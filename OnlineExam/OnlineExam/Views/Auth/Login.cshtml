@@ -1,0 +1,218 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập";
+    
+    // Ép trang này sử dụng Layout riêng dành cho Auth
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Đăng nhập | The Academic Atelier</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#89fa9b",
+                      "tertiary-fixed-dim": "#fbbc05",
+                      "on-tertiary-container": "#ffffff",
+                      "tertiary-container": "#987000",
+                      "surface-bright": "#f9f9ff",
+                      "primary": "#005bbf",
+                      "on-tertiary-fixed-variant": "#5c4300",
+                      "on-primary-fixed-variant": "#004493",
+                      "surface-container-highest": "#e0e2ec",
+                      "on-primary-container": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "on-surface-variant": "#414754",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#adc7ff",
+                      "primary-fixed-dim": "#adc7ff",
+                      "outline-variant": "#c1c6d6",
+                      "secondary-container": "#86f898",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed": "#001a41",
+                      "outline": "#727785",
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#eff0fa",
+                      "surface-tint": "#005bc0",
+                      "primary-container": "#1a73e8",
+                      "inverse-surface": "#2d3038",
+                      "surface-container-high": "#e6e8f2",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed": "#261a00",
+                      "tertiary": "#795900",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f2f3fd",
+                      "surface": "#f9f9ff",
+                      "on-secondary-fixed": "#002108",
+                      "on-error": "#ffffff",
+                      "surface-container": "#ecedf7",
+                      "secondary": "#006e2c",
+                      "tertiary-fixed": "#ffdfa0",
+                      "background": "#f9f9ff",
+                      "secondary-fixed-dim": "#6ddd81",
+                      "on-background": "#191c23",
+                      "surface-dim": "#d8d9e3",
+                      "on-surface": "#191c23",
+                      "on-secondary-fixed-variant": "#005320",
+                      "on-secondary-container": "#00722f",
+                      "surface-variant": "#e0e2ec"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope", "sans-serif"],
+                      "body": ["Inter", "sans-serif"],
+                      "label": ["Inter", "sans-serif"]
+              }
+            },
+          },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface-container-high text-on-background font-body min-h-screen flex items-center justify-center p-0 md:p-6 lg:p-12">
+
+    <main class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_12px_32px_rgba(25,28,35,0.06)] min-h-[800px]">
+
+        <section class="relative hidden md:flex flex-col justify-between p-12 overflow-hidden bg-primary">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute inset-0 bg-gradient-to-tr from-primary via-primary/90 to-primary-container"></div>
+                <img alt="Minimalist architectural library interior" class="w-full h-full object-cover mix-blend-overlay opacity-30" src="https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=1000&auto=format&fit=crop" />
+            </div>
+
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-10">
+                    <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">school</span>
+                    <h1 class="font-headline font-bold text-2xl tracking-tight text-white">Online Exam</h1>
+                </div>
+                <h2 class="font-headline text-5xl font-bold text-white leading-tight mb-6">Khai phá tiềm năng<br>trong không gian tri<br>thức</h2>
+                <p class="text-primary-fixed/90 text-lg max-w-md font-light leading-relaxed">
+                    Chào mừng bạn đến với hệ sinh thái học tập hiện đại, nơi sự tập trung và sáng tạo được ưu tiên hàng đầu.
+                </p>
+            </div>
+
+            <div class="relative z-10 mt-auto pt-12">
+                <div class="flex gap-4 items-center">
+                    <div class="flex -space-x-3">
+                        <img alt="Student Profile" class="h-10 w-10 rounded-full border-2 border-primary bg-surface-container-lowest object-cover" src="https://i.pravatar.cc/150?img=68" />
+                        <img alt="Teacher Profile" class="h-10 w-10 rounded-full border-2 border-primary bg-surface-container-lowest object-cover" src="https://i.pravatar.cc/150?img=11" />
+                    </div>
+                    <span class="text-white text-sm font-medium">Tham gia cùng giảng viên và sinh viên</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="flex flex-col justify-center px-8 py-12 md:px-16 lg:px-20 bg-surface">
+            <div class="mb-10 text-center md:text-left">
+                <h3 class="font-headline text-3xl font-bold text-on-surface mb-2">Chào mừng trở lại</h3>
+                <p class="text-on-surface-variant font-medium">Vui lòng đăng nhập để tiếp tục hành trình của bạn.</p>
+            </div>
+
+            <div class="inline-flex p-1 bg-surface-container-low rounded-full mb-8 w-full max-w-md mx-auto md:mx-0">
+                <button class="flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-all duration-300 bg-surface-container-lowest text-primary shadow-sm">
+                    Học sinh
+                </button>
+                <button class="flex-1 py-2.5 px-4 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary transition-all duration-300">
+                    Giáo viên
+                </button>
+            </div>
+
+            <form class="space-y-6 max-w-md mx-auto md:mx-0 w-full">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2" for="email">Email học viện</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">mail</span>
+                        <input class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest border border-outline-variant/15 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant" id="email" name="email" placeholder="example@atelier.edu.vn" type="email" />
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="password">Mật khẩu</label>
+                        <a class="text-xs font-semibold text-primary hover:underline" href="#">Quên mật khẩu?</a>
+                    </div>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">lock</span>
+                        <input class="w-full pl-12 pr-12 py-4 bg-surface-container-lowest border border-outline-variant/15 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" type="password" />
+                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary" type="button">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 mt-4 mb-6">
+                    <input class="w-4 h-4 rounded text-primary border-outline-variant focus:ring-primary" id="remember" type="checkbox" />
+                    <label class="text-sm text-on-surface font-medium" for="remember">Ghi nhớ đăng nhập</label>
+                </div>
+
+                <button class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-[0px_4px_12px_rgba(0,91,191,0.2)] hover:bg-primary-container hover:shadow-[0px_6px_16px_rgba(0,91,191,0.3)] active:scale-[0.98] transition-all duration-300" type="submit">
+                    Đăng nhập 
+                </button>
+            </form>
+
+            <div class="mt-8 space-y-6 max-w-md mx-auto md:mx-0 w-full">
+                <div class="relative flex items-center">
+                    <div class="flex-grow border-t border-surface-container-highest"></div>
+                    <span class="flex-shrink mx-4 text-xs font-bold text-outline uppercase">Hoặc tiếp tục với</span>
+                    <div class="flex-grow border-t border-surface-container-highest"></div>
+                </div>
+
+                <button class="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-surface-container-lowest border border-outline-variant/20 rounded-xl hover:bg-surface-container-low transition-colors duration-200">
+                    <svg class="w-5 h-5" viewBox="0 0 48 48">
+                        <path d="M43.611,20.083H42V20H24v8h11.303c-1.64,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path>
+                        <path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path>
+                        <path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" fill="#4CAF50"></path>
+                        <path d="M43.611,20.083L43.611,20.083L42,20H24v8h11.303c-0.792,2.251-2.22,4.184-4.093,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path>
+                    </svg>
+                    <span class="text-sm font-semibold text-on-surface">Tiếp tục bằng Google</span>
+                </button>
+
+                <p class="text-center text-sm text-on-surface-variant font-medium mt-6">
+                    Bạn chưa có tài khoản?
+                    <a class="text-primary font-bold ml-1 hover:underline" href="#">Đăng ký tài khoản mới</a>
+                </p>
+            </div>
+
+            <div class="mt-auto pt-12 flex justify-center md:justify-start max-w-md mx-auto md:mx-0 w-full">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#f4ebd0] text-[#795900] font-bold text-xs rounded-full">
+                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+                    Quyền truy cập dành cho giảng viên
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="fixed bottom-6 left-0 right-0 text-center hidden md:block">
+        <p class="text-xs tracking-widest text-outline font-semibold">© 2024 ACADEMIC ATELIER. INTELLECTUAL SANCTUARY PLATFORM.</p>
+    </footer>
+</body>
+</html>

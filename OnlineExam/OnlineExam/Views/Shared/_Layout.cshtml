@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - The Academic Atelier</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/OnlineExam.styles.css" asp-append-version="true" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                  "brand-blue": "#005bbf",
+                  "brand-blue-container": "#1a73e8",
+                  "brand-orange": "#FF8A65",
+                  "brand-yellow": "#fbbc05",
+                  "brand-teal": "#006e2c",
+                  "surface-bg": "#f9f9ff",
+                  "on-surface-variant": "#414754"
+              },
+              fontFamily: {
+                  "headline": ["Manrope"],
+                  "body": ["Inter"]
+              }
+            }
+          }
+        }
+    </script>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+    </style>
+</head>
+<body class="bg-surface-bg font-body text-slate-800 antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        <partial name="_Sidebar" />
+
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-surface-bg ml-24 peer-hover:ml-[260px] transition-all duration-300 ease-in-out">
+            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-8 z-10 sticky top-0">
+                <div class="flex-1 max-w-2xl font-headline font-semibold text-lg text-slate-800">
+                    Hệ thống thi trắc nghiệm online
+                </div>
+                <div class="ml-4 flex items-center gap-6">
+                    <button class="text-slate-500 hover:text-brand-blue transition-colors">
+                        <span class="material-symbols-outlined text-2xl">settings</span>
+                    </button>
+                    <button class="relative text-slate-500 hover:text-brand-blue transition-colors">
+                        <span class="material-symbols-outlined text-2xl">notifications</span>
+                        <span class="absolute top-0 right-0 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border border-white"></span>
+                        </span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 lg:p-12">
+                <div>
+                    @RenderBody()
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
