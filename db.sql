@@ -55,9 +55,11 @@ BEGIN
     CREATE TABLE ExamPapers (
         Id INT IDENTITY(1,1) PRIMARY KEY,
         Title NVARCHAR(255) NOT NULL,
+        Subject NVARCHAR(100) NULL,
         TeacherId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
         CreatedAt DATETIME DEFAULT GETDATE(),
-        IsDeleted BIT DEFAULT 0
+        IsDeleted BIT DEFAULT 0,
+        Status NVARCHAR(50) DEFAULT N'Bản nháp'
     );
 END
 GO

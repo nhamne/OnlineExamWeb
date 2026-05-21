@@ -38,9 +38,9 @@ GO
 -- 4. Insert ExamPapers (2 Đề thi)
 IF NOT EXISTS (SELECT 1 FROM ExamPapers)
 BEGIN
-    INSERT INTO ExamPapers (Title, TeacherId, IsDeleted) VALUES
-    (N'Bài kiểm tra ASP.NET MVC Giữa kỳ', 1, 0),
-    (N'Trắc nghiệm SQL Server Cơ bản', 2, 0);
+    INSERT INTO ExamPapers (Title, Subject, TeacherId, IsDeleted) VALUES
+    (N'Bài kiểm tra ASP.NET MVC Giữa kỳ', N'Lập trình Web', 1, 0),
+    (N'Trắc nghiệm SQL Server Cơ bản', N'Cơ sở dữ liệu', 2, 0);
 END
 GO
 
