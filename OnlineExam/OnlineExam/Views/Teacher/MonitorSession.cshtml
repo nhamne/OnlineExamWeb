@@ -1,0 +1,127 @@
+@model OnlineExam.ViewModels.SessionMonitorPageVM
+
+@{
+    ViewData["Title"] = "Theo dõi ca thi";
+}
+
+<div class="min-h-screen bg-slate-50 px-4 pt-0 sm:px-6 lg:px-10 py-8">
+    <div class="max-w-7xl mx-auto space-y-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="space-y-1">
+                <a href="@Url.Action("Sessions", "Teacher")" class="inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:text-sky-800">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Quay lại danh sách ca thi
+                </a>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">Theo dõi ca thi: @Model.SessionName</h1>
+                <p class="text-sm text-slate-600">@Model.ExamTitle - @Model.ClassName</p>
+                <p class="text-xs text-slate-500">@Model.StartTime.ToString("dd/MM/yyyy HH:mm") - @Model.EndTime.ToString("dd/MM/yyyy HH:mm") (@Model.DurationInMinutes phút)</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-wide">Tổng học sinh</p>
+                <p class="mt-2 text-2xl font-bold text-slate-900">@Model.TotalStudents</p>
+            </div>
+            <div class="rounded-2xl bg-white border border-emerald-200 p-4">
+                <p class="text-xs text-emerald-700 uppercase font-bold tracking-wide">Đã nộp bài</p>
+                <p class="mt-2 text-2xl font-bold text-emerald-700">@Model.SubmittedCount</p>
+            </div>
+            <div class="rounded-2xl bg-white border border-blue-200 p-4">
+                <p class="text-xs text-blue-700 uppercase font-bold tracking-wide">Đang làm bài</p>
+                <p class="mt-2 text-2xl font-bold text-blue-700">@Model.InProgressCount</p>
+            </div>
+            <div class="rounded-2xl bg-white border border-slate-300 p-4">
+                <p class="text-xs text-slate-700 uppercase font-bold tracking-wide">Chưa vào thi</p>
+                <p class="mt-2 text-2xl font-bold text-slate-700">@Model.NotStartedCount</p>
+            </div>
+            <div class="rounded-2xl bg-white border border-amber-200 p-4">
+                <p class="text-xs text-amber-700 uppercase font-bold tracking-wide">Hết giờ chưa nộp</p>
+                <p class="mt-2 text-2xl font-bold text-amber-700">@Model.LateNotSubmittedCount</p>
+            </div>
+            <div class="rounded-2xl bg-white border border-rose-200 p-4">
+                <p class="text-xs text-rose-700 uppercase font-bold tracking-wide">Có vi phạm</p>
+                <p class="mt-2 text-2xl font-bold text-rose-700">@Model.ViolationCount</p>
+            </div>
+        </div>
+
+        <form method="get" asp-action="MonitorSession" asp-controller="Teacher" class="rounded-2xl bg-white border border-slate-200 p-4 flex flex-col lg:flex-row gap-3 lg:items-end">
+            <input type="hidden" name="sessionId" value="@Model.SessionId" />
+            <div class="flex-1">
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-600 mb-1">Tìm học sinh</label>
+                <input name="searchKeyword" value="@Model.SearchKeyword" placeholder="Tên hoặc email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
+            </div>
+            <div class="w-full lg:w-60">
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-600 mb-1">Trạng thái nộp bài</label>
+                <select name="statusFilter" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200">
+                    <option value="all" selected="@(Model.StatusFilter == "all")">Tất cả</option>
+                    <option value="submitted" selected="@(Model.StatusFilter == "submitted")">Đã nộp bài</option>
+                    <option value="in_progress" selected="@(Model.StatusFilter == "in_progress")">Đang làm bài</option>
+                    <option value="not_started" selected="@(Model.StatusFilter == "not_started")">Chưa vào thi</option>
+                    <option value="late" selected="@(Model.StatusFilter == "late")">Hết giờ chưa nộp</option>
+                </select>
+            </div>
+            <button type="submit" class="h-[42px] px-5 rounded-xl bg-sky-700 text-white text-sm font-semibold hover:bg-sky-800">Lọc</button>
+        </form>
+
+        <div class="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wide">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-bold">Học sinh</th>
+                            <th class="text-left px-4 py-3 font-bold">Điểm</th>
+                            <th class="text-left px-4 py-3 font-bold">Đúng</th>
+                            <th class="text-left px-4 py-3 font-bold">Thời gian làm</th>
+                            <th class="text-left px-4 py-3 font-bold">Vi phạm</th>
+                            <th class="text-left px-4 py-3 font-bold">Bắt đầu</th>
+                            <th class="text-left px-4 py-3 font-bold">Nộp bài</th>
+                            <th class="text-left px-4 py-3 font-bold">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
+                        @if (!Model.Students.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="px-4 py-10 text-center text-slate-500">Không có học sinh phù hợp với bộ lọc.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var student in Model.Students)
+                            {
+                                var statusClass = student.SubmissionStatus switch
+                                {
+                                    "Đã nộp bài" => "bg-emerald-100 text-emerald-700",
+                                    "Đang làm bài" => "bg-blue-100 text-blue-700",
+                                    "Hết giờ chưa nộp" => "bg-amber-100 text-amber-700",
+                                    _ => "bg-slate-100 text-slate-700"
+                                };
+
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold">@student.FullName</div>
+                                        <div class="text-xs text-slate-500">@student.Email</div>
+                                    </td>
+                                    <td class="px-4 py-3 font-semibold">@(student.Score.HasValue ? student.Score.Value.ToString("0.##") : "-")</td>
+                                    <td class="px-4 py-3">@(student.CorrectAnswersCount.HasValue ? student.CorrectAnswersCount.Value.ToString() : "-")</td>
+                                    <td class="px-4 py-3">@(student.TimeSpentMinutes.HasValue ? $"{student.TimeSpentMinutes} phút" : "-")</td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold @(student.WarningCount > 0 ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600")">
+                                            @student.WarningCount
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs">@(student.StartedAt.HasValue ? student.StartedAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                    <td class="px-4 py-3 text-xs">@(student.SubmittedAt.HasValue ? student.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold @statusClass">@student.SubmissionStatus</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

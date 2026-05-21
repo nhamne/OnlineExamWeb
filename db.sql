@@ -55,10 +55,17 @@ BEGIN
     CREATE TABLE ExamPapers (
         Id INT IDENTITY(1,1) PRIMARY KEY,
         Title NVARCHAR(255) NOT NULL,
+        DurationInMinutes INT NOT NULL DEFAULT 45,
         TeacherId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
         CreatedAt DATETIME DEFAULT GETDATE(),
         IsDeleted BIT DEFAULT 0
     );
+END
+GO
+
+IF COL_LENGTH('ExamPapers', 'DurationInMinutes') IS NULL
+BEGIN
+    ALTER TABLE ExamPapers ADD DurationInMinutes INT NOT NULL CONSTRAINT DF_ExamPapers_DurationInMinutes DEFAULT(45);
 END
 GO
 
@@ -91,9 +98,42 @@ BEGIN
         EndTime DATETIME NOT NULL,
         DurationInMinutes INT NOT NULL,
         SessionPassword VARCHAR(50) NULL,
-        AllowViewScore BIT DEFAULT 1,
-        IsShuffled BIT DEFAULT 1
+        AllowViewExplanation BIT DEFAULT 1,
+        IsShuffled BIT DEFAULT 1,
+        ShuffleQuestions BIT DEFAULT 1,
+        ShuffleAnswers BIT DEFAULT 1,
+        Notes NVARCHAR(MAX) NULL
     );
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD AllowViewExplanation BIT NOT NULL CONSTRAINT DF_ExamSessions_AllowViewExplanation DEFAULT(1);
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'AllowViewScore') IS NOT NULL AND COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NOT NULL
+BEGIN
+    EXEC('UPDATE ExamSessions SET AllowViewExplanation = AllowViewScore');
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'ShuffleQuestions') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD ShuffleQuestions BIT NOT NULL CONSTRAINT DF_ExamSessions_ShuffleQuestions DEFAULT(1);
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'ShuffleAnswers') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD ShuffleAnswers BIT NOT NULL CONSTRAINT DF_ExamSessions_ShuffleAnswers DEFAULT(1);
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'Notes') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD Notes NVARCHAR(MAX) NULL;
 END
 GO
 

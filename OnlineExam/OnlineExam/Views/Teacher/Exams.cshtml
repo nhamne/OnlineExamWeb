@@ -1,0 +1,71 @@
+@model OnlineExam.ViewModels.TeacherExamListVM
+
+@{
+    ViewData["Title"] = "Quản lý đề thi";
+}
+
+<div class="px-6 py-8">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Quản lý đề thi</h1>
+            <p class="text-slate-500 text-sm mt-1">Tìm kiếm đề thi bằng Meilisearch và sắp xếp theo nhu cầu.</p>
+        </div>
+    </div>
+
+    <form method="get" asp-action="Exams" class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div class="md:col-span-3">
+            <label class="text-xs font-semibold text-slate-500">Từ khóa</label>
+            <input type="text" name="searchKeyword" value="@Model.SearchKeyword" placeholder="Nhập tên đề thi..."
+                   class="mt-1 w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="text-xs font-semibold text-slate-500">Sắp xếp</label>
+            <select name="sortBy" class="mt-1 w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                <option value="created_desc" selected="@(Model.SortBy == "created_desc")">Mới nhất</option>
+                <option value="created_asc" selected="@(Model.SortBy == "created_asc")">Cũ nhất</option>
+                <option value="name_asc" selected="@(Model.SortBy == "name_asc")">Tên A-Z</option>
+                <option value="name_desc" selected="@(Model.SortBy == "name_desc")">Tên Z-A</option>
+                <option value="questions_desc" selected="@(Model.SortBy == "questions_desc")">Nhiều câu hỏi nhất</option>
+                <option value="sessions_desc" selected="@(Model.SortBy == "sessions_desc")">Nhiều ca thi nhất</option>
+            </select>
+        </div>
+
+        <div class="flex items-end gap-2">
+            <button type="submit" class="w-full rounded-xl bg-blue-600 text-white py-2.5 font-semibold hover:bg-blue-700 transition">Tìm kiếm</button>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                <tr>
+                    <th class="text-left px-5 py-3">Đề thi</th>
+                    <th class="text-left px-5 py-3">Câu hỏi</th>
+                    <th class="text-left px-5 py-3">Ca thi</th>
+                    <th class="text-left px-5 py-3">Ngày tạo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Exams.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="px-5 py-8 text-center text-slate-500">Không có đề thi phù hợp.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var exam in Model.Exams)
+                    {
+                        <tr class="border-t border-slate-100 hover:bg-slate-50/80">
+                            <td class="px-5 py-4 font-semibold text-slate-800">@exam.Title</td>
+                            <td class="px-5 py-4 text-slate-600">@exam.QuestionCount</td>
+                            <td class="px-5 py-4 text-slate-600">@exam.SessionCount</td>
+                            <td class="px-5 py-4 text-slate-600">@(exam.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

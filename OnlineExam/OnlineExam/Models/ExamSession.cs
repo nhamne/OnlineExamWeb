@@ -21,9 +21,15 @@ public partial class ExamSession
 
     public string? SessionPassword { get; set; }
 
-    public bool? AllowViewScore { get; set; }
+    public bool? AllowViewExplanation { get; set; }
 
     public bool? IsShuffled { get; set; }
+
+    public bool? ShuffleQuestions { get; set; }
+
+    public bool? ShuffleAnswers { get; set; }
+
+    public string? Notes { get; set; }
 
     public virtual Classroom Classroom { get; set; } = null!;
 

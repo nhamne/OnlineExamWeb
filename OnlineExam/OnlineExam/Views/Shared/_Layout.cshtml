@@ -67,8 +67,58 @@
                 background: #94a3b8;
             }
     </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="bg-surface-bg font-body text-slate-800 antialiased">
+    @{
+        var currentPath = Context.Request.Path.Value ?? string.Empty;
+        string headerTitle;
+        var serverToastMessage = TempData["ToastMessage"] as string;
+        var serverToastType = (TempData["ToastType"] as string) ?? "success";
+
+        if (currentPath.StartsWith("/Teacher/Classes", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/ManageClass", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Quản lý lớp học";
+        }
+        else if (currentPath.StartsWith("/Teacher/Exams", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Quản lý đề thi";
+        }
+        else if (currentPath.StartsWith("/Teacher/Sessions", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/MonitorSession", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tổ chức ca thi";
+        }
+        else if (currentPath.StartsWith("/Teacher/Reports", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Báo cáo thống kê";
+        }
+        else if (currentPath.StartsWith("/Student/JoinClass", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tham gia lớp";
+        }
+        else if (currentPath.StartsWith("/Student/Exams", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Ca thi của tôi";
+        }
+        else if (currentPath.StartsWith("/Student/Results", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Kết quả";
+        }
+        else if (currentPath.StartsWith("/Student", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Trang chủ";
+        }
+        else if (currentPath.StartsWith("/Teacher", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tổng quan";
+        }
+        else
+        {
+            headerTitle = "Hệ thống thi trắc nghiệm online";
+        }
+    }
 
     <div class="flex h-screen overflow-hidden">
         <partial name="_Sidebar" />
@@ -76,7 +126,7 @@
         <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-surface-bg ml-24 peer-hover:ml-[260px] transition-all duration-300 ease-in-out">
             <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-8 z-10 sticky top-0">
                 <div class="flex-1 max-w-2xl font-headline font-semibold text-lg text-slate-800">
-                    Hệ thống thi trắc nghiệm online
+                    @headerTitle
                 </div>
                 <div class="ml-4 flex items-center gap-6">
                     <button class="text-slate-500 hover:text-brand-blue transition-colors">
@@ -100,9 +150,119 @@
         </main>
     </div>
 
+    <div id="app-toast-container" class="fixed top-4 right-4 z-[140] pointer-events-none">
+        <div id="app-toast" class="hidden min-w-[280px] max-w-[420px] rounded-2xl border bg-white shadow-[0_20px_40px_rgba(15,23,42,0.12)] px-4 py-3 flex items-start gap-3 pointer-events-auto">
+            <div id="app-toast-icon" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="flex-1">
+                <p id="app-toast-title" class="font-bold text-sm">Thông báo</p>
+                <p id="app-toast-message" class="text-sm mt-0.5 text-slate-600">Nội dung thông báo</p>
+            </div>
+            <button id="app-toast-close" class="text-slate-400 hover:text-slate-600 transition-colors" type="button" aria-label="Đóng thông báo">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const toastEl = document.getElementById('app-toast');
+            const iconEl = document.getElementById('app-toast-icon');
+            const titleEl = document.getElementById('app-toast-title');
+            const messageEl = document.getElementById('app-toast-message');
+            const closeEl = document.getElementById('app-toast-close');
+            let hideToastTimer;
+
+            function getToastTheme(type) {
+                if (type === 'error') {
+                    return {
+                        root: 'border-rose-200',
+                        iconWrap: 'bg-rose-100 text-rose-600',
+                        title: 'Thất bại',
+                        icon: 'error'
+                    };
+                }
+
+                return {
+                    root: 'border-emerald-200',
+                    iconWrap: 'bg-emerald-100 text-emerald-600',
+                    title: 'Thành công',
+                    icon: 'check_circle'
+                };
+            }
+
+            function hideToast() {
+                if (!toastEl) {
+                    return;
+                }
+
+                toastEl.classList.add('hidden');
+            }
+
+            function showToast(message, type = 'success') {
+                if (!toastEl || !iconEl || !titleEl || !messageEl) {
+                    return;
+                }
+
+                const theme = getToastTheme(type);
+
+                toastEl.classList.remove('border-emerald-200', 'border-rose-200');
+                toastEl.classList.add(theme.root);
+
+                iconEl.classList.remove('bg-emerald-100', 'text-emerald-600', 'bg-rose-100', 'text-rose-600');
+                iconEl.classList.add(...theme.iconWrap.split(' '));
+
+                const iconSpan = iconEl.querySelector('.material-symbols-outlined');
+                if (iconSpan) {
+                    iconSpan.textContent = theme.icon;
+                }
+
+                titleEl.textContent = theme.title;
+                messageEl.textContent = message;
+
+                toastEl.classList.remove('hidden');
+
+                clearTimeout(hideToastTimer);
+                hideToastTimer = setTimeout(hideToast, 3200);
+            }
+
+            if (closeEl) {
+                closeEl.addEventListener('click', hideToast);
+            }
+
+            window.appToast = {
+                show: showToast,
+                storeAndReload: (message, type = 'success') => {
+                    sessionStorage.setItem('app.toast', JSON.stringify({ message, type }));
+                    location.reload();
+                }
+            };
+
+            const serverToastMessage = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverToastMessage));
+            const serverToastType = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverToastType));
+
+            if (serverToastMessage) {
+                showToast(serverToastMessage, serverToastType || 'success');
+            }
+
+            const pendingToastRaw = sessionStorage.getItem('app.toast');
+            if (pendingToastRaw) {
+                sessionStorage.removeItem('app.toast');
+                try {
+                    const pendingToast = JSON.parse(pendingToastRaw);
+                    if (pendingToast?.message) {
+                        showToast(pendingToast.message, pendingToast.type || 'success');
+                    }
+                } catch {
+                    // Ignore malformed session data.
+                }
+            }
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -9,6 +9,8 @@ public partial class ExamPaper
 
     public string Title { get; set; } = null!;
 
+    public int DurationInMinutes { get; set; }
+
     public int TeacherId { get; set; }
 
     public DateTime? CreatedAt { get; set; }

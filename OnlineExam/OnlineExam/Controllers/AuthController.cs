@@ -100,6 +100,7 @@ namespace OnlineExam.Controllers
             // === TẠO COOKIE ĐĂNG NHẬP (LƯU VÀO TRÌNH DUYỆT) ===
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, roleFromDB == "teacher" ? "Teacher" : "Student")
@@ -206,7 +207,7 @@ namespace OnlineExam.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Auth");
+            return RedirectToAction("Login", "Auth", new { cleared = 1 });
         }
     }
 }
