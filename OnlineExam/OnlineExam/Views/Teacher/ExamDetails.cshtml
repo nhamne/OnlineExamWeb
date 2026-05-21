@@ -1,0 +1,187 @@
+﻿@model OnlineExam.Models.ExamPaper
+@{
+    ViewData["Title"] = "Chi tiết đề thi";
+}
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es6/tex-mml-chtml.js"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#0056d2",
+                    "background": "#f7f9fb",
+                    "on-surface": "#191c1e",
+                    "on-surface-variant": "#424654",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#a93802",
+                },
+                fontFamily: { sans: ["Manrope", "sans-serif"] },
+                borderRadius: { "xl": "1.5rem" }
+            }
+        }
+    }
+</script>
+<style>
+    body { background-color: #f7f9fb; color: #191c1e; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+    .editorial-card { background: #ffffff; border: none; }
+</style>
+
+<div class="antialiased custom-scope">
+    <main class="max-w-[96%] mx-auto px-6 pt-2 pb-10 -mt-6">
+        
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <a href="/Teacher/Exams" class="bg-gray-200 text-gray-700 px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-300 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Quay lại
+                </a>
+            </div>
+            <div>
+                <a href="/Teacher/EditExam/@Model.Id" class="bg-primary text-white px-8 py-2.5 rounded-full font-bold text-sm shadow-lg shadow-blue-200 hover:opacity-90 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                    Chỉnh sửa đề thi
+                </a>
+            </div> 
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Cụm thông tin chuyển sang Split bên trái (1/3 màn hình) -->
+            <aside class="lg:col-span-4 space-y-4">
+                <div class="editorial-card rounded-xl p-6 relative overflow-hidden shadow-[0px_4px_16px_rgba(0,0,0,0.02)]">
+                    <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+                    <h1 class="text-xl font-extrabold text-on-surface leading-snug mb-4">
+                        @Model.Title
+                    </h1>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">person</span></div>
+                            <span class="text-[14px] font-bold text-on-surface-variant">@(User.Identity?.Name ?? "Giáo viên")</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-on-surface-variant">
+                            <div class="w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">calendar_today</span></div>
+                            <span class="text-[14px] font-bold tracking-wider">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white shadow-[0px_4px_16px_rgba(0,0,0,0.02)] p-4 rounded-xl flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px]">menu_book</span>
+                            <p class="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Môn học</p>
+                        </div>
+                        <p class="text-[14px] font-medium truncate text-black mt-1">@(string.IsNullOrEmpty(Model.Subject) ? "Chưa xác định" : Model.Subject)</p>
+                    </div>
+                    <div class="bg-white shadow-[0px_4px_16px_rgba(0,0,0,0.02)] p-4 rounded-xl flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px]">analytics</span>
+                            <p class="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</p>
+                        </div>
+                        <p class="text-[14px] font-medium text-black truncate mt-1">@Model.Status</p>
+                    </div>
+                    <div class="bg-white shadow-[0px_4px_16px_rgba(0,0,0,0.02)] p-4 rounded-xl flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px]">schedule</span>
+                            <p class="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Thời gian thi</p>
+                        </div>
+                        <p class="text-[14px] font-medium text-black mt-1">@(Model.Duration.HasValue ? $"{Model.Duration} phút" : "--")</p>
+                    </div>
+                    <div class="bg-white shadow-[0px_4px_16px_rgba(0,0,0,0.02)] p-4 rounded-xl flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px]">quiz</span>
+                            <p class="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Tổng câu hỏi</p>
+                        </div>
+                        <p class="text-[14px] font-medium text-black mt-1">@(Model.Questions?.Count ?? 0) Câu</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Cụm nội dung câu hỏi chuyển sang Split bên phải (2/3 màn hình) -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="flex justify-between items-end pb-3 border-b border-surface-container-low">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined">list_alt</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-extrabold text-on-surface">Nội dung chi tiết</h3>
+                            <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Danh mục câu hỏi</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Questions != null && Model.Questions.Any())
+                {
+                    int qIndex = 1;
+                    foreach (var q in Model.Questions)
+                    {
+                    <article class="editorial-card rounded-xl p-8 shadow-[0px_4px_16px_rgba(0,0,0,0.02)] relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="flex items-center gap-4">
+                                <span class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-black">@(qIndex.ToString("D2"))</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-base font-medium text-on-surface leading-relaxed mb-4">
+                                @Html.Raw(q.Content)
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @{
+                                var optAClass = q.CorrectOption == "A" ? "bg-blue-50 ring-1 ring-primary/20" : "bg-surface-container-low";
+                                var optBClass = q.CorrectOption == "B" ? "bg-blue-50 ring-1 ring-primary/20" : "bg-surface-container-low";
+                                var optCClass = q.CorrectOption == "C" ? "bg-blue-50 ring-1 ring-primary/20" : "bg-surface-container-low";
+                                var optDClass = q.CorrectOption == "D" ? "bg-blue-50 ring-1 ring-primary/20" : "bg-surface-container-low";
+
+                                var textAClass = q.CorrectOption == "A" ? "text-sm font-bold text-primary" : "text-sm font-medium";
+                                var textBClass = q.CorrectOption == "B" ? "text-sm font-bold text-primary" : "text-sm font-medium";
+                                var textCClass = q.CorrectOption == "C" ? "text-sm font-bold text-primary" : "text-sm font-medium";
+                                var textDClass = q.CorrectOption == "D" ? "text-sm font-bold text-primary" : "text-sm font-medium";
+
+                                var badgeAClass = q.CorrectOption == "A" ? "bg-primary text-white" : "bg-white text-on-surface";
+                                var badgeBClass = q.CorrectOption == "B" ? "bg-primary text-white" : "bg-white text-on-surface";
+                                var badgeCClass = q.CorrectOption == "C" ? "bg-primary text-white" : "bg-white text-on-surface";
+                                var badgeDClass = q.CorrectOption == "D" ? "bg-primary text-white" : "bg-white text-on-surface";
+                            }
+                            <div class="p-4 rounded-xl @optAClass flex items-center gap-4 relative">
+                                <span class="w-8 h-8 rounded-lg @badgeAClass flex items-center justify-center text-xs font-black">A</span>
+                                <span class="@textAClass">@Html.Raw(q.OptionA)</span>
+                                @if(q.CorrectOption == "A") { <span class="material-symbols-outlined text-primary text-xl absolute right-4" style="font-variation-settings: 'FILL' 1;">check_circle</span> }
+                            </div>
+                            <div class="p-4 rounded-xl @optBClass flex items-center gap-4 relative">
+                                <span class="w-8 h-8 rounded-lg @badgeBClass flex items-center justify-center text-xs font-black">B</span>
+                                <span class="@textBClass">@Html.Raw(q.OptionB)</span>
+                                @if(q.CorrectOption == "B") { <span class="material-symbols-outlined text-primary text-xl absolute right-4" style="font-variation-settings: 'FILL' 1;">check_circle</span> }
+                            </div>
+                            <div class="p-4 rounded-xl @optCClass flex items-center gap-4 relative">
+                                <span class="w-8 h-8 rounded-lg @badgeCClass flex items-center justify-center text-xs font-black">C</span>
+                                <span class="@textCClass">@Html.Raw(q.OptionC)</span>
+                                @if(q.CorrectOption == "C") { <span class="material-symbols-outlined text-primary text-xl absolute right-4" style="font-variation-settings: 'FILL' 1;">check_circle</span> }
+                            </div>
+                            <div class="p-4 rounded-xl @optDClass flex items-center gap-4 relative">
+                                <span class="w-8 h-8 rounded-lg @badgeDClass flex items-center justify-center text-xs font-black">D</span>
+                                <span class="@textDClass">@Html.Raw(q.OptionD)</span>
+                                @if(q.CorrectOption == "D") { <span class="material-symbols-outlined text-primary text-xl absolute right-4" style="font-variation-settings: 'FILL' 1;">check_circle</span> }
+                            </div>
+                        </div>
+                    </article>
+                    qIndex++;
+                }
+            }
+            else
+            {
+                <div class="text-center py-10 text-gray-500 font-bold">
+                    Chưa có câu hỏi nào trong đề thi này.
+                </div>
+            }
+            </div>
+        </div>
+
+    </main>
+</div>
