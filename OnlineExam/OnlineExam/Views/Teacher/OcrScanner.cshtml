@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AI & OCR Exam Generator - Academic Architect</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0056d2",
+                        "background": "#f7f9fb",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#424654",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "rgba(195, 198, 214, 0.15)", /* Ghost Border Rule */
+                    },
+                    fontFamily: { sans: ["Manrope", "sans-serif"] },
+                    borderRadius: { "xl": "1.5rem" }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f7f9fb; color: #191c1e; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        /* Tonal layering principle */
+        .depth-card { background: #ffffff; border: 1px solid rgba(195, 198, 214, 0.15); transition: all 0.4s ease; }
+        .depth-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(25, 28, 30, 0.06); }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <main class="w-full px-6 pt-0 pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+            <!-- Left Column: Upload -->
+            <div class="flex flex-col">
+                <div class="mb-2">
+                    <h1 class="text-lg font-bold tracking-tight text-on-surface">Tạo đề thi bằng AI & OCR</h1>
+                    <p class="text-on-surface-variant text-[11px] mt-0.5">Phân tích tài liệu và tự động trích xuất câu hỏi thông minh.</p>
+                </div>
+
+
+
+<div id="dropZone" class="depth-card rounded-xl p-6 flex flex-col items-center text-center cursor-pointer mb-4 group w-full relative border-2 border-dashed border-transparent hover:border-primary transition-all">
+                    <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,image/png,image/jpeg" />     
+                    <div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                        <span class="material-symbols-outlined text-2xl text-primary" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+                    </div>
+                    <h3 class="text-lg font-extrabold mb-1">Kéo và thả tài liệu vào đây hoặc Click để chọn</h3>
+                    <p id="fileNameDisplay" class="text-on-surface-variant text-xs mb-6">Hỗ trợ PDF, JPG, PNG lên đến 25MB</p>
+                    <div class="flex gap-3">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-full">
+                            <span class="material-symbols-outlined !text-lg text-red-500">picture_as_pdf</span>
+                            <span class="text-[9px] font-black uppercase tracking-wider">PDF</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-full">
+                            <span class="material-symbols-outlined !text-lg text-blue-500">image</span>
+                            <span class="text-[9px] font-black uppercase tracking-wider">Images</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface mb-2">Tên đề thi <span class="text-red-500">*</span></label>
+                        <input type="text" id="examTitle" class="w-full bg-white border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3 py-2 text-xs transition-all outline-none" placeholder="Nhập tên đề thi (VD: Kiểm tra 15 phút)..." required />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface mb-2">Môn học <span class="text-red-500">*</span></label>
+                        <input type="text" id="examSubject" class="w-full bg-white border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3 py-2 text-xs transition-all outline-none" placeholder="Nhập tên môn học (VD: Toán học, Vật lý)..." required />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface mb-2">Thời gian thi (phút)</label>
+                        <input type="number" id="examDuration" min="1" class="w-full bg-white border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3 py-2 text-xs transition-all outline-none" placeholder="Nhập thời gian thi..." />
+                    </div>
+                </div>
+
+                <button id="btnAnalyze" class="w-full bg-primary text-white py-2 rounded-full font-bold text-xs shadow-xl shadow-blue-200 hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-[0.98] mb-10 max-w-full disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="material-symbols-outlined !text-base">shutter_speed</span>
+                    Bắt đầu phân tích OCR
+                </button>
+            </div>
+
+            <!-- Right Column: Result -->
+            <div class="space-y-6 w-full lg:sticky top-6">
+                <div class="flex justify-between items-end">
+                    <h2 class="text-lg font-extrabold flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                        Câu hỏi đã nhận diện (<span id="questionCount">0</span>)
+                    </h2>
+                </div>
+
+                <div id="questionsContainer" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                    <div class="text-center text-on-surface-variant text-sm py-10">
+                        Chưa có dữ liệu. Hãy tải tệp lên và bấm phân tích để AI trích xuất câu hỏi.
+                    </div>
+                </div>
+
+                <div id="actionButtons" class="pt-6 flex gap-3 hidden">
+                    <button id="btnSaveDraft" onclick="submitExam('Bản nháp')" class="flex-1 bg-white border-2 border-primary text-primary px-3 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-wider hover:bg-blue-50 transition-all active:scale-[0.98] flex items-center gap-1.5 justify-center">
+                        <span class="material-symbols-outlined !text-base">save</span>
+                        Lưu bản nháp
+                    </button>
+                    <button id="btnPublish" onclick="submitExam('Xuất bản')" class="flex-1 bg-primary text-white border-2 border-primary px-3 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-wider hover:opacity-90 shadow-lg shadow-blue-200 transition-all active:scale-[0.98] flex items-center gap-1.5 justify-center">
+                        <span class="material-symbols-outlined !text-base">publish</span>
+                        Xuất bản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const btnAnalyze = document.getElementById('btnAnalyze');
+        const dropZone = document.getElementById('dropZone');
+
+        // Handling File Selection & Drag-and-Drop
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.innerHTML = `<span class="text-primary font-bold">Đã chọn: ${file.name}</span>`;
+                btnAnalyze.disabled = false;
+            } else {
+                fileNameDisplay.textContent = 'Hỗ trợ PDF, JPG, PNG lên đến 25MB';
+                btnAnalyze.disabled = true;
+            }
+        });
+
+        // Add dragging styles
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('border-primary', 'bg-blue-50/50'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-primary', 'bg-blue-50/50'), false);
+        });
+
+        // Handle the API Request
+        btnAnalyze.addEventListener('click', async () => {
+            if (!fileInput.files.length) return;
+
+            const file = fileInput.files[0];
+            
+            // UI Feedback during parsing
+            btnAnalyze.disabled = true;
+            btnAnalyze.innerHTML = `<span class="material-symbols-outlined !text-lg animate-spin">refresh</span> Đang quét OCR và phân tích AI...`;
+            
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch('/Teacher/AnalyzeOCR', { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    alert('Lỗi: ' + data.message);
+                    return;
+                }
+
+                // Render questions to UI
+                const container = document.getElementById('questionsContainer');
+                container.innerHTML = ''; // Clear empty message
+                
+                document.getElementById('questionCount').textContent = data.questions.length;
+
+                data.questions.forEach((q, index) => {
+                    let optionsHtml = '';
+                    const labels = ['A', 'B', 'C', 'D'];
+                    
+                    q.options.forEach((opt, optIdx) => {
+                        const isCorrect = (q.correct && q.correct.toUpperCase() === labels[optIdx]);
+                        const bgClass = isCorrect ? 'bg-blue-50 border border-blue-100' : 'bg-surface-container-low border border-transparent';
+                        const textClass = isCorrect ? 'text-primary font-bold' : 'font-semibold text-on-surface';
+                        const circleClass = isCorrect ? 'bg-primary text-white' : 'bg-white text-on-surface shadow-sm';
+                        
+                        optionsHtml += `
+                        <div class="p-3 ${bgClass} rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer" onclick="setCorrect(this)">
+                            <span class="w-6 h-6 shrink-0 rounded-full ${circleClass} flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform" title="Đánh dấu đáp án đúng">${labels[optIdx]}</span>
+                            <span class="text-xs ${textClass} break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text" contenteditable="true" spellcheck="false" title="Sửa đáp án" onclick="event.stopPropagation()">${opt}</span>
+                        </div>`;
+                    });
+
+                    const questionCard = `
+                    <div class="depth-card rounded-xl p-6 relative overflow-hidden mb-4">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-2">
+                                <span class="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black uppercase rounded">Câu ${String(index + 1).padStart(2, '0')}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button class="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors" title="Xóa câu hỏi" onclick="this.closest('.depth-card').remove();"><span class="material-symbols-outlined !text-lg">delete</span></button>
+                            </div>
+                        </div>
+                        <p class="text-sm font-bold leading-relaxed mb-6 whitespace-pre-wrap outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-2 py-1 hover:bg-black/5 transition-colors cursor-text" contenteditable="true" spellcheck="false" title="Sửa nội dung câu hỏi">${q.question}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${optionsHtml}
+                        </div>
+                    </div>`;
+                    
+                    container.insertAdjacentHTML('beforeend', questionCard);
+                });
+
+                if(data.questions.length > 0) {
+                    document.getElementById('actionButtons').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert('Lỗi xảy ra trong quá trình kết nối tới Backend.');
+            } finally {
+                btnAnalyze.disabled = false;
+                btnAnalyze.innerHTML = `<span class="material-symbols-outlined !text-lg">shutter_speed</span> Bắt đầu phân tích OCR`;
+            }
+        });
+
+        // Function allowing teachers to click options to toggle correct answer manually
+        function setCorrect(el) {
+            const container = el.closest('.grid');
+            if (!container) return;
+            
+            const allOptions = container.querySelectorAll('.option-item');
+            
+            // Reset all siblings
+            allOptions.forEach(opt => {
+                opt.className = 'p-3 bg-surface-container-low border border-transparent rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer';
+                const circle = opt.querySelector('span.w-6');
+                if (circle) circle.className = 'w-6 h-6 shrink-0 rounded-full bg-white text-on-surface shadow-sm flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform';
+                const text = opt.querySelector('span.text-xs');
+                if (text) text.className = 'text-xs font-semibold text-on-surface break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
+            });
+
+            // Set current element as active
+            const targetDiv = el.closest('.option-item') || el;
+            targetDiv.className = 'p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer';
+            
+            const activeCircle = targetDiv.querySelector('span.w-6');
+            if (activeCircle) activeCircle.className = 'w-6 h-6 shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform scale-110';
+            
+            const activeText = targetDiv.querySelector('span.text-xs');
+            if (activeText) activeText.className = 'text-xs text-primary font-bold break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
+        }
+
+        async function submitExam(status) {
+            const titleInput = document.getElementById('examTitle');
+            const subjectInput = document.getElementById('examSubject');
+            
+            if (!titleInput.value.trim()) {
+                alert('Vui lòng nhập Tên đề thi bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                titleInput.focus();
+                return;
+            }
+            if (!subjectInput.value.trim()) {
+                alert('Vui lòng nhập Môn học bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                subjectInput.focus();
+                return;
+            }
+            
+            const cards = document.querySelectorAll('#questionsContainer .depth-card');
+            if (cards.length === 0) {
+                alert('Chưa có câu hỏi nào trong đề thi!');
+                return;
+            }
+            
+            const request = {
+                Title: titleInput.value.trim(),
+                Subject: subjectInput.value.trim(),
+                Duration: document.getElementById('examDuration').value ? parseInt(document.getElementById('examDuration').value) : null,
+                Status: status,
+                Questions: []
+            };
+
+            let validationError = false;
+
+            cards.forEach((card, index) => {
+                // p:last-of-type to ignore the span/p labels, we target the question content
+                const questionElement = Array.from(card.querySelectorAll('p')).find(p => p.getAttribute('contenteditable') === 'true');
+                const qText = questionElement ? questionElement.innerText.trim() : '';
+
+                const opts = [];
+                const optElements = card.querySelectorAll('.option-item');
+                let hasCorrect = false;
+
+                optElements.forEach((el) => {
+                    const labelSpan = el.querySelector('span:first-child');
+                    const textSpan = el.querySelector('span:last-child');
+                    const isCorrect = labelSpan.classList.contains('bg-primary');
+                    if (isCorrect) hasCorrect = true;
+                    opts.push({
+                        Label: labelSpan.innerText.trim(),
+                        Text: textSpan.innerText.trim(),
+                        IsCorrect: isCorrect
+                    });
+                });
+                
+                if (!hasCorrect) {
+                   validationError = true;
+                   alert('Lỗi: Câu hỏi số ' + (index + 1) + ' chưa có đáp án đúng! Vui lòng nhấp chọn 1 đáp án làm đáp án đúng.');
+                }
+
+                request.Questions.push({
+                    Number: String(index + 1),
+                    Text: qText,
+                    Options: opts
+                });
+            });
+
+            if (validationError) return;
+
+            const btnDraft = document.getElementById('btnSaveDraft');
+            const btnPublish = document.getElementById('btnPublish');
+            const draftHtml = btnDraft.innerHTML;
+            const publishHtml = btnPublish.innerHTML;
+
+            btnDraft.disabled = true; btnPublish.disabled = true;
+            btnDraft.innerHTML = 'Đang xử lý...'; btnPublish.innerHTML = 'Đang xử lý...';
+
+            try {
+                const res = await fetch('/Teacher/SaveExam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+                
+                const result = await res.json();
+                if (result.success) {
+                    alert((status === 'Bản nháp' ? 'Lưu bản nháp' : 'Xuất bản đề thi') + ' thành công! Đề thi đã nằm trong hệ thống.');
+                    window.location.href = result.redirectUrl || '/Teacher/Exams';
+                } else {
+                    alert('Có lỗi xảy ra: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối tới máy chủ!');
+            } finally {
+                btnDraft.disabled = false; btnPublish.disabled = false;
+                btnDraft.innerHTML = draftHtml; btnPublish.innerHTML = publishHtml;
+            }
+        }
+    </script>
+</body>
+</html>

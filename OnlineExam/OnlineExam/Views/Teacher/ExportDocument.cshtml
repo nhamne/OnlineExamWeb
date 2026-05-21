@@ -1,0 +1,99 @@
+@model OnlineExam.Models.ExamPaper
+@{
+    Layout = null; // Không dùng layout chung
+    string format = ViewBag.Format as string ?? "word";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Xuất đề thi - @Model.Title</title>
+    @if (format == "pdf")
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <style>
+            /* CSS tối giản cho PDF in */
+            body { font-family: "Times New Roman", Times, serif; font-size: 14pt; padding: 20px; line-height: 1.5; color: black; background: white; }
+            h1 { text-align: center; font-size: 18pt; text-transform: uppercase; margin-bottom: 20px; }
+            .info { text-align: center; margin-bottom: 30px; font-style: italic; }
+            .question { margin-bottom: 15px; page-break-inside: avoid; }
+            .options { margin-left: 20px; }
+            .options p { margin: 5px 0; }
+            .bold { font-weight: bold; }
+        </style>
+    }
+    else
+    {
+        <!-- Inline CSS cho Word parse tốt -->
+        <style>
+            body { font-family: "Times New Roman", serif; font-size: 14pt; }
+            h1 { text-align: center; font-size: 18pt; text-transform: uppercase; }
+            .info { text-align: center; margin-bottom: 20px; font-style: italic; }
+            .question { margin-bottom: 15px; }
+            .options { margin-left: 20px; }
+            p { margin: 5px 0; }
+        </style>
+    }
+</head>
+<body id="content">
+
+    <h1>BÀI THI: @Model.Title</h1>
+    <div class="info">
+        <p>Môn thi: @(Model.Subject ?? "Không phân loại")</p>
+        <p>Thời gian: @(Model.Duration.HasValue ? $"{Model.Duration.Value} phút" : "Không giới hạn")</p>
+        <p>Người ra đề: @Model.Teacher?.FullName</p>
+    </div>
+
+    <hr style="margin-bottom: 20px;" />
+
+    @if (Model.Questions != null && Model.Questions.Any())
+    {
+        int qIndex = 1;
+        foreach (var q in Model.Questions)
+        {
+            <div class="question">
+                <p class="bold">Câu @qIndex: @q.Content</p>
+                <div class="options">
+                    <p>A. @q.OptionA</p>
+                    <p>B. @q.OptionB</p>
+                    <p>C. @q.OptionC</p>
+                    <p>D. @q.OptionD</p>
+                </div>
+                @if (!string.IsNullOrEmpty(q.CorrectOption))
+                {
+                    <p style="margin-top:5px; color: red;"><i>(Đáp án đúng: @q.CorrectOption)</i></p>
+                }
+            </div>
+            qIndex++;
+        }
+    }
+    else
+    {
+        <p>Đề thi này chưa có câu hỏi nào.</p>
+    }
+
+    @if (format == "pdf")
+    {
+        <script>
+            window.onload = function () {
+                var element = document.getElementById('content');
+                var opt = {
+                  margin:       1,
+                  filename:     '@(Model.Title).pdf',
+                  image:        { type: 'jpeg', quality: 0.98 },
+                  html2canvas:  { scale: 2 },
+                  jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+
+                // Gọi html2pdf, sau đó tự đóng cửa sổ
+                html2pdf().set(opt).from(element).save().then(function() {
+                    // Timeout nhẹ để browser kịp save file
+                    setTimeout(() => {
+                        window.close();
+                    }, 500);
+                });
+            };
+        </script>
+    }
+</body>
+</html>

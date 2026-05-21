@@ -9,11 +9,17 @@ public partial class ExamPaper
 
     public string Title { get; set; } = null!;
 
+    public string? Subject { get; set; }
+
     public int TeacherId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public bool? IsDeleted { get; set; }
+
+    public string? Status { get; set; }
+
+    public int? Duration { get; set; }
 
     public virtual ICollection<ExamSession> ExamSessions { get; set; } = new List<ExamSession>();
 
