@@ -1,0 +1,263 @@
+@model OnlineExam.ViewModels.StudentResultsVM
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Kết quả | The Academic Sanctuary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#1a61a4',
+                        'primary-container': '#75aef7',
+                        'surface': '#f7f9fb',
+                        'surface-container-low': '#f0f4f7',
+                        'on-surface': '#2c3437',
+                        'outline-variant-soft': 'rgba(172, 179, 183, 0.15)',
+                    },
+                    fontFamily: {
+                        'headline': ['Manrope', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'knowledge-flow': 'linear-gradient(135deg, #1a61a4 0%, #75aef7 100%)',
+                    },
+                    boxShadow: {
+                        'ambient': '0 20px 40px rgba(44, 52, 55, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #2c3437; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .transition-soft { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .hover-scale:hover { transform: translateY(-4px); }
+        .glass-dock { background: rgba(247, 249, 251, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-surface min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low hidden md:flex flex-col py-8 px-5 z-40 border-r border-outline-variant-soft">
+        <div class="flex items-center gap-3 px-2 mb-12">
+            <div class="w-10 h-10 bg-knowledge-flow rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
+                <span class="material-symbols-outlined text-[20px]">school</span>
+            </div>
+            <h1 class="text-xl font-extrabold font-headline tracking-tight text-primary truncate">Thi Online</h1>
+        </div>
+
+        <nav class="space-y-2 flex-1">
+            <a href="/Student/Index" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
+                <span class="material-symbols-outlined text-[22px]">grid_view</span>
+                <span class="text-sm">Trang chủ</span>
+            </a>
+            <a href="/Student/JoinClass" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
+                <span class="material-symbols-outlined text-[22px]">person_add</span>
+                <span class="text-sm">Tham gia lớp</span>
+            </a>
+            <a href="/Student/MyExams" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
+                <span class="material-symbols-outlined text-[22px]">calendar_today</span>
+                <span class="text-sm">Ca thi của tôi</span>
+            </a>
+            <a href="/Student/Results" class="flex items-center gap-3 px-4 py-3.5 bg-white text-primary rounded-xl shadow-ambient font-bold transition-soft">
+                <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+                <span class="text-sm">Kết quả</span>
+            </a>
+        </nav>
+
+        <div class="pt-6 border-t border-outline-variant-soft mt-auto">
+            <a href="/Auth/Logout" class="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:text-red-500 transition-soft font-medium">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span class="text-sm">Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col md:ml-64 min-h-screen">
+        <div class="flex-1 w-full max-w-7xl mx-auto p-6 md:p-10 flex flex-col">
+            
+            <header class="flex justify-between items-center mb-10 w-full">
+                <div class="relative hidden lg:block w-96">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/30">search</span>
+                    <input type="text" placeholder="Tìm kiếm kết quả..."
+                           class="w-full pl-12 pr-6 py-3.5 bg-surface-container-low border border-transparent rounded-xl focus:border-primary/20 focus:bg-white transition-all outline-none text-sm">
+                </div>
+                <div class="flex items-center gap-4 ml-auto">
+                    <button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface/60 hover:bg-white hover:shadow-ambient transition-soft relative">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full"></span>
+                    </button>
+                    <div class="w-10 h-10 rounded-full bg-knowledge-flow p-[2px]">
+                        <div class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(Model.StudentName)&background=random" alt="User">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="mb-10 w-full flex items-center gap-4">
+                <div class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-outline-variant-soft flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[28px]">workspace_premium</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-extrabold font-headline tracking-tight">Kết quả học tập</h2>
+                    <p class="text-on-surface/50 text-sm mt-1">Lịch sử và tiến độ làm bài của bạn.</p>
+                </div>
+            </section>
+
+            @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
+            {
+                <div class="bg-white rounded-3xl shadow-sm border border-outline-variant-soft p-8 md:p-10 mb-10 w-full">
+                    <h3 class="text-xl font-bold font-headline mb-6 text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">monitoring</span>
+                        Tiến độ học tập
+                    </h3>
+                    <div class="w-full h-72">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+            }
+
+            <!-- Danh sách bài đã nộp -->
+            <div class="grid grid-cols-1 gap-4 w-full pb-12">
+                @if (Model.Submissions != null && Model.Submissions.Any())
+                {
+                    foreach (var sub in Model.Submissions)
+                    {
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:shadow-ambient transition-soft">
+                            <div class="flex items-start gap-4">
+                                <div class="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center text-primary font-black text-2xl shrink-0 font-headline">
+                                    @(sub.Score ?? 0)
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold font-headline text-on-surface mb-1">@sub.ExamSession.SessionName</h3>
+                                    <div class="flex items-center gap-4 text-xs text-on-surface/60 font-medium">
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[16px]">domain</span>
+                                            <span>@sub.ExamSession.Classroom.ClassName</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                            <span>@(sub.SubmittedAt?.ToString("dd/MM/yyyy HH:mm"))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/Student/ExamResult/@sub.ExamSessionId" class="px-6 py-2.5 bg-surface-container-low text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors shrink-0 text-sm">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="bg-white p-10 rounded-2xl shadow-sm border border-outline-variant-soft text-center col-span-full">
+                        <span class="material-symbols-outlined text-6xl text-on-surface/20 mb-4">history</span>
+                        <h3 class="text-xl font-bold font-headline text-on-surface/50">Chưa có kết quả nào</h3>
+                        <p class="text-sm text-on-surface/40 mt-2">Bạn chưa hoàn thành bài kiểm tra nào.</p>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 h-16 glass-dock rounded-2xl border border-white/20 shadow-2xl flex justify-around items-center z-50 px-2">
+        <a href="/Student/Index" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
+            <span class="material-symbols-outlined text-[22px]">grid_view</span>
+            <span class="text-[9px] font-bold mt-1">Trang chủ</span>
+        </a>
+        <a href="/Student/JoinClass" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
+            <span class="material-symbols-outlined text-[22px]">person_add</span>
+            <span class="text-[9px] font-bold mt-1">Tham gia</span>
+        </a>
+        <a href="/Student/MyExams" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
+            <span class="material-symbols-outlined text-[22px]">calendar_today</span>
+            <span class="text-[9px] font-bold mt-1">Ca thi</span>
+        </a>
+        <a href="/Student/Results" class="flex flex-col items-center text-primary w-16">
+            <span class="material-symbols-outlined fill-1 text-[22px]">workspace_premium</span>
+            <span class="text-[9px] font-bold mt-1">Kết quả</span>
+        </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('scoreChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.ScoreHistory.Select(s => $"'{s.ExamName.Replace("'", "\\'")}'")))],
+                        datasets: [{
+                            label: 'Điểm số',
+                            data: [@string.Join(",", Model.ScoreHistory.Select(s => s.Score.ToString(System.Globalization.CultureInfo.InvariantCulture)))],
+                            borderColor: '#1a61a4',
+                            backgroundColor: 'rgba(26, 97, 164, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#1a61a4',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#2c3437',
+                                padding: 12,
+                                titleFont: { family: 'Inter', size: 13 },
+                                bodyFont: { family: 'Inter', size: 15, weight: 'bold' },
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + ' điểm';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10,
+                                ticks: { stepSize: 2, font: { size: 12, family: 'Inter' } },
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                border: { display: false }
+                            },
+                            x: {
+                                ticks: { font: { size: 11, family: 'Inter' } },
+                                grid: { display: false }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        },
+                    }
+                });
+            });
+            </text>
+        }
+    </script>
+</body>
+</html>

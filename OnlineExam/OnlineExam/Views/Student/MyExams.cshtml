@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Thi Online | The Academic Sanctuary</title>
+    <title>Ca thi của tôi | The Academic Sanctuary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -38,27 +38,11 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            color: #2c3437;
-        }
-
-        .font-headline {
-            font-family: 'Manrope', sans-serif;
-        }
-
-        .transition-soft {
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .hover-scale:hover {
-            transform: translateY(-4px);
-        }
-
-        .glass-dock {
-            background: rgba(247, 249, 251, 0.8);
-            backdrop-filter: blur(12px);
-        }
+        body { font-family: 'Inter', sans-serif; color: #2c3437; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .transition-soft { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .hover-scale:hover { transform: translateY(-4px); }
+        .glass-dock { background: rgba(247, 249, 251, 0.8); backdrop-filter: blur(12px); }
     </style>
 </head>
 <body class="bg-surface min-h-screen flex flex-col md:flex-row">
@@ -73,7 +57,7 @@
         </div>
 
         <nav class="space-y-2 flex-1">
-            <a href="/Student/Index" class="flex items-center gap-3 px-4 py-3.5 bg-white text-primary rounded-xl shadow-ambient font-bold transition-soft">
+            <a href="/Student/Index" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
                 <span class="material-symbols-outlined text-[22px]">grid_view</span>
                 <span class="text-sm">Trang chủ</span>
             </a>
@@ -81,7 +65,7 @@
                 <span class="material-symbols-outlined text-[22px]">person_add</span>
                 <span class="text-sm">Tham gia lớp</span>
             </a>
-            <a href="/Student/MyExams" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
+            <a href="/Student/MyExams" class="flex items-center gap-3 px-4 py-3.5 bg-white text-primary rounded-xl shadow-ambient font-bold transition-soft">
                 <span class="material-symbols-outlined text-[22px]">calendar_today</span>
                 <span class="text-sm">Ca thi của tôi</span>
             </a>
@@ -122,37 +106,22 @@
                 </div>
             </header>
 
-            <div class="flex flex-col lg:flex-row gap-8 mb-12 w-full">
-                <section class="flex-1 flex flex-col justify-center">
-                    <h2 class="text-4xl font-extrabold font-headline mb-3 tracking-tight">Xin chào @Model.StudentName!</h2>
-                    <p class="text-lg text-on-surface/50 leading-relaxed">
-                        Sẵn sàng làm bài thi chưa nào? Bạn có <span class="text-primary font-bold">@Model.PendingExamsCount bài kiểm tra</span> cần hoàn thành.
-                    </p>
-                </section>
-                
-                @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
-                {
-                    <div class="w-full lg:w-[400px] bg-white p-5 rounded-2xl shadow-ambient border border-outline-variant-soft shrink-0">
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface/50 mb-3 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">monitoring</span>
-                            Tiến độ học tập
-                        </h3>
-                        <div class="h-24 w-full">
-                            <canvas id="scoreChart"></canvas>
-                        </div>
-                    </div>
-                }
-            </div>
+            <section class="mb-10 w-full flex items-center gap-4">
+                <div class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-outline-variant-soft flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[28px]">calendar_today</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-extrabold font-headline tracking-tight">Ca thi của tôi</h2>
+                    <p class="text-on-surface/50 text-sm mt-1">Danh sách tất cả các bài kiểm tra được giao.</p>
+                </div>
+            </section>
 
             <div class="flex flex-wrap gap-2 mb-8 w-full" id="class-filters">
-                <button class="filter-btn active px-6 py-2.5 bg-knowledge-flow text-white rounded-lg font-bold shadow-md hover-scale transition-soft text-sm" data-id="all" onclick="filterExams('all', this)">Tất cả môn</button>
-                @if (Model.JoinedClasses != null)
-                {
-                    foreach (var cls in Model.JoinedClasses)
-                    {
-                        <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-primary/30 hover:text-primary transition-soft text-sm hover-scale" data-id="@cls.Id" onclick="filterExams('@cls.Id', this)">@cls.ClassName</button>
-                    }
-                }
+                <button class="filter-btn active px-6 py-2.5 bg-knowledge-flow text-white rounded-lg font-bold shadow-md hover-scale transition-soft text-sm" data-id="all" onclick="filterExams('all', this)">Tất cả trạng thái</button>
+                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-primary/30 hover:text-primary transition-soft text-sm hover-scale" data-id="Chưa làm" onclick="filterExams('Chưa làm', this)">Chưa làm</button>
+                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-orange-500/50 hover:text-orange-600 transition-soft text-sm hover-scale" data-id="Sắp hết hạn" onclick="filterExams('Sắp hết hạn', this)">Sắp hết hạn</button>
+                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-green-500/50 hover:text-green-600 transition-soft text-sm hover-scale" data-id="Đã nộp" onclick="filterExams('Đã nộp', this)">Đã nộp</button>
+                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-outline-variant-soft hover:text-on-surface/50 transition-soft text-sm hover-scale" data-id="Đã đóng" onclick="filterExams('Đã đóng', this)">Đã đóng / Chưa mở</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-12" id="exam-list">
@@ -160,9 +129,12 @@
                 {
                     foreach (var exam in Model.Exams)
                     {
+                        var statusFilter = exam.Status;
+                        if(statusFilter == "Chưa mở") statusFilter = "Đã đóng"; // Group them for filtering
+
                         if (exam.Status == "Chưa làm")
                         {
-                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group relative overflow-hidden flex flex-col border border-transparent hover:border-primary/20" data-class-id="@exam.ClassroomId">
+                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group relative overflow-hidden flex flex-col border border-transparent hover:border-primary/20" data-status="@statusFilter">
                                 <div class="flex justify-between items-start mb-6">
                                     <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-primary shrink-0">
                                         <span class="material-symbols-outlined text-[24px]">assignment</span>
@@ -181,6 +153,10 @@
                                         <span class="material-symbols-outlined text-[18px]">schedule</span>
                                         <span class="text-xs font-medium">@exam.Duration phút</span>
                                     </div>
+                                    <div class="flex items-center gap-2 text-primary">
+                                        <span class="material-symbols-outlined text-[18px]">event</span>
+                                        <span class="text-xs font-bold">Hạn: @exam.EndTime.ToString("dd/MM HH:mm")</span>
+                                    </div>
                                 </div>
                                 <a href="/Student/TakeExam/@exam.ExamSessionId" class="block text-center w-full py-3 bg-knowledge-flow text-white rounded-xl text-sm font-bold shadow-md hover:shadow-primary/30 transition-soft mt-auto">
                                     Vào thi
@@ -189,7 +165,7 @@
                         }
                         else if (exam.Status == "Sắp hết hạn")
                         {
-                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group flex flex-col border border-transparent hover:border-orange-500/20" data-class-id="@exam.ClassroomId">
+                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group flex flex-col border border-transparent hover:border-orange-500/20" data-status="@statusFilter">
                                 <div class="flex justify-between items-start mb-6">
                                     <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500 shrink-0">
                                         <span class="material-symbols-outlined text-[24px]">warning</span>
@@ -208,6 +184,10 @@
                                         <span class="material-symbols-outlined text-[18px]">schedule</span>
                                         <span class="text-xs font-medium">@exam.Duration phút</span>
                                     </div>
+                                    <div class="flex items-center gap-2 text-orange-600">
+                                        <span class="material-symbols-outlined text-[18px]">alarm</span>
+                                        <span class="text-xs font-bold animate-pulse">Hết hạn: @exam.EndTime.ToString("HH:mm")</span>
+                                    </div>
                                 </div>
                                 <a href="/Student/TakeExam/@exam.ExamSessionId" class="block text-center w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold shadow-md transition-soft mt-auto hover:bg-orange-600">
                                     Vào thi
@@ -216,7 +196,7 @@
                         }
                         else if (exam.Status == "Đã đóng" || exam.Status == "Chưa mở")
                         {
-                            <div class="exam-card bg-surface-container-low/50 p-8 rounded-2xl border border-outline-variant-soft transition-soft flex flex-col" data-class-id="@exam.ClassroomId">
+                            <div class="exam-card bg-surface-container-low/50 p-8 rounded-2xl border border-outline-variant-soft transition-soft flex flex-col" data-status="@statusFilter">
                                 <div class="flex justify-between items-start mb-6 opacity-60">
                                     <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-on-surface/40 shrink-0 shadow-sm">
                                         <span class="material-symbols-outlined text-[24px]">lock</span>
@@ -243,7 +223,7 @@
                         }
                         else if (exam.Status == "Đã nộp")
                         {
-                            <div class="exam-card bg-green-50/30 p-8 rounded-2xl shadow-sm border border-green-100 hover-scale transition-soft group flex flex-col" data-class-id="@exam.ClassroomId">
+                            <div class="exam-card bg-green-50/30 p-8 rounded-2xl shadow-sm border border-green-100 hover-scale transition-soft group flex flex-col" data-status="@statusFilter">
                                 <div class="flex justify-between items-start mb-6">
                                     <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 shrink-0">
                                         <span class="material-symbols-outlined text-[24px]">task_alt</span>
@@ -270,15 +250,14 @@
                         }
                     }
                 }
-
-                <!-- Empty State Card styled like an exam card -->
-                <div class="bg-surface-container-low/30 p-8 rounded-2xl border-2 border-dashed border-outline-variant-soft flex flex-col items-center justify-center text-center transition-soft min-h-[320px]">
-                    <div class="w-14 h-14 bg-white rounded-xl shadow-sm border border-outline-variant-soft flex items-center justify-center mb-6 text-primary/30">
-                        <span class="material-symbols-outlined text-[28px]">add_task</span>
+                else
+                {
+                    <div class="col-span-full py-20 text-center flex flex-col items-center">
+                        <span class="material-symbols-outlined text-6xl text-on-surface/20 mb-4">folder_open</span>
+                        <h4 class="text-xl font-bold text-on-surface/50 mb-2">Không có ca thi nào</h4>
+                        <p class="text-on-surface/40">Bạn hiện chưa tham gia lớp học nào có bài thi.</p>
                     </div>
-                    <h4 class="text-lg font-bold font-headline text-on-surface/50 mb-2">Sắp có thêm bài thi</h4>
-                    <p class="text-sm text-on-surface/40 max-w-[200px]">Đang biên soạn các đề ôn tập cho kỳ thi tiếp theo.</p>
-                </div>
+                }
 
             </div>
             
@@ -289,16 +268,16 @@
     </div>
 
     <nav class="md:hidden fixed bottom-4 left-4 right-4 h-16 glass-dock rounded-2xl border border-white/20 shadow-2xl flex justify-around items-center z-50 px-2">
-        <a href="/Student/Index" class="flex flex-col items-center text-primary w-16">
-            <span class="material-symbols-outlined fill-1 text-[22px]">grid_view</span>
+        <a href="/Student/Index" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
+            <span class="material-symbols-outlined text-[22px]">grid_view</span>
             <span class="text-[9px] font-bold mt-1">Trang chủ</span>
         </a>
         <a href="/Student/JoinClass" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
             <span class="material-symbols-outlined text-[22px]">person_add</span>
             <span class="text-[9px] font-bold mt-1">Tham gia</span>
         </a>
-        <a href="/Student/MyExams" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
-            <span class="material-symbols-outlined text-[22px]">calendar_today</span>
+        <a href="/Student/MyExams" class="flex flex-col items-center text-primary w-16">
+            <span class="material-symbols-outlined fill-1 text-[22px]">calendar_today</span>
             <span class="text-[9px] font-bold mt-1">Ca thi</span>
         </a>
         <a href="/Student/Results" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
@@ -307,9 +286,8 @@
         </a>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        function filterExams(classId, btn) {
+        function filterExams(statusId, btn) {
             // Update active state
             document.querySelectorAll('.filter-btn').forEach(b => {
                 b.classList.remove('bg-knowledge-flow', 'text-white', 'shadow-md');
@@ -320,75 +298,12 @@
 
             // Filter cards
             document.querySelectorAll('.exam-card').forEach(card => {
-                if (classId === 'all' || card.getAttribute('data-class-id') === classId) {
+                if (statusId === 'all' || card.getAttribute('data-status') === statusId) {
                     card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
                 }
             });
-        }
-
-        @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
-        {
-            <text>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('scoreChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.ScoreHistory.Select(s => $"'{s.ExamName.Replace("'", "\\'")}'")))],
-                        datasets: [{
-                            label: 'Điểm số',
-                            data: [@string.Join(",", Model.ScoreHistory.Select(s => s.Score.ToString(System.Globalization.CultureInfo.InvariantCulture)))],
-                            borderColor: '#1a61a4',
-                            backgroundColor: 'rgba(26, 97, 164, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#1a61a4',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: '#2c3437',
-                                padding: 12,
-                                titleFont: { family: 'Inter', size: 12 },
-                                bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.parsed.y + ' điểm';
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 10,
-                                ticks: { stepSize: 2, font: { size: 10 } },
-                                grid: { color: 'rgba(0,0,0,0.04)' },
-                                border: { display: false }
-                            },
-                            x: {
-                                display: false
-                            }
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index',
-                        },
-                    }
-                });
-            });
-            </text>
         }
     </script>
 </body>

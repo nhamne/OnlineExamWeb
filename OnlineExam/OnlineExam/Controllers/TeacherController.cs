@@ -5,8 +5,11 @@ using Microsoft.Extensions.Configuration;
 using OnlineExam.Models;
 using OnlineExam.Services.Search;
 using OnlineExam.ViewModels;
+using OnlineExam.Models;
 using System;
+using System.Linq;
 using System.Collections.Generic;
+<<<<<<< Updated upstream
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -20,12 +23,19 @@ namespace OnlineExam.Controllers;
 
 [Authorize(Roles = "Teacher")]
 public class TeacherController : Controller
+=======
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace OnlineExam.Controllers
+>>>>>>> Stashed changes
 {
     private readonly OnlineExamDbContext _context;
     private readonly IMeiliSearchService? _meiliSearch;
 
     public TeacherController(OnlineExamDbContext context, IMeiliSearchService? meiliSearch = null)
     {
+<<<<<<< Updated upstream
         _context = context;
         _meiliSearch = meiliSearch;
     }
@@ -60,12 +70,44 @@ public class TeacherController : Controller
                 .Where(s => s.ExamPaper.TeacherId == teacherId.Value)
                 .OrderByDescending(s => s.StartTime)
                 .Take(8)
+=======
+        private readonly OnlineExamDbContext _context;
+
+        public TeacherController(OnlineExamDbContext context)
+        {
+            _context = context;
+        }
+
+        public IActionResult Index()
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var teacher = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+
+            if (teacher == null) return RedirectToAction("Login", "Auth");
+
+            var now = DateTime.Now;
+
+            var totalClasses = _context.Classrooms.Count(c => c.TeacherId == teacher.Id && c.IsDeleted == false);
+            var totalExams = _context.ExamPapers.Count(e => e.TeacherId == teacher.Id && e.IsDeleted == false);
+
+            var sessionsQuery = _context.ExamSessions
+                .Include(s => s.Classroom)
+                .Where(s => s.Classroom.TeacherId == teacher.Id);
+
+            var ongoingSessions = sessionsQuery.Count(s => s.StartTime <= now && s.EndTime >= now);
+            var upcomingSessions = sessionsQuery.Count(s => s.StartTime > now);
+
+            var recentSessionsDb = sessionsQuery
+                .OrderByDescending(s => s.StartTime)
+                .Take(5)
+>>>>>>> Stashed changes
                 .Select(s => new SessionItemVM
                 {
                     SessionName = s.SessionName,
                     ClassName = s.Classroom.ClassName,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime
+<<<<<<< Updated upstream
                 })
                 .ToListAsync(),
             SessionsToday = await _context.ExamSessions.AsNoTracking().CountAsync(s => s.ExamPaper.TeacherId == teacherId.Value && s.StartTime.Date == now.Date)
@@ -614,6 +656,46 @@ public class TeacherController : Controller
         catch (Exception ex)
         {
             return Json(new { success = false, message = "Lỗi xử lý file với AI: " + ex.Message });
+=======
+                }).ToList();
+
+            var dashboardData = new TeacherDashboardVM()
+            {
+                TeacherName = teacher.FullName,
+                TotalClasses = totalClasses,
+                TotalExams = totalExams,
+                OngoingSessions = ongoingSessions,
+                UpcomingSessions = upcomingSessions,
+                RecentSessions = recentSessionsDb
+            };
+
+            return View(dashboardData);
+>>>>>>> Stashed changes
+        }
+
+        [HttpGet]
+        public IActionResult GetOverviewStats()
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var teacher = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+
+            if (teacher == null) return Unauthorized();
+
+            var submissions = _context.Submissions
+                .Include(s => s.ExamSession)
+                .ThenInclude(es => es.Classroom)
+                .Where(s => s.ExamSession.Classroom.TeacherId == teacher.Id && s.Status == 1)
+                .ToList();
+
+            var stats = new
+            {
+                Gioi = submissions.Count(s => s.Score >= 8.0),
+                Kha = submissions.Count(s => s.Score >= 6.5 && s.Score < 8.0),
+                TrungBinh = submissions.Count(s => s.Score >= 5.0 && s.Score < 6.5),
+                Yeu = submissions.Count(s => s.Score < 5.0)
+            };
+
+            return Json(new { success = true, data = stats });
         }
     }
 
