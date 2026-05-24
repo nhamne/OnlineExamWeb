@@ -1,4 +1,4 @@
-﻿USE OnlineExamDB;
+USE OnlineExamDB;
 GO
 
 -- 1. Insert Users (3 Teachers, 12 Students)
@@ -188,6 +188,7 @@ END
 GO
 
 -- 6. Insert ExamSessions (Ca thi)
+<<<<<<< Updated upstream
 -- Không dùng hardcoded ID để tránh lỗi khóa ngoại trên DB đã có dữ liệu.
 -- Việc bổ sung ca thi được xử lý ở khối top-up bên dưới (map theo JoinCode và Title).
 
@@ -238,6 +239,16 @@ WHERE NOT EXISTS (
       AND es.ClassroomId = c.Id
 )
 AND ep.Id IS NOT NULL;
+=======
+IF NOT EXISTS (SELECT 1 FROM ExamSessions)
+BEGIN
+    INSERT INTO ExamSessions (SessionName, ClassroomId, ExamPaperId, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewScore, IsShuffled) VALUES
+    (N'Ca thi sáng - Lập trình Web', 1, 1, DATEADD(hour, -2, GETDATE()), DATEADD(day, 2, GETDATE()), 45, '123456', 1, 1), -- Đang mở, Còn nhiều thời gian (>24h) -> Chưa làm
+    (N'Kiểm tra 15 phút CSDL', 2, 2, DATEADD(day, 1, GETDATE()), DATEADD(day, 1, DATEADD(hour, 1, GETDATE())), 15, NULL, 0, 1), -- Chưa đến giờ -> Chưa mở
+    (N'Thi thử SQL Server - Đã đóng', 2, 2, DATEADD(day, -2, GETDATE()), DATEADD(day, -1, GETDATE()), 30, NULL, 1, 0), -- Đã qua hạn -> Đã đóng
+    (N'Quiz ASP.NET - Sắp hết hạn', 1, 1, DATEADD(hour, -5, GETDATE()), DATEADD(hour, 5, GETDATE()), 20, NULL, 1, 1); -- Còn < 24h -> Sắp hết hạn
+END
+>>>>>>> Stashed changes
 GO
 
 -- 7. Insert Submissions (nhiều bài nộp mẫu để test phân trang)

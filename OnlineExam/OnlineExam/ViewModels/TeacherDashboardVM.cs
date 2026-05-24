@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace OnlineExam.ViewModels // Đảm bảo namespace này khớp với file Index.cshtml của bạn

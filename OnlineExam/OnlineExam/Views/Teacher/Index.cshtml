@@ -1,4 +1,4 @@
-﻿@model OnlineExam.ViewModels.TeacherDashboardVM
+@model OnlineExam.ViewModels.TeacherDashboardVM
 @{
     ViewData["Title"] = "Tổng quan";
     var today = DateTime.Now.ToString("dddd, dd 'Tháng' MM", new System.Globalization.CultureInfo("vi-VN"));
@@ -233,13 +233,68 @@
             </div>
 
             <div class="bg-white border border-slate-100 p-6 rounded-[32px] shadow-sm mt-8">
-                <h4 class="font-extrabold text-sm mb-2 flex items-center text-slate-800"><span class="material-symbols-outlined text-brand-yellow mr-2 text-lg">lightbulb</span> Mẹo sử dụng</h4>
-                <ul class="space-y-3 mt-4 text-xs font-medium text-slate-500">
-                    <li class="flex gap-2 items-start"><span class="text-brand-blue">•</span> Tạo lớp học để lấy mã mời gửi cho sinh viên.</li>
-                    <li class="flex gap-2 items-start"><span class="text-brand-blue">•</span> Upload file Word/PDF để AI tự động bóc tách câu hỏi và đáp án.</li>
-                    <li class="flex gap-2 items-start"><span class="text-brand-blue">•</span> Bật tính năng đảo câu hỏi khi tạo ca thi để chống gian lận.</li>
-                </ul>
+                <h4 class="font-extrabold text-sm mb-4 flex items-center text-slate-800"><span class="material-symbols-outlined text-brand-blue mr-2 text-lg">pie_chart</span> Phân bố điểm số (Tổng quan)</h4>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="scoreChart"></canvas>
+                    <p id="noDataMsg" class="absolute text-slate-400 text-xs font-medium hidden">Chưa có dữ liệu bài nộp.</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        try {
+            const res = await fetch('/Teacher/GetOverviewStats');
+            const json = await res.json();
+            
+            if (json.success) {
+                const data = json.data;
+                const total = data.gioi + data.kha + data.trungBinh + data.yeu;
+                
+                if (total === 0) {
+                    document.getElementById('scoreChart').style.display = 'none';
+                    document.getElementById('noDataMsg').classList.remove('hidden');
+                    return;
+                }
+
+                const ctx = document.getElementById('scoreChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Giỏi (≥8)', 'Khá (6.5-8)', 'Trung bình (5-6.5)', 'Yếu (<5)'],
+                        datasets: [{
+                            data: [data.gioi, data.kha, data.trungBinh, data.yeu],
+                            backgroundColor: [
+                                '#10b981', // green
+                                '#3b82f6', // blue
+                                '#f59e0b', // yellow
+                                '#ef4444'  // red
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { size: 10, family: 'Inter' }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Lỗi khi load thống kê:", err);
+        }
+    });
+</script>
