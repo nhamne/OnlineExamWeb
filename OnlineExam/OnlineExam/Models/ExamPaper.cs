@@ -27,6 +27,7 @@ public partial class ExamPaper
 
     public bool? IsDeleted { get; set; }
 
+    [NotMapped]
     public string? Status { get; set; }
 
     public virtual ICollection<ExamSession> ExamSessions { get; set; } = new List<ExamSession>();

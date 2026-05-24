@@ -432,7 +432,18 @@ public class TeacherController : Controller
         if (!string.IsNullOrEmpty(search)) baseQuery = baseQuery.Where(e => e.Title.Contains(search) || (e.Subject != null && e.Subject.Contains(search)));
         if (!string.IsNullOrEmpty(subject)) baseQuery = baseQuery.Where(e => e.Subject == subject);
         if (!string.IsNullOrEmpty(title)) baseQuery = baseQuery.Where(e => e.Title == title);
-        if (!string.IsNullOrEmpty(status)) baseQuery = baseQuery.Where(e => e.Status == status);
+        if (!string.IsNullOrEmpty(status))
+        {
+            // DB does not have a Status column; derive status from whether exam has questions.
+            if (status == "Bản nháp")
+            {
+                baseQuery = baseQuery.Where(e => e.Questions.Count == 0);
+            }
+            else if (status == "Xuất bản")
+            {
+                baseQuery = baseQuery.Where(e => e.Questions.Count > 0);
+            }
+        }
 
         var totalExams = await baseQuery.CountAsync();
         ViewBag.TotalExams = totalExams;
@@ -451,6 +462,7 @@ public class TeacherController : Controller
         foreach (var exam in exams)
         {
             exam.Duration = exam.DurationInMinutes;
+            exam.Status = (exam.Questions == null || exam.Questions.Count == 0) ? "Bản nháp" : "Xuất bản";
         }
 
         return View(exams);
