@@ -64,11 +64,26 @@
             <button type="submit" class="h-[42px] px-5 rounded-xl bg-sky-700 text-white text-sm font-semibold hover:bg-sky-800">Lọc</button>
         </form>
 
-        <div class="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+        <div class="rounded-2xl bg-white border border-slate-200 overflow-visible mt-6">
+            @{
+                ViewData["exportUrl"] = $"/Teacher/ExportSessionSubmissions?id={Model.SessionId}";
+                ViewData["hideCopy"] = true;
+                ViewData["hideSettings"] = true;
+                ViewData["deleteUrl"] = ""; 
+            }
+            @await Html.PartialAsync("_ListActions")
+
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+                <p id="selected-count-label" class="text-sm font-semibold text-slate-500">Chưa chọn học sinh nào</p>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full">
                     <thead class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wide">
                         <tr>
+                            <th class="px-4 py-3 w-12 text-center">
+                                <input id="check-all-students" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/30" />
+                            </th>
                             <th class="text-left px-4 py-3 font-bold">Học sinh</th>
                             <th class="text-left px-4 py-3 font-bold">Điểm</th>
                             <th class="text-left px-4 py-3 font-bold">Đúng</th>
@@ -83,7 +98,7 @@
                         @if (!Model.Students.Any())
                         {
                             <tr>
-                                <td colspan="8" class="px-4 py-10 text-center text-slate-500">Không có học sinh phù hợp với bộ lọc.</td>
+                                <td colspan="9" class="px-4 py-10 text-center text-slate-500">Không có học sinh phù hợp với bộ lọc.</td>
                             </tr>
                         }
                         else
@@ -98,7 +113,10 @@
                                     _ => "bg-slate-100 text-slate-700"
                                 };
 
-                                <tr class="hover:bg-slate-50">
+                                <tr class="hover:bg-slate-50" data-student-row-id="@student.StudentId">
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="checkbox" class="student-select-checkbox h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/30" value="@student.StudentId" />
+                                    </td>
                                     <td class="px-4 py-3">
                                         <div class="font-semibold">@student.FullName</div>
                                         <div class="text-xs text-slate-500">@student.Email</div>
@@ -125,3 +143,52 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="/js/list-actions.js"></script>
+    <script>window.ListActions && window.ListActions.init('body');</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkAllStudents = document.getElementById('check-all-students');
+            const studentCheckboxes = Array.from(document.querySelectorAll('.student-select-checkbox'));
+            const selectedCountLabel = document.getElementById('selected-count-label');
+
+            function getSelectedStudentIds() {
+                return studentCheckboxes
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+            }
+
+            function updateSelectedState() {
+                const selectedIds = getSelectedStudentIds();
+                const selectedCount = selectedIds.length;
+
+                if (selectedCountLabel) {
+                    selectedCountLabel.textContent = selectedCount > 0
+                        ? `Đã chọn ${selectedCount} học sinh`
+                        : 'Chưa chọn học sinh nào';
+                }
+
+                if (checkAllStudents) {
+                    checkAllStudents.checked = studentCheckboxes.length > 0 && selectedCount === studentCheckboxes.length;
+                    checkAllStudents.indeterminate = selectedCount > 0 && selectedCount < studentCheckboxes.length;
+                }
+            }
+
+            if (checkAllStudents) {
+                checkAllStudents.addEventListener('change', () => {
+                    studentCheckboxes.forEach(checkbox => {
+                        checkbox.checked = checkAllStudents.checked;
+                    });
+                    updateSelectedState();
+                });
+            }
+
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedState);
+            });
+
+            updateSelectedState();
+        });
+    </script>
+}

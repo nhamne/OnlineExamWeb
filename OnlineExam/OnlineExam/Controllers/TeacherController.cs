@@ -515,6 +515,73 @@ public class TeacherController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ExportSessionSubmissions(int id, string? studentIds, string format = "csv")
+    {
+        var teacherId = GetTeacherId();
+        if (!teacherId.HasValue) return Unauthorized();
+
+        var session = await _context.ExamSessions.AsNoTracking()
+            .Include(s => s.Classroom)
+            .FirstOrDefaultAsync(s => s.Id == id && s.Classroom.TeacherId == teacherId.Value && s.Classroom.IsDeleted == false);
+
+        if (session == null)
+        {
+            return NotFound();
+        }
+
+        var ids = new List<int>();
+        if (!string.IsNullOrWhiteSpace(studentIds))
+        {
+            ids = studentIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => { int.TryParse(s, out var v); return v; }).Where(v => v > 0).ToList();
+        }
+
+        if (ids.Count == 0)
+        {
+            return BadRequest("No students selected");
+        }
+
+        var now = DateTime.Now;
+
+        var studentRows = await _context.ClassroomMembers.AsNoTracking()
+            .Where(cm => cm.ClassroomId == session.ClassroomId && ids.Contains(cm.StudentId))
+            .Select(cm => new
+            {
+                cm.StudentId,
+                cm.Student.FullName,
+                cm.Student.Email,
+                Submission = _context.Submissions.AsNoTracking()
+                    .Where(s => s.ExamSessionId == id && s.StudentId == cm.StudentId)
+                    .OrderByDescending(s => s.StartedAt)
+                    .FirstOrDefault()
+            })
+            .OrderBy(x => x.FullName)
+            .ToListAsync();
+
+        var csvLines = new List<string> { "FullName,Email,Score,CorrectAnswers,TimeSpentMinutes,WarningCount,StartedAt,SubmittedAt,Status" };
+        foreach (var x in studentRows)
+        {
+            var submission = x.Submission;
+            var statusText = MapSubmissionStatus(submission?.Status, submission?.SubmittedAt, session.EndTime, now);
+            var timeSpentMinutes = CalculateTimeSpentMinutes(submission?.StartedAt, submission?.SubmittedAt, session.EndTime, now);
+
+            var score = submission?.Score?.ToString("0.##") ?? "";
+            var correctCount = submission?.CorrectAnswersCount?.ToString() ?? "";
+            var timeSpent = timeSpentMinutes?.ToString() ?? "";
+            var warningCount = submission?.WarningCount.ToString() ?? "0";
+            var startedAt = submission?.StartedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+            var submittedAt = submission?.SubmittedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+
+            var line = $"\"{x.FullName.Replace("\"", "\"\"")}\",\"{x.Email}\",\"{score}\",\"{correctCount}\",\"{timeSpent}\",\"{warningCount}\",\"{startedAt}\",\"{submittedAt}\",\"{statusText}\"";
+            csvLines.Add(line);
+        }
+
+        var csv = string.Join("\r\n", csvLines);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var fileName = $"session_{id}_monitor_{DateTime.Now:yyyyMMddHHmmss}.csv";
+        return File(bytes, "text/csv; charset=utf-8", fileName);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> ExamsSummary(string? searchKeyword, string sortBy = "created_desc")
     {
         var teacherId = GetTeacherId();
