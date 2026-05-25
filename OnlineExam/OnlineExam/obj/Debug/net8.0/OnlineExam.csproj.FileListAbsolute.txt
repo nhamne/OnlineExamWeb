@@ -137,7 +137,6 @@ C:\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\runtimes\win\lib\net6.0\
 C:\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 C:\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\OnlineExam.csproj.AssemblyReference.cache
-C:\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\appsettings.Development.json
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\appsettings.json
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\bin\Debug\net8.0\OnlineExam.staticwebassets.runtime.json
@@ -279,3 +278,5 @@ E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\Onli
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\OnlineExam.genruntimeconfig.cache
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\ref\OnlineExam.dll
 E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\OnlineExam.sourcelink.json
+C:\OnlineExamWeb\OnlineExam\OnlineExam\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

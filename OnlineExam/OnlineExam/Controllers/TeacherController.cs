@@ -5,11 +5,8 @@ using Microsoft.Extensions.Configuration;
 using OnlineExam.Models;
 using OnlineExam.Services.Search;
 using OnlineExam.ViewModels;
-using OnlineExam.Models;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-<<<<<<< Updated upstream
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -23,19 +20,12 @@ namespace OnlineExam.Controllers;
 
 [Authorize(Roles = "Teacher")]
 public class TeacherController : Controller
-=======
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-
-namespace OnlineExam.Controllers
->>>>>>> Stashed changes
 {
     private readonly OnlineExamDbContext _context;
     private readonly IMeiliSearchService? _meiliSearch;
 
     public TeacherController(OnlineExamDbContext context, IMeiliSearchService? meiliSearch = null)
     {
-<<<<<<< Updated upstream
         _context = context;
         _meiliSearch = meiliSearch;
     }
@@ -69,51 +59,79 @@ namespace OnlineExam.Controllers
             RecentSessions = await _context.ExamSessions.AsNoTracking()
                 .Where(s => s.ExamPaper.TeacherId == teacherId.Value)
                 .OrderByDescending(s => s.StartTime)
-                .Take(8)
-=======
-        private readonly OnlineExamDbContext _context;
-
-        public TeacherController(OnlineExamDbContext context)
-        {
-            _context = context;
-        }
-
-        public IActionResult Index()
-        {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var teacher = _context.Users.FirstOrDefault(u => u.Email == userEmail);
-
-            if (teacher == null) return RedirectToAction("Login", "Auth");
-
-            var now = DateTime.Now;
-
-            var totalClasses = _context.Classrooms.Count(c => c.TeacherId == teacher.Id && c.IsDeleted == false);
-            var totalExams = _context.ExamPapers.Count(e => e.TeacherId == teacher.Id && e.IsDeleted == false);
-
-            var sessionsQuery = _context.ExamSessions
-                .Include(s => s.Classroom)
-                .Where(s => s.Classroom.TeacherId == teacher.Id);
-
-            var ongoingSessions = sessionsQuery.Count(s => s.StartTime <= now && s.EndTime >= now);
-            var upcomingSessions = sessionsQuery.Count(s => s.StartTime > now);
-
-            var recentSessionsDb = sessionsQuery
-                .OrderByDescending(s => s.StartTime)
-                .Take(5)
->>>>>>> Stashed changes
+                .Take(3)
                 .Select(s => new SessionItemVM
                 {
                     SessionName = s.SessionName,
                     ClassName = s.Classroom.ClassName,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime
-<<<<<<< Updated upstream
                 })
                 .ToListAsync(),
             SessionsToday = await _context.ExamSessions.AsNoTracking().CountAsync(s => s.ExamPaper.TeacherId == teacherId.Value && s.StartTime.Date == now.Date)
         };
 
         return View(dashboardData);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Reports()
+    {
+        var teacherId = GetTeacherId();
+        if (!teacherId.HasValue) return Unauthorized();
+
+        var teacherClassIds = await _context.Classrooms
+            .Where(c => c.TeacherId == teacherId.Value && c.IsDeleted == false)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        var totalStudents = await _context.ClassroomMembers
+            .Where(cm => teacherClassIds.Contains(cm.ClassroomId))
+            .Select(cm => cm.StudentId)
+            .Distinct()
+            .CountAsync();
+
+        var teacherSubmissions = await _context.Submissions
+            .Include(s => s.ExamSession)
+            .ThenInclude(es => es.Classroom)
+            .Where(s => s.ExamSession.ExamPaper.TeacherId == teacherId.Value && (s.Status == 1 || s.Status == 2))
+            .ToListAsync();
+
+        var totalSubmissions = teacherSubmissions.Count;
+        var averageScore = totalSubmissions > 0 ? teacherSubmissions.Average(s => s.Score ?? 0) : 0;
+
+        var score0To4 = teacherSubmissions.Count(s => (s.Score ?? 0) < 4);
+        var score4To6 = teacherSubmissions.Count(s => (s.Score ?? 0) >= 4 && (s.Score ?? 0) < 6);
+        var score6To8 = teacherSubmissions.Count(s => (s.Score ?? 0) >= 6 && (s.Score ?? 0) < 8);
+        var score8To10 = teacherSubmissions.Count(s => (s.Score ?? 0) >= 8);
+
+        var recentPerformances = teacherSubmissions
+            .GroupBy(s => new { s.ExamSessionId, s.ExamSession.SessionName, s.ExamSession.Classroom.ClassName })
+            .Select(g => new SessionPerformanceVM
+            {
+                SessionId = g.Key.ExamSessionId,
+                SessionName = g.Key.SessionName,
+                ClassName = g.Key.ClassName,
+                TotalSubmissions = g.Count(),
+                AverageScore = Math.Round(g.Average(s => s.Score ?? 0), 2)
+            })
+            .OrderByDescending(sp => sp.SessionId)
+            .Take(5)
+            .ToList();
+
+        var vm = new TeacherReportVM
+        {
+            TotalStudents = totalStudents,
+            TotalSubmissions = totalSubmissions,
+            AverageScore = Math.Round(averageScore, 2),
+            Score0To4 = score0To4,
+            Score4To6 = score4To6,
+            Score6To8 = score6To8,
+            Score8To10 = score8To10,
+            RecentPerformances = recentPerformances
+        };
+
+        return View(vm);
     }
 
     [HttpGet]
@@ -425,17 +443,110 @@ namespace OnlineExam.Controllers
         return RedirectToAction(nameof(ManageClass), new { id, searchKeyword, page, pageSize });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> DeleteStudents([FromBody] DeleteStudentsRequest req)
+    {
+        var teacherId = GetTeacherId();
+        if (!teacherId.HasValue) return Unauthorized();
+        if (req == null || req.Id <= 0) return BadRequest();
+
+        if (!await _context.Classrooms.AsNoTracking().AnyAsync(c => c.Id == req.Id && c.TeacherId == teacherId.Value && c.IsDeleted == false))
+        {
+            return NotFound();
+        }
+
+        var selectedIds = req.StudentIds?.Where(x => x > 0).Distinct().ToList() ?? new List<int>();
+        if (selectedIds.Count == 0) return BadRequest();
+
+        var members = await _context.ClassroomMembers.Where(cm => cm.ClassroomId == req.Id && selectedIds.Contains(cm.StudentId)).ToListAsync();
+        if (members.Count == 0) return NotFound();
+
+        _context.ClassroomMembers.RemoveRange(members);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, count = members.Count });
+    }
+
+    public class DeleteStudentsRequest
+    {
+        public int Id { get; set; }
+        public List<int>? StudentIds { get; set; }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportClassStudents(int id, string? studentIds, string format = "csv")
+    {
+        var teacherId = GetTeacherId();
+        if (!teacherId.HasValue) return Unauthorized();
+
+        if (!await _context.Classrooms.AsNoTracking().AnyAsync(c => c.Id == id && c.TeacherId == teacherId.Value && c.IsDeleted == false))
+        {
+            return NotFound();
+        }
+
+        var ids = new List<int>();
+        if (!string.IsNullOrWhiteSpace(studentIds))
+        {
+            ids = studentIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => { int.TryParse(s, out var v); return v; }).Where(v => v > 0).ToList();
+        }
+
+        if (ids.Count == 0)
+        {
+            return BadRequest("No students selected");
+        }
+
+        var students = await _context.ClassroomMembers.AsNoTracking()
+            .Where(cm => cm.ClassroomId == id && ids.Contains(cm.StudentId))
+            .Select(cm => new { cm.Student.FullName, cm.Student.Email, JoinedAt = cm.JoinedAt })
+            .ToListAsync();
+
+        var csvLines = new List<string> { "FullName,Email,JoinedAt" };
+        foreach (var s in students)
+        {
+            var joined = s.JoinedAt.HasValue ? s.JoinedAt.Value.ToString("dd/MM/yyyy HH:mm") : "";
+            var line = $"\"{s.FullName.Replace("\"", "\"\"")}\",\"{s.Email}\",\"{joined}\"";
+            csvLines.Add(line);
+        }
+
+        var csv = string.Join("\r\n", csvLines);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var fileName = $"students_{id}_{DateTime.Now:yyyyMMddHHmmss}.csv";
+        return File(bytes, "text/csv; charset=utf-8", fileName);
+    }
+
     [HttpGet]
     public async Task<IActionResult> ExamsSummary(string? searchKeyword, string sortBy = "created_desc")
     {
         var teacherId = GetTeacherId();
         if (!teacherId.HasValue) return Unauthorized();
 
+        var showMeiliWarning = false;
         var baseQuery = _context.ExamPapers.AsNoTracking().Where(e => e.TeacherId == teacherId.Value && e.IsDeleted == false);
+
         if (!string.IsNullOrWhiteSpace(searchKeyword))
         {
             var keyword = searchKeyword.Trim();
-            baseQuery = baseQuery.Where(e => e.Title.Contains(keyword) || (e.Subject != null && e.Subject.Contains(keyword)));
+            var meiliAvailable = await IsMeiliAvailableAsync();
+            showMeiliWarning = !meiliAvailable;
+
+            if (meiliAvailable)
+            {
+                var allExams = await _context.ExamPapers.AsNoTracking().Where(e => e.TeacherId == teacherId.Value && e.IsDeleted == false).ToListAsync();
+                var searchableExams = allExams.Select(e => new ExamPaperSearchDocument
+                {
+                    Id = e.Id,
+                    TeacherId = e.TeacherId,
+                    Title = e.Title
+                });
+                await _meiliSearch!.IndexTeacherExamPapersAsync(teacherId.Value, searchableExams);
+                var matchedIds = await _meiliSearch.SearchTeacherExamPaperIdsAsync(teacherId.Value, keyword);
+                
+                baseQuery = baseQuery.Where(e => matchedIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => e.Title.Contains(keyword) || (e.Subject != null && e.Subject.Contains(keyword)));
+            }
         }
 
         var projectedQuery = baseQuery.Select(e => new TeacherExamItemVM
@@ -461,22 +572,57 @@ namespace OnlineExam.Controllers
         {
             Exams = await projectedQuery.ToListAsync(),
             SearchKeyword = searchKeyword,
-            SortBy = sortBy
+            SortBy = sortBy,
+            ShowMeiliSearchWarning = showMeiliWarning
         });
     }
 
     [HttpGet]
     public async Task<IActionResult> Exams(string search = null, string subject = null, string title = null, string status = null, int page = 1)
     {
-        const int pageSize = 10;
-        var baseQuery = _context.ExamPapers.Where(e => e.IsDeleted != true).Include(e => e.Teacher).Include(e => e.ExamSessions).ThenInclude(es => es.Classroom).AsQueryable();
+        var teacherId = GetTeacherId();
+        if (!teacherId.HasValue) return Unauthorized();
 
-        if (!string.IsNullOrEmpty(search)) baseQuery = baseQuery.Where(e => e.Title.Contains(search) || (e.Subject != null && e.Subject.Contains(search)));
+        const int pageSize = 10;
+        var showMeiliWarning = false;
+        
+        var baseQuery = _context.ExamPapers
+            .Where(e => e.TeacherId == teacherId.Value && e.IsDeleted != true)
+            .Include(e => e.Teacher)
+            .Include(e => e.Questions)
+            .Include(e => e.ExamSessions)
+                .ThenInclude(es => es.Classroom)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var keyword = search.Trim();
+            var meiliAvailable = await IsMeiliAvailableAsync();
+            showMeiliWarning = !meiliAvailable;
+
+            if (meiliAvailable)
+            {
+                var allExams = await _context.ExamPapers.AsNoTracking().Where(e => e.TeacherId == teacherId.Value && e.IsDeleted != true).ToListAsync();
+                var searchableExams = allExams.Select(e => new ExamPaperSearchDocument
+                {
+                    Id = e.Id,
+                    TeacherId = e.TeacherId,
+                    Title = e.Title
+                });
+                await _meiliSearch!.IndexTeacherExamPapersAsync(teacherId.Value, searchableExams);
+                var matchedIds = await _meiliSearch.SearchTeacherExamPaperIdsAsync(teacherId.Value, keyword);
+                
+                baseQuery = baseQuery.Where(e => matchedIds.Contains(e.Id));
+            }
+            else
+            {
+                baseQuery = baseQuery.Where(e => e.Title.Contains(keyword) || (e.Subject != null && e.Subject.Contains(keyword)));
+            }
+        }
         if (!string.IsNullOrEmpty(subject)) baseQuery = baseQuery.Where(e => e.Subject == subject);
         if (!string.IsNullOrEmpty(title)) baseQuery = baseQuery.Where(e => e.Title == title);
         if (!string.IsNullOrEmpty(status))
         {
-            // DB does not have a Status column; derive status from whether exam has questions.
             if (status == "Bản nháp")
             {
                 baseQuery = baseQuery.Where(e => e.Questions.Count == 0);
@@ -495,6 +641,7 @@ namespace OnlineExam.Controllers
         ViewBag.CurrentSubject = subject;
         ViewBag.CurrentTitle = title;
         ViewBag.CurrentStatus = status;
+        ViewBag.ShowMeiliSearchWarning = showMeiliWarning;
         ViewBag.PopularSubject = await _context.ExamPapers.Where(e => e.IsDeleted != true && !string.IsNullOrEmpty(e.Subject)).GroupBy(e => e.Subject).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefaultAsync() ?? "Chưa có môn nào";
         ViewBag.TotalQuestions = await _context.Questions.Where(q => q.ExamPaper.IsDeleted != true).CountAsync();
         ViewBag.AllSubjects = await _context.ExamPapers.Where(e => e.IsDeleted != true && !string.IsNullOrEmpty(e.Subject)).Select(e => e.Subject).Distinct().ToListAsync();
@@ -504,7 +651,6 @@ namespace OnlineExam.Controllers
         foreach (var exam in exams)
         {
             exam.Duration = exam.DurationInMinutes;
-            exam.Status = (exam.Questions == null || exam.Questions.Count == 0) ? "Bản nháp" : "Xuất bản";
         }
 
         return View(exams);
@@ -567,7 +713,6 @@ namespace OnlineExam.Controllers
                     TeacherId = oldExam.TeacherId,
                     CreatedAt = DateTime.Now,
                     IsDeleted = false,
-                    Status = "Bản nháp",
                     DurationInMinutes = oldExam.DurationInMinutes
                 };
 
@@ -668,46 +813,6 @@ namespace OnlineExam.Controllers
         catch (Exception ex)
         {
             return Json(new { success = false, message = "Lỗi xử lý file với AI: " + ex.Message });
-=======
-                }).ToList();
-
-            var dashboardData = new TeacherDashboardVM()
-            {
-                TeacherName = teacher.FullName,
-                TotalClasses = totalClasses,
-                TotalExams = totalExams,
-                OngoingSessions = ongoingSessions,
-                UpcomingSessions = upcomingSessions,
-                RecentSessions = recentSessionsDb
-            };
-
-            return View(dashboardData);
->>>>>>> Stashed changes
-        }
-
-        [HttpGet]
-        public IActionResult GetOverviewStats()
-        {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var teacher = _context.Users.FirstOrDefault(u => u.Email == userEmail);
-
-            if (teacher == null) return Unauthorized();
-
-            var submissions = _context.Submissions
-                .Include(s => s.ExamSession)
-                .ThenInclude(es => es.Classroom)
-                .Where(s => s.ExamSession.Classroom.TeacherId == teacher.Id && s.Status == 1)
-                .ToList();
-
-            var stats = new
-            {
-                Gioi = submissions.Count(s => s.Score >= 8.0),
-                Kha = submissions.Count(s => s.Score >= 6.5 && s.Score < 8.0),
-                TrungBinh = submissions.Count(s => s.Score >= 5.0 && s.Score < 6.5),
-                Yeu = submissions.Count(s => s.Score < 5.0)
-            };
-
-            return Json(new { success = true, data = stats });
         }
     }
 
@@ -721,11 +826,11 @@ namespace OnlineExam.Controllers
             {
                 Title = request.Title,
                 Subject = request.Subject,
-                Status = request.Status,
                 DurationInMinutes = request.Duration ?? 45,
                 TeacherId = teacherId,
                 CreatedAt = DateTime.Now,
-                IsDeleted = false
+                IsDeleted = false,
+                Status = request.Status ?? "Bản nháp"
             };
 
             foreach (var q in request.Questions)
@@ -764,9 +869,11 @@ namespace OnlineExam.Controllers
 
             exam.Title = request.Title;
             exam.Subject = request.Subject;
-            exam.Status = request.Status;
             exam.DurationInMinutes = request.Duration ?? exam.DurationInMinutes;
             exam.CreatedAt = DateTime.Now;
+            if (!string.IsNullOrEmpty(request.Status)) {
+                exam.Status = request.Status;
+            }
 
             var questionIds = exam.Questions.Select(q => q.Id).ToList();
             var submissionDetailsToDelete = _context.Set<SubmissionDetail>().Where(s => questionIds.Contains(s.QuestionId));
@@ -930,8 +1037,50 @@ namespace OnlineExam.Controllers
 
         if (sessionInfo is null) return NotFound();
 
-        var studentRows = await _context.ClassroomMembers.AsNoTracking()
-            .Where(cm => cm.ClassroomId == sessionInfo.ClassroomId)
+        var studentMemberQuery = _context.ClassroomMembers.AsNoTracking()
+            .Where(cm => cm.ClassroomId == sessionInfo.ClassroomId);
+
+        if (!string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            var keyword = searchKeyword.Trim();
+            var usedMeili = false;
+
+            if (await IsMeiliAvailableAsync())
+            {
+                var searchableStudents = await studentMemberQuery
+                    .Select(cm => new StudentSearchDocument
+                    {
+                        Id = cm.Student.Id,
+                        ClassroomId = sessionInfo.ClassroomId,
+                        FullName = cm.Student.FullName,
+                        Email = cm.Student.Email
+                    })
+                    .ToListAsync();
+
+                await _meiliSearch!.IndexClassStudentsAsync(sessionInfo.ClassroomId, searchableStudents);
+                var matchedStudentIds = await _meiliSearch.SearchClassStudentIdsAsync(sessionInfo.ClassroomId, keyword);
+
+                if (matchedStudentIds.Count > 0)
+                {
+                    studentMemberQuery = studentMemberQuery.Where(cm => matchedStudentIds.Contains(cm.StudentId));
+                }
+                else
+                {
+                    studentMemberQuery = studentMemberQuery.Where(_ => false);
+                }
+
+                usedMeili = true;
+            }
+
+            if (!usedMeili)
+            {
+                studentMemberQuery = studentMemberQuery.Where(cm =>
+                    cm.Student.FullName.Contains(keyword) ||
+                    cm.Student.Email.Contains(keyword));
+            }
+        }
+
+        var studentRows = await studentMemberQuery
             .Select(cm => new
             {
                 cm.StudentId,
@@ -972,12 +1121,6 @@ namespace OnlineExam.Controllers
                 SubmissionStatus = statusText
             };
         }).ToList();
-
-        if (!string.IsNullOrWhiteSpace(searchKeyword))
-        {
-            var keyword = searchKeyword.Trim();
-            studentItems = studentItems.Where(x => x.FullName.Contains(keyword, StringComparison.OrdinalIgnoreCase) || x.Email.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
 
         studentItems = statusFilter switch
         {
@@ -1025,9 +1168,16 @@ namespace OnlineExam.Controllers
             .ToListAsync();
 
         var examPapers = await _context.ExamPapers.AsNoTracking()
-            .Where(e => e.TeacherId == teacherId.Value && e.IsDeleted == false)
+            .Where(e => e.TeacherId == teacherId.Value && e.IsDeleted == false && e.Status == "Xuất bản")
             .OrderBy(e => e.Title)
-            .Select(e => new SessionOptionVM { Id = e.Id, Name = e.Title, DurationInMinutes = e.DurationInMinutes })
+            .Select(e => new SessionOptionVM { Id = e.Id, Name = e.Title, Subject = e.Subject ?? string.Empty, DurationInMinutes = e.DurationInMinutes })
+            .ToListAsync();
+
+        var subjects = await _context.ExamPapers.AsNoTracking()
+            .Where(e => e.TeacherId == teacherId.Value && e.IsDeleted == false && e.Subject != null && e.Subject != "")
+            .Select(e => e.Subject!)
+            .Distinct()
+            .OrderBy(s => s)
             .ToListAsync();
 
         if (!string.IsNullOrWhiteSpace(searchKeyword))
@@ -1100,6 +1250,7 @@ namespace OnlineExam.Controllers
             TotalPages = totalPages,
             Classrooms = classrooms,
             ExamPapers = examPapers,
+            Subjects = subjects,
             SearchKeyword = searchKeyword,
             StatusFilter = statusFilter,
             SortBy = sortBy

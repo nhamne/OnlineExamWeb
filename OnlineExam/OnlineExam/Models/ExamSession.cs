@@ -23,6 +23,8 @@ public partial class ExamSession
 
     public bool? AllowViewExplanation { get; set; }
 
+    public bool? AllowViewScore { get; set; }
+
     public bool? IsShuffled { get; set; }
 
     public bool? ShuffleQuestions { get; set; }

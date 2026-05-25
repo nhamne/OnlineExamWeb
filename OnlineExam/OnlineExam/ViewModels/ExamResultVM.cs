@@ -14,6 +14,7 @@ namespace OnlineExam.ViewModels
         public DateTime? SubmittedAt { get; set; }
         public int WarningCount { get; set; }
         public bool AllowViewScore { get; set; }
+        public bool AllowViewExplanation { get; set; }
         public List<ExamResultDetailVM> Details { get; set; } = new List<ExamResultDetailVM>();
         public List<StudentScoreChartItemVM> ScoreHistory { get; set; } = new List<StudentScoreChartItemVM>();
     }

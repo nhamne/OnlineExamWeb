@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "E:\\CHECK\\HK2 2025 - 2026\\Lap trinh web nang cao\\OnlineExamWeb\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {}
+    "C:\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {}
   },
   "projects": {
-    "E:\\CHECK\\HK2 2025 - 2026\\Lap trinh web nang cao\\OnlineExamWeb\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {
+    "C:\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\CHECK\\HK2 2025 - 2026\\Lap trinh web nang cao\\OnlineExamWeb\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
+        "projectUniqueName": "C:\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
         "projectName": "OnlineExam",
-        "projectPath": "E:\\CHECK\\HK2 2025 - 2026\\Lap trinh web nang cao\\OnlineExamWeb\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
-        "packagesPath": "C:\\Users\\Khanh\\.nuget\\packages\\",
-        "outputPath": "E:\\CHECK\\HK2 2025 - 2026\\Lap trinh web nang cao\\OnlineExamWeb\\OnlineExamWeb\\OnlineExam\\OnlineExam\\obj\\",
+        "projectPath": "C:\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
+        "packagesPath": "C:\\Users\\baekn\\.nuget\\packages\\",
+        "outputPath": "C:\\OnlineExamWeb\\OnlineExam\\OnlineExam\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Khanh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\baekn\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -78,24 +78,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.23, 8.0.23]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.23, 8.0.23]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.23, 8.0.23]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.23, 8.0.23]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"

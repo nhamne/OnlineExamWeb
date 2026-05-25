@@ -30,7 +30,7 @@
         .session-action-btn-edit {
             background: #eef6ff;
             border-color: #d6e7ff;
-            color: #005bbf;
+            color: #0369A1;
         }
 
         .session-action-btn-edit:hover {
@@ -160,22 +160,23 @@
 
         .session-detail-panel {
             position: fixed;
-            right: -500px;
+            right: 0;
             top: 0;
+            transform: translateX(100%);
             width: 420px;
             height: 100vh;
             background: #ffffff;
             border-left: 1px solid #e6e8f2;
             box-shadow: -8px 0 24px rgba(25, 28, 35, 0.12);
             z-index: 40;
-            transition: right 0.3s ease;
+            transition: transform 0.3s ease;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
 
         .session-detail-panel.show {
-            right: 0;
+            transform: translateX(0);
         }
 
         .session-detail-header {
@@ -296,7 +297,7 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
             font-weight: 600;
-            color: #005bbf;
+            color: #0369A1;
             font-size: 14px;
         }
 
@@ -482,7 +483,7 @@
 
         .btn-delete-cancel {
             background: #f2f3fd;
-            color: #005bbf;
+            color: #0369A1;
         }
 
         .btn-delete-cancel:hover {
@@ -519,10 +520,10 @@
 @* <main class="flex-1 p-6 pt-0 pl-0 md:p-10 lg:p-12 bg-[#f9f9ff] font-['Inter',_sans-serif] text-[#191c23] min-h-screen"> *@
     <main class="max-w-7xl mx-auto space-y-8">
     <div class="max-w-7xl mx-auto">
-        <div class="w-full flex items-center justify-between mb-4">
+        <div class="w-full flex items-center justify-between mb-4 max-md:flex-col max-md:items-start gap-4">
             <div class="flex items-center mb-4 gap-4 px-2">
                 <h1
-                    class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#005bbf] leading-none tracking-tight">
+                    class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">
                     Danh sách ca thi</h1>
                     <span
                     class="px-2.5 py-0.5 bg-[#e0e2ec] text-[#414754] rounded-full text-[13px] font-bold">@Model.TotalItems</span>
@@ -531,7 +532,7 @@
         
                 <button type="button"
                 id="btn-open-exam-modal"
-                        class="bg-gradient-to-r from-[#005bbf] to-[#1a73e8] text-[#ffffff] px-6 py-3.5 rounded-[12px] font-['Manrope',_sans-serif] font-bold text-[15px] flex items-center gap-2 shadow-[0_8px_20px_-6px_rgba(0,91,191,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(0,91,191,0.5)] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
+                        class="w-full md:w-auto flex items-center justify-center bg-[#0369A1] text-[#ffffff] px-6 py-3.5 rounded-[12px] font-['Manrope',_sans-serif] font-bold text-[15px] gap-2 shadow-[0_8px_20px_-6px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(3,105,161,0.5)] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
                         title="Tạo ca thi mới">
                     <span class="material-symbols-outlined text-[20px]"
                           style="font-variation-settings: 'FILL' 1;">add_circle</span>
@@ -543,8 +544,8 @@
 
 
 
-<div id="modal-exam-overlay" class="fixed inset-0 bg-[#191c23]/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-    <div class="bg-[#ffffff] w-full max-w-[860px] max-h-[90vh] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter font-['Inter',_sans-serif]">
+<div id="modal-exam-overlay" class="fixed inset-0 z-[100] h-screen w-screen bg-[#191c23]/65 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-[#ffffff] w-full max-w-[860px] max-h-[calc(100dvh-2rem)] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter font-['Inter',_sans-serif]">
         <form id="create-session-form" asp-action="CreateSession" asp-controller="Teacher" method="post" autocomplete="off" class="flex flex-col h-full overflow-hidden">
             @Html.AntiForgeryToken()
 
@@ -554,7 +555,7 @@
 
             <div class="px-8 py-6 bg-[#ffffff]/80 backdrop-blur-md sticky top-0 z-20 flex justify-between items-center border-b border-[#e6e8f2]/50">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#005bbf]">
+                    <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#0369A1]">
                         <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_add_on</span>
                     </div>
                     <div>
@@ -569,19 +570,34 @@
 
             <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
                 <section class="space-y-5">
-                    <div class="flex items-center gap-2 text-[#005bbf]">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
                         <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thông tin cơ bản</h4>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2 space-y-1.5 group">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-3 space-y-1.5 group">
                             <label for="sessionNameInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Tên ca thi <span class="text-[#d32f2f]">*</span></label>
                             <div class="relative">
                                 <input id="sessionNameInput" type="text" name="sessionName" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Ví dụ: Kiểm tra cuối kỳ - Môn Cấu trúc dữ liệu" />
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                             <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="sessionName"></div>
+                        </div>
+
+                        <div class="space-y-1.5 group">
+                            <label for="subjectSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Môn học <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <select id="subjectSelect" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                    <option value="">Tất cả môn học</option>
+                                    @foreach (var subject in Model.Subjects)
+                                    {
+                                        <option value="@subject">@subject</option>
+                                    }
+                                </select>
+                                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
                         </div>
 
                         <div class="space-y-1.5 group">
@@ -591,11 +607,11 @@
                                     <option value="">Chọn đề thi từ thư viện</option>
                                     @foreach (var examPaper in Model.ExamPapers)
                                     {
-                                        <option value="@examPaper.Id" data-duration="@examPaper.DurationInMinutes">@examPaper.Name</option>
+                                        <option value="@examPaper.Id" data-duration="@examPaper.DurationInMinutes" data-subject="@examPaper.Subject">@examPaper.Name</option>
                                     }
                                 </select>
                                 <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                             <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="examPaperId"></div>
                         </div>
@@ -611,7 +627,7 @@
                                     }
                                 </select>
                                 <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                             <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="classroomId"></div>
                         </div>
@@ -619,7 +635,7 @@
                 </section>
 
                 <section class="space-y-5">
-                    <div class="flex items-center gap-2 text-[#005bbf]">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
                         <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thời gian</h4>
                     </div>
@@ -629,7 +645,7 @@
                             <label for="startTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ bắt đầu <span class="text-[#d32f2f]">*</span></label>
                             <div class="relative">
                                 <input id="startTimeInput" type="datetime-local" name="startTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                             <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="startTime"></div>
                         </div>
@@ -638,7 +654,7 @@
                             <label for="endTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ kết thúc <span class="text-[#d32f2f]">*</span></label>
                             <div class="relative">
                                 <input id="endTimeInput" type="datetime-local" name="endTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                             <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="endTime"></div>
                         </div>
@@ -646,34 +662,34 @@
                 </section>
 
                 <section class="space-y-5">
-                    <div class="flex items-center gap-2 text-[#005bbf]">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>
                         <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Bảo mật & hiển thị</h4>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-1.5 group">
-                            <label for="sessionPasswordInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Mật khẩu phòng (Tùy chọn)</label>
+                            <label for="sessionPasswordInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Mật khẩu ca thi (Tùy chọn)</label>
                             <div class="relative">
                                 <input id="sessionPasswordInput" type="password" name="sessionPassword" autocomplete="new-password" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Nhập mã bảo mật" />
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 p-6 bg-[#f2f3fd] rounded-[16px]">
                             <label class="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" name="allowViewExplanation" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#005bbf] focus:ring-[#005bbf]" />
-                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#005bbf] transition-colors">Công bố lời giải sau khi làm xong</span>
+                                <input type="checkbox" name="allowViewExplanation" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Công bố lời giải sau khi làm xong</span>
                             </label>
 
                             <label class="flex items-center gap-3 cursor-pointer group">
-                                <input id="shuffleQuestionsInput" type="checkbox" name="shuffleQuestions" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#005bbf] focus:ring-[#005bbf]" />
-                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#005bbf] transition-colors">Xáo trộn câu hỏi</span>
+                                <input id="shuffleQuestionsInput" type="checkbox" name="shuffleQuestions" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Xáo trộn câu hỏi</span>
                             </label>
 
                             <label class="flex items-center gap-3 cursor-pointer group">
-                                <input id="shuffleAnswersInput" type="checkbox" name="shuffleAnswers" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#005bbf] focus:ring-[#005bbf]" />
-                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#005bbf] transition-colors">Xáo trộn đáp án</span>
+                                <input id="shuffleAnswersInput" type="checkbox" name="shuffleAnswers" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Xáo trộn đáp án</span>
                             </label>
                         </div>
 
@@ -681,7 +697,7 @@
                             <label for="notesInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Ghi chú (Tùy chọn)</label>
                             <div class="relative">
                                 <textarea id="notesInput" name="notes" rows="3" class="w-full px-5 py-4 bg-[#f2f3fd] rounded-[16px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] resize-none transition-all" placeholder="Ví dụ: Học sinh được phép sử dụng máy tính bỏ túi..."></textarea>
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                             </div>
                         </div>
                     </div>
@@ -689,12 +705,12 @@
             </div>
 
             <div class="px-8 py-3 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-[24px]">
-                <button type="button" id="btn-cancel-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
+                <button type="button" id="btn-cancel-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
                     Hủy bỏ
                 </button>
 
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <button type="button" id="btn-preview-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-transparent border border-[#005bbf]/20 text-[#005bbf] rounded-[12px] text-[14px] font-bold hover:bg-[#f2f3fd] transition-all active:scale-[0.98]">
+                    <button type="button" id="btn-preview-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-transparent border border-[#0369A1]/20 text-[#0369A1] rounded-[12px] text-[14px] font-bold hover:bg-[#f2f3fd] transition-all active:scale-[0.98]">
                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                         Xem trước ca thi
                     </button>
@@ -708,7 +724,7 @@
     <div class="preview-modal-panel bg-white w-full max-w-[720px] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter">
         <div class="px-8 py-6 bg-[#ffffff] flex justify-between items-center border-b border-[#e6e8f2]/50">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-[16px] bg-[#eef3ff] flex items-center justify-center text-[#005bbf]">
+                <div class="w-12 h-12 rounded-[16px] bg-[#eef3ff] flex items-center justify-center text-[#0369A1]">
                     <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">visibility</span>
                 </div>
                 <div>
@@ -734,8 +750,8 @@
         </div>
 
         <div class="px-8 py-4 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-end gap-3">
-            <button type="button" id="btn-confirm-create-session" class="px-6 py-2.5 bg-gradient-to-r from-[#005bbf] to-[#1a73e8] text-[#ffffff] rounded-[12px] text-[14px] font-bold shadow-[0_4px_12px_rgba(0,91,191,0.2)] hover:shadow-[0_6px_16px_rgba(0,91,191,0.3)] transition-all active:scale-[0.98]">Hoàn tất tạo</button>
-            <button type="button" id="btn-close-preview-modal-footer" class="px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">Đóng</button>
+            <button type="button" id="btn-confirm-create-session" class="px-6 py-2.5 bg-[#0369A1] text-[#ffffff] rounded-[12px] text-[14px] font-bold shadow-[0_4px_12px_rgba(3,105,161,0.2)] hover:shadow-[0_6px_16px_rgba(3,105,161,0.3)] transition-all active:scale-[0.98]">Hoàn tất tạo</button>
+            <button type="button" id="btn-close-preview-modal-footer" class="px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">Đóng</button>
         </div>
     </div>
 </div>
@@ -753,7 +769,7 @@
                 </div>
                 <h3 class="mt-2 text-[26px] leading-tight font-['Manrope',_sans-serif] font-extrabold text-[#191c23]">Tạo ca thi thành công!</h3>
                 <p class="mt-1 text-[14px] text-[#4b5563] leading-relaxed">
-                    Ca thi <span id="successSessionName" class="font-bold text-[#005bbf]"></span> đã được tạo thành công.
+                    Ca thi <span id="successSessionName" class="font-bold text-[#0369A1]"></span> đã được tạo thành công.
                     Chia sẻ link hoặc mã QR bên dưới cho học sinh.
                 </p>
             </div>
@@ -762,13 +778,13 @@
                 <label class="block text-[11px] font-bold text-[#6b7280] uppercase tracking-widest mb-2">Link tham gia</label>
                 <div class="flex items-center gap-2">
                     <input id="successJoinLink" type="text" readonly class="flex-1 bg-[#f4f6ff] border border-[#dfe5f4] rounded-[10px] px-3 py-2.5 text-[13px] text-[#374151] focus:ring-0" />
-                    <button type="button" id="btn-copy-join-link" class="px-4 py-2.5 min-w-[88px] rounded-[10px] bg-[#005bbf] text-white text-[13px] font-bold hover:bg-[#0d6ad0] transition-colors">Copy</button>
+                    <button type="button" id="btn-copy-join-link" class="px-4 py-2.5 min-w-[88px] rounded-[10px] bg-[#0369A1] text-white text-[13px] font-bold hover:bg-[#0369A1] transition-colors">Copy</button>
                 </div>
             </div>
 
             <div class="mt-3 border border-[#e6e8f2] rounded-[16px] bg-[#f9f9ff] p-4 text-center">
                 <img id="successQrImage" src="" alt="QR tham gia ca thi" class="w-36 h-36 object-contain mx-auto rounded-[10px] bg-white border border-[#e6e8f2] p-2" />
-                <button type="button" id="btn-download-qr" class="mt-3 inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-[#eef3ff] border border-[#d8e4ff] text-[#005bbf] font-bold text-[14px] hover:bg-[#e2ebff] transition-colors">
+                <button type="button" id="btn-download-qr" class="mt-3 inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-[#eef3ff] border border-[#d8e4ff] text-[#0369A1] font-bold text-[14px] hover:bg-[#e2ebff] transition-colors">
                     <span class="material-symbols-outlined text-[18px]">download</span>
                     Tải mã QR
                 </button>
@@ -790,16 +806,16 @@
                 <label class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Từ khóa</label>
                 <div class="relative">
                     <span
-                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none group-focus-within:text-[#005bbf] transition-colors">search</span>
+                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none group-focus-within:text-[#0369A1] transition-colors">search</span>
                     <input id="sessionKeywordInput" type="text" name="searchKeyword" value="@Model.SearchKeyword"
                            class="w-full border-none rounded-[12px] pl-12 pr-14 py-3.5 text-[#191c23] text-[14px] focus:ring-0 focus:bg-[#ffffff] placeholder:text-[#c1c6d6] transition-all shadow-sm"
                            placeholder="VD: Giữa kỳ, 12A1...">
                     <button type="submit" title="Tìm kiếm"
-                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-[13px] bg-[#005bbf] text-white inline-flex items-center justify-center hover:bg-[#1a73e8] transition-colors shadow-[0_4px_10px_rgba(0,91,191,0.22)]">
+                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-[13px] bg-[#0369A1] text-white inline-flex items-center justify-center hover:bg-[#0369A1] transition-colors shadow-[0_4px_10px_rgba(3,105,161,0.22)]">
                         <span class="material-symbols-outlined text-[16px]">search</span>
                     </button>
                     <div
-                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
                     </div>
                 </div>
             </div>
@@ -817,7 +833,7 @@
                     <span
                     class="material-symbols-outlined absolute right-[14px] top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
                     <div
-                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
                     </div>
                 </div>
             </div>
@@ -836,7 +852,7 @@
                     <span
                     class="material-symbols-outlined absolute right-[14px] top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
                     <div
-                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
                     </div>
                 </div>
             </div>
@@ -939,29 +955,9 @@
 
                 @if (Model.TotalPages > 1)
                 {
-                    var visiblePages = new SortedSet<int> { 1, Model.TotalPages };
-                    for (var p = Model.CurrentPage - 1; p <= Model.CurrentPage + 1; p++)
-                    {
-                        if (p >= 1 && p <= Model.TotalPages)
-                        {
-                            visiblePages.Add(p);
-                        }
-                    }
-
-                    if (Model.CurrentPage <= 3)
-                    {
-                        visiblePages.Add(2);
-                        visiblePages.Add(3);
-                    }
-
-                    if (Model.CurrentPage >= Model.TotalPages - 2)
-                    {
-                        visiblePages.Add(Model.TotalPages - 1);
-                        visiblePages.Add(Model.TotalPages - 2);
-                    }
-
-                    visiblePages.RemoveWhere(pageNumber => pageNumber < 1 || pageNumber > Model.TotalPages);
-                    var orderedPages = visiblePages.ToList();
+                    var startPage = Math.Max(1, Model.CurrentPage - 2);
+                    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                    startPage = Math.Max(1, endPage - 4);
 
                     <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
                         <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
@@ -970,14 +966,8 @@
                             <span class="material-symbols-outlined text-[20px]">chevron_left</span>
                         </a>
 
-                        @for (var i = 0; i < orderedPages.Count; i++)
+                        @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
                         {
-                            var pageNumber = orderedPages[i];
-                            if (i > 0 && pageNumber - orderedPages[i - 1] > 1)
-                            {
-                                <span class="h-10 min-w-10 px-2 rounded-xl bg-slate-100 text-[#5ca0f0] text-sm font-bold inline-flex items-center justify-center">...</span>
-                            }
-
                             <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#5ca0f0] text-white" : "bg-slate-100 text-[#5ca0f0] hover:bg-[#e8f1ff]")"
                                href="@Url.Action("Sessions", "Teacher", new { searchKeyword = Model.SearchKeyword, statusFilter = Model.StatusFilter, sortBy = Model.SortBy, page = pageNumber })">@pageNumber</a>
                         }
@@ -1106,7 +1096,7 @@
 
                     <div class="px-8 py-6 bg-[#ffffff]/80 backdrop-blur-md sticky top-0 z-20 flex justify-between items-center border-b border-[#e6e8f2]/50">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#005bbf]">
+                            <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#0369A1]">
                                 <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_add_on</span>
                             </div>
                             <div>
@@ -1121,7 +1111,7 @@
 
                     <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
                         <section class="space-y-5">
-                            <div class="flex items-center gap-2 text-[#005bbf]">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
                                 <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thông tin cơ bản</h4>
                             </div>
@@ -1131,7 +1121,7 @@
                                     <label for="editSessionNameInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Tên ca thi <span class="text-[#d32f2f]">*</span></label>
                                     <div class="relative">
                                         <input id="editSessionNameInput" type="text" name="sessionName" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Ví dụ: Kiểm tra cuối kỳ - Môn Cấu trúc dữ liệu" />
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                         <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="sessionName"></div>
                                     </div>
                                 </div>
@@ -1143,7 +1133,7 @@
                                             <option value="">Chọn đề thi từ thư viện</option>
                                         </select>
                                         <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                         <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="examPaperId"></div>
                                     </div>
                                 </div>
@@ -1155,7 +1145,7 @@
                                             <option value="">Chọn lớp học</option>
                                         </select>
                                         <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                         <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="classroomId"></div>
                                     </div>
                                 </div>
@@ -1163,7 +1153,7 @@
                         </section>
 
                         <section class="space-y-5">
-                            <div class="flex items-center gap-2 text-[#005bbf]">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
                                 <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thời gian</h4>
                             </div>
@@ -1173,7 +1163,7 @@
                                     <label for="editStartTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ bắt đầu <span class="text-[#d32f2f]">*</span></label>
                                     <div class="relative">
                                         <input id="editStartTimeInput" type="datetime-local" name="startTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                         <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="startTime"></div>
                                     </div>
                                 </div>
@@ -1182,7 +1172,7 @@
                                     <label for="editEndTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ kết thúc <span class="text-[#d32f2f]">*</span></label>
                                     <div class="relative">
                                         <input id="editEndTimeInput" type="datetime-local" name="endTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                         <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="endTime"></div>
                                     </div>
                                 </div>
@@ -1190,7 +1180,7 @@
                         </section>
 
                         <section class="space-y-5">
-                            <div class="flex items-center gap-2 text-[#005bbf]">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">settings</span>
                                 <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Bảo mật & hiển thị</h4>
                             </div>
@@ -1200,22 +1190,22 @@
                                     <label for="editSessionPasswordInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Mã khóa ca thi (Tùy chọn)</label>
                                     <div class="relative">
                                         <input id="editSessionPasswordInput" name="sessionPassword" type="text" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="VD: LK2024...">
-                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
-                                    <input id="editAllowViewExplanation" name="allowViewExplanation" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#005bbf]">
+                                    <input id="editAllowViewExplanation" name="allowViewExplanation" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
                                     <label for="editAllowViewExplanation" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Công bố lời giải sau khi kết thúc</label>
                                 </div>
 
                                 <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
-                                    <input id="editShuffleQuestions" name="shuffleQuestions" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#005bbf]">
+                                    <input id="editShuffleQuestions" name="shuffleQuestions" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
                                     <label for="editShuffleQuestions" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Xáo trộn câu hỏi cho mỗi học sinh</label>
                                 </div>
 
                                 <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
-                                    <input id="editShuffleAnswers" name="shuffleAnswers" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#005bbf]">
+                                    <input id="editShuffleAnswers" name="shuffleAnswers" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
                                     <label for="editShuffleAnswers" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Xáo trộn đáp án cho mỗi câu hỏi</label>
                                 </div>
                             </div>
@@ -1225,18 +1215,18 @@
                             <label for="editNotesInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Ghi chú (Tùy chọn)</label>
                             <div class="relative">
                                 <textarea id="editNotesInput" name="notes" rows="3" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] resize-none transition-all" placeholder="VD: Giữa kỳ tần suất cao, có phần tự luận..."></textarea>
-                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#005bbf] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="px-8 py-3 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-[24px]">
-                        <button type="button" id="btn-cancel-edit-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
+                        <button type="button" id="btn-cancel-edit-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
                             Hủy bỏ
                         </button>
 
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button type="button" id="btn-update-edit-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#005bbf] text-white rounded-[12px] text-[14px] font-bold hover:bg-[#004b9f] transition-all active:scale-[0.98]">
+                            <button type="button" id="btn-update-edit-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0369A1] text-white rounded-[12px] text-[14px] font-bold hover:bg-[#0369A1] transition-all active:scale-[0.98]">
                                 <span class="material-symbols-outlined text-[18px]">save</span>
                                 Cập nhật ca thi
                             </button>
@@ -1266,6 +1256,16 @@
 
 @section Scripts {
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Đưa các popups ra khỏi thẻ <main> (để không bị giới hạn bởi relative/stacking context)
+            const body = document.body;
+            body.appendChild(document.getElementById('modal-exam-overlay'));
+            body.appendChild(document.getElementById('modal-session-preview-overlay'));
+            body.appendChild(document.getElementById('modal-create-success-overlay'));
+            body.appendChild(document.getElementById('modal-edit-exam-overlay'));
+            body.appendChild(document.getElementById('modal-delete-confirm-overlay'));
+        });
+
         (function () {
             const form = document.getElementById("sessionFilterForm");
             const statusFilter = document.getElementById("statusFilter");
@@ -1335,7 +1335,9 @@
         const btnCloseSuccessModalIcon = document.getElementById('btn-close-success-modal-icon');
 
         const sessionNameInput = document.getElementById('sessionNameInput');
+        const subjectSelect = document.getElementById('subjectSelect');
         const examPaperIdSelect = document.getElementById('examPaperIdSelect');
+        const examPaperOptionsTemplate = examPaperIdSelect ? examPaperIdSelect.innerHTML : '';
         const classroomIdSelect = document.getElementById('classroomIdSelect');
         const startTimeInput = document.getElementById('startTimeInput');
         const endTimeInput = document.getElementById('endTimeInput');
@@ -1390,6 +1392,37 @@
             }
 
             closePreviewModal();
+
+            if (subjectSelect) {
+                subjectSelect.value = '';
+            }
+
+            if (examPaperIdSelect) {
+                filterExamPapersBySubject('');
+            }
+        }
+
+        function filterExamPapersBySubject(subject) {
+            if (!examPaperIdSelect) {
+                return;
+            }
+
+            const normalizedSubject = (subject || '').trim();
+            const currentValue = examPaperIdSelect.value;
+
+            Array.from(examPaperIdSelect.options).forEach((option, index) => {
+                if (index === 0) {
+                    option.hidden = false;
+                    return;
+                }
+
+                const optionSubject = (option.dataset.subject || '').trim();
+                option.hidden = Boolean(normalizedSubject) && optionSubject !== normalizedSubject;
+            });
+
+            if (currentValue && examPaperIdSelect.selectedOptions.length && examPaperIdSelect.selectedOptions[0]?.hidden) {
+                examPaperIdSelect.value = '';
+            }
         }
 
         function closeModal() {
@@ -1794,6 +1827,15 @@
         if (sessionNameInput) {
             sessionNameInput.addEventListener('blur', () => {
                 validateRequiredField('sessionName');
+            });
+        }
+
+        if (subjectSelect) {
+            subjectSelect.addEventListener('change', () => {
+                filterExamPapersBySubject(subjectSelect.value);
+                if (examPaperIdSelect) {
+                    examPaperIdSelect.value = '';
+                }
             });
         }
 
@@ -2259,7 +2301,7 @@
             
             // Copy options from create form to edit form
             if (examPaperIdSelect && editExamPaperIdSelect) {
-                editExamPaperIdSelect.innerHTML = examPaperIdSelect.innerHTML;
+                editExamPaperIdSelect.innerHTML = examPaperOptionsTemplate;
                 editExamPaperIdSelect.value = sessionData.examPaperId;
             }
             

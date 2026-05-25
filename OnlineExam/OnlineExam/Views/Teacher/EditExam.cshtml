@@ -1,4 +1,4 @@
-﻿@model OnlineExam.Models.ExamPaper
+@model OnlineExam.Models.ExamPaper
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -52,7 +52,7 @@
 
     <!-- Tiêu đề trang (breadcrumb removed) -->
     <div class="px-6 pt-5 pb-3 bg-white shrink-0 z-30 border-b border-slate-50">
-        <h1 class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#005bbf] leading-none tracking-tight">Chỉnh sửa đề thi</h1>
+        <h1 class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">Chỉnh sửa đề thi</h1>
     </div>
 
     <!-- Thanh công cụ nhập tên, lưu, xuất bản -->
@@ -173,7 +173,8 @@
 
             function handleSavePrevent(e) {
                 if (titleInput.value.trim() === '' || subjectInput.value.trim() === '') {
-                    alert("Vui lòng điền đầy đủ Tên đề thi và Tên môn học (phần có dấu sao đỏ) trước khi tiếp tục!");
+                    if (window.appToast) window.appToast.error("Vui lòng điền đầy đủ Tên đề thi và Tên môn học (phần có dấu sao đỏ) trước khi tiếp tục!");
+                    else alert("Vui lòng điền đầy đủ Tên đề thi và Tên môn học (phần có dấu sao đỏ) trước khi tiếp tục!");
                     e.preventDefault();
                     return;
                 }
@@ -181,7 +182,8 @@
                 // Cấm lưu/xuất bản nếu không có nội dung câu hỏi nào
                 const questions = parseQuestions(nlEditor.value);
                 if (questions.length === 0) {
-                    alert("Đề thi chưa có nội dung câu hỏi nào. Vui lòng soạn ít nhất 1 câu hỏi vào khung soạn thảo!");
+                    if (window.appToast) window.appToast.error("Đề thi chưa có nội dung câu hỏi nào. Vui lòng soạn ít nhất 1 câu hỏi vào khung soạn thảo!");
+                    else alert("Đề thi chưa có nội dung câu hỏi nào. Vui lòng soạn ít nhất 1 câu hỏi vào khung soạn thảo!");
                     e.preventDefault();
                     return;
                 }
@@ -190,12 +192,14 @@
                 for (let i = 0; i < questions.length; i++) {
                     const q = questions[i];
                     if (q.options.length < 2) {
-                        alert(`Câu [${q.number}] chưa nhập đủ các đáp án. Vui lòng nhập tối thiểu 2 đáp án (A, B...)!`);
+                        if (window.appToast) window.appToast.error(`Câu [${q.number}] chưa nhập đủ các đáp án. Vui lòng nhập tối thiểu 2 đáp án (A, B...)!`);
+                        else alert(`Câu [${q.number}] chưa nhập đủ các đáp án. Vui lòng nhập tối thiểu 2 đáp án (A, B...)!`);
                         e.preventDefault();
                         return;
                     }
                     if (!q.options.some(o => o.isCorrect)) {
-                        alert(`Câu [${q.number}] chưa đánh dấu đáp án đúng. Vui lòng thêm dấu * trước đáp án ĐÚNG!`);
+                        if (window.appToast) window.appToast.error(`Câu [${q.number}] chưa đánh dấu đáp án đúng. Vui lòng thêm dấu * trước đáp án ĐÚNG!`);
+                        else alert(`Câu [${q.number}] chưa đánh dấu đáp án đúng. Vui lòng thêm dấu * trước đáp án ĐÚNG!`);
                         e.preventDefault();
                         return;
                     }
@@ -223,16 +227,21 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert(btn.id === 'btnPublish' ? 'Cập nhật và xuất bản đề thi thành công!' : 'Cập nhật bản nháp thành công!');
-                        window.location.href = data.redirectUrl;
+                        if (window.appToast) {
+                            window.appToast.redirect(btn.id === 'btnPublish' ? 'Cập nhật và xuất bản đề thi thành công!' : 'Cập nhật bản nháp thành công!', data.redirectUrl || '/Teacher/Exams');
+                        } else {
+                            window.location.href = data.redirectUrl || '/Teacher/Exams';
+                        }
                     } else {
-                        alert('Lỗi khi lưu đề thi: ' + data.message);
+                        if (window.appToast) window.appToast.error('Lỗi khi lưu đề thi: ' + data.message);
+                        else alert('Lỗi khi lưu đề thi: ' + data.message);
                         btn.innerHTML = originalText;
                         btn.classList.remove('pointer-events-none', 'opacity-50');
                     }
                 })
                 .catch(err => {
-                    alert('Lỗi hệ thống: ' + err);
+                    if (window.appToast) window.appToast.error('Lỗi hệ thống: ' + err);
+                    else alert('Lỗi hệ thống: ' + err);
                     btn.innerHTML = originalText;
                     btn.classList.remove('pointer-events-none', 'opacity-50');
                 });

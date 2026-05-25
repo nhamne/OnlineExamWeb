@@ -1,214 +1,206 @@
 @model OnlineExam.ViewModels.ExamResultVM
 @{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = $"Kết quả: {Model.SessionName}";
 }
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Kết quả: @Model.SessionName</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#1a61a4',
-                        'primary-container': '#75aef7',
-                        'surface': '#f7f9fb',
-                        'surface-container-low': '#f0f4f7',
-                        'on-surface': '#2c3437',
-                        'outline-variant-soft': 'rgba(172, 179, 183, 0.15)',
-                    },
-                    fontFamily: {
-                        'headline': ['Manrope', 'sans-serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; color: #2c3437; }
-        .font-headline { font-family: 'Manrope', sans-serif; }
-        .transition-soft { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    </style>
-</head>
-<body class="bg-surface min-h-screen pb-32">
+<div class="max-w-7xl mx-auto space-y-8">
+    @{
+        var scoreValue = Math.Clamp(Model.Score ?? 0, 0, 10);
+        var scorePercent = scoreValue / 10.0 * 100.0;
+    }
 
-    <header class="bg-white border-b border-outline-variant-soft px-8 py-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="/Student/Index" class="w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center text-on-surface/50 hover:bg-primary hover:text-white transition-colors">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </a>
-            <div>
-                <h1 class="text-xl font-bold font-headline text-on-surface">@Model.SessionName</h1>
-                <p class="text-xs text-on-surface/50 font-semibold">Kết quả bài thi</p>
-            </div>
+    <section class="mb-2 w-full flex items-center gap-4 max-md:flex-col max-md:items-start">
+        <a href="/Student/Results" class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#0369A1] shrink-0 hover:bg-[#f2f3fd] transition-colors">
+            <span class="material-symbols-outlined text-[26px]">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="text-[32px] font-extrabold font-headline tracking-tight text-slate-800">Theo dõi kết quả bài thi: @Model.SessionName</h1>
+            <p class="text-slate-500 text-sm mt-1">Xem kết quả chi tiết cho từng câu hỏi của bài thi này.</p>
+            <p class="text-slate-400 text-xs mt-1">@Model.ClassName</p>
         </div>
-    </header>
+    </section>
 
-    <main class="max-w-4xl mx-auto mt-12 px-6">
-        
-        <!-- Summary Card -->
-        <div class="bg-white rounded-3xl shadow-sm border border-outline-variant-soft p-10 mb-12 text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
-            
-            <h2 class="text-3xl font-bold font-headline text-on-surface mb-8">Điểm số của bạn</h2>
-            
-            <div class="flex flex-col md:flex-row justify-center items-center gap-12 mb-8">
-                <div class="w-48 h-48 rounded-full border-8 border-primary/10 flex items-center justify-center relative">
-                    <svg class="absolute inset-0 w-full h-full -rotate-90">
-                        <circle cx="96" cy="96" r="88" fill="none" stroke="currentColor" stroke-width="8" class="text-primary" stroke-dasharray="552.92" stroke-dashoffset="@((552.92) - (552.92 * (Model.Score ?? 0) / 10.0))"></circle>
-                    </svg>
-                    <div>
-                        <span class="text-5xl font-black font-headline text-primary">@Model.Score</span>
-                        <span class="text-xl text-on-surface/40 font-bold">/10</span>
-                    </div>
-                </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 md:p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-[#0369A1]"></div>
 
-                <div class="text-left space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-green-500">check_circle</span>
-                        <span class="text-lg font-medium">Đúng <strong>@Model.CorrectAnswersCount</strong> / @Model.TotalQuestions câu</span>
+        <h2 class="text-3xl font-bold font-headline text-slate-800 text-center mb-8">Điểm số của bạn</h2>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-12 mb-2">
+            <div class="relative w-52 h-52 shrink-0">
+                <svg viewBox="0 0 200 200" class="w-full h-full -rotate-90">
+                    <circle cx="100" cy="100" r="86" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
+                    <circle cx="100" cy="100" r="86" fill="none" stroke="#0369A1" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="@(100 - scorePercent)"></circle>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center flex-col">
+                    <div class="flex items-end gap-1 leading-none">
+                        <span class="text-5xl font-black font-headline text-[#0369A1]">@scoreValue</span>
+                        <span class="text-xl text-slate-400 font-bold pb-1">/10</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-blue-500">schedule</span>
-                        <span class="text-lg font-medium">Nộp lúc: <strong>@(Model.SubmittedAt?.ToString("dd/MM/yyyy HH:mm"))</strong></span>
-                    </div>
-                    @if (Model.WarningCount > 0)
-                    {
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-orange-500">warning</span>
-                            <span class="text-lg font-medium text-orange-600">Vi phạm: <strong>@Model.WarningCount</strong> lần</span>
-                        </div>
-                    }
                 </div>
             </div>
-            
-            @if (!Model.AllowViewScore)
-            {
-                <div class="mt-8 p-4 bg-yellow-50 text-yellow-800 rounded-xl font-medium inline-block mx-auto">
-                    Giáo viên đã ẩn tính năng xem chi tiết bài làm đối với ca thi này.
-                </div>
-            }
-        </div>
 
-        @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
-        {
-            <div class="bg-white rounded-3xl shadow-sm border border-outline-variant-soft p-8 md:p-10 mb-12">
-                <h3 class="text-xl font-bold font-headline mb-6 text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">monitoring</span>
-                    Tiến độ học tập của bạn
-                </h3>
-                <div class="w-full h-64">
-                    <canvas id="scoreChart"></canvas>
+            <div class="text-left space-y-4 w-full max-w-md">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    <span class="text-lg font-medium">Đúng <strong>@Model.CorrectAnswersCount</strong> / @Model.TotalQuestions câu</span>
                 </div>
-            </div>
-        }
-
-        @if (Model.AllowViewScore && Model.Details != null && Model.Details.Any())
-        {
-            <h3 class="text-2xl font-bold font-headline mb-8">Chi tiết bài làm</h3>
-            
-            <div class="space-y-6">
-                @for (int i = 0; i < Model.Details.Count; i++)
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-blue-500">schedule</span>
+                    <span class="text-lg font-medium">Nộp lúc: <strong>@(Model.SubmittedAt?.ToString("dd/MM/yyyy HH:mm"))</strong></span>
+                </div>
+                @if (Model.WarningCount > 0)
                 {
-                    var q = Model.Details[i];
-                    var isCorrect = q.IsCorrect == true;
-                    var borderColor = isCorrect ? "border-green-500" : (q.SelectedOption == null ? "border-orange-400" : "border-red-500");
-                    var bgColor = isCorrect ? "bg-green-50" : (q.SelectedOption == null ? "bg-orange-50" : "bg-red-50");
-                    var icon = isCorrect ? "check_circle" : (q.SelectedOption == null ? "help" : "cancel");
-                    var iconColor = isCorrect ? "text-green-500" : (q.SelectedOption == null ? "text-orange-500" : "text-red-500");
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-orange-500">warning</span>
+                        <span class="text-lg font-medium text-orange-600">Vi phạm: <strong>@Model.WarningCount</strong> lần</span>
+                    </div>
+                }
+            </div>
+        </div>
 
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border-2 @borderColor relative">
-                        <div class="absolute top-8 right-8 flex items-center gap-2 @iconColor font-bold">
-                            <span class="material-symbols-outlined">@icon</span>
-                            @(isCorrect ? "Đúng" : (q.SelectedOption == null ? "Bỏ trống" : "Sai"))
+        @if (!Model.AllowViewScore)
+        {
+            <div class="mt-8 p-4 bg-yellow-50 text-yellow-800 rounded-xl font-medium inline-block mx-auto">
+                Giáo viên đã ẩn tính năng xem chi tiết bài làm đối với ca thi này.
+            </div>
+        }
+    </div>
+
+    @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
+    {
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 md:p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-11 h-11 rounded-xl bg-[#f2f3fd] text-[#0369A1] flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined">monitoring</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">Tiến độ học tập của bạn</h3>
+                    <p class="text-sm text-slate-500">Biểu đồ điểm số các lần nộp gần đây.</p>
+                </div>
+            </div>
+            <div class="w-full h-64">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    }
+
+    @if (Model.AllowViewScore && Model.Details != null && Model.Details.Any())
+    {
+        <h3 class="text-2xl font-bold font-headline mb-2 text-slate-800">Chi tiết bài làm</h3>
+        <p class="text-sm text-slate-500 mb-6">Danh sách câu hỏi và đáp án của bài thi này.</p>
+
+        <div class="space-y-6 pb-12">
+            @for (int i = 0; i < Model.Details.Count; i++)
+            {
+                var q = Model.Details[i];
+                var isCorrect = q.IsCorrect == true;
+                var showAnswers = !string.IsNullOrEmpty(q.CorrectOption);
+
+                // When answers are not published, don't reveal correct/wrong status via color
+                var borderColor = showAnswers
+                    ? (isCorrect ? "border-green-500" : (string.IsNullOrEmpty(q.SelectedOption) ? "border-orange-400" : "border-red-500"))
+                    : (string.IsNullOrEmpty(q.SelectedOption) ? "border-orange-400" : "border-blue-400");
+                var bgColor = showAnswers
+                    ? (isCorrect ? "bg-green-50" : (string.IsNullOrEmpty(q.SelectedOption) ? "bg-orange-50" : "bg-red-50"))
+                    : (string.IsNullOrEmpty(q.SelectedOption) ? "bg-orange-50" : "bg-blue-50");
+                var icon = showAnswers
+                    ? (isCorrect ? "check_circle" : (string.IsNullOrEmpty(q.SelectedOption) ? "help" : "cancel"))
+                    : (string.IsNullOrEmpty(q.SelectedOption) ? "help" : "check_box");
+                var iconColor = showAnswers
+                    ? (isCorrect ? "text-green-500" : (string.IsNullOrEmpty(q.SelectedOption) ? "text-orange-500" : "text-red-500"))
+                    : (string.IsNullOrEmpty(q.SelectedOption) ? "text-orange-500" : "text-blue-500");
+
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border-2 @borderColor relative">
+                    <div class="absolute top-6 right-6 flex items-center gap-2 @iconColor font-bold">
+                        <span class="material-symbols-outlined">@icon</span>
+                        @(showAnswers
+                            ? (isCorrect ? "Đúng" : (string.IsNullOrEmpty(q.SelectedOption) ? "Bỏ trống" : "Sai"))
+                            : (string.IsNullOrEmpty(q.SelectedOption) ? "Bỏ trống" : "Đã trả lời"))
+                    </div>
+
+                    <div class="flex gap-4 mb-6">
+                        <div class="w-10 h-10 shrink-0 @bgColor rounded-xl flex items-center justify-center font-bold font-headline @iconColor">
+                            @(i + 1)
                         </div>
-                        
-                        <div class="flex gap-4 mb-6">
-                            <div class="w-10 h-10 shrink-0 @bgColor rounded-xl flex items-center justify-center font-bold font-headline @iconColor">
-                                @(i + 1)
-                            </div>
-                            <div class="text-lg font-medium leading-relaxed pt-1 pr-24">
-                                @Html.Raw(q.Content)
-                            </div>
+                        <div class="text-lg font-medium leading-relaxed pt-1 pr-24">
+                            @Html.Raw(q.Content)
                         </div>
+                    </div>
 
-                        <div class="space-y-3 pl-14 mb-6">
-                            @{
-                                var options = new Dictionary<string, string> {
-                                    {"A", q.OptionA},
-                                    {"B", q.OptionB},
-                                    {"C", q.OptionC},
-                                    {"D", q.OptionD}
-                                };
-                            }
-                            @foreach(var opt in options)
-                            {
-                                var isSelected = q.SelectedOption == opt.Key;
-                                var isActualCorrect = q.CorrectOption == opt.Key;
-                                
-                                var optClass = "border-outline-variant-soft text-on-surface/70";
-                                var dotClass = "border-on-surface/20";
-                                var innerClass = "scale-0";
-
-                                if (isActualCorrect)
-                                {
-                                    optClass = "border-green-500 bg-green-50 text-green-900";
-                                    dotClass = "border-green-500";
-                                    innerClass = "bg-green-500 scale-100";
-                                }
-                                else if (isSelected && !isActualCorrect)
-                                {
-                                    optClass = "border-red-500 bg-red-50 text-red-900";
-                                    dotClass = "border-red-500";
-                                    innerClass = "bg-red-500 scale-100";
-                                }
-
-                                <div class="px-6 py-4 rounded-xl border-2 @optClass flex items-center gap-4">
-                                    <div class="w-5 h-5 rounded-full border-2 @dotClass flex items-center justify-center shrink-0">
-                                        <div class="w-2.5 h-2.5 rounded-full @innerClass transition-transform"></div>
-                                    </div>
-                                    <span class="font-bold w-6">@opt.Key.</span>
-                                    <span>@Html.Raw(opt.Value)</span>
-                                </div>
-                            }
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(q.Explanation))
+                    <div class="space-y-3 pl-14 mb-6">
+                        @{
+                            var options = new Dictionary<string, string> {
+                                {"A", q.OptionA},
+                                {"B", q.OptionB},
+                                {"C", q.OptionC},
+                                {"D", q.OptionD}
+                            };
+                        }
+                        @foreach(var opt in options)
                         {
-                            <div class="pl-14">
-                                <div class="bg-surface-container-low p-4 rounded-xl text-sm border border-outline-variant-soft">
-                                    <strong class="text-primary block mb-1">Giải thích:</strong>
-                                    @Html.Raw(q.Explanation)
+                            var isSelected = q.SelectedOption == opt.Key;
+                            var isActualCorrect = showAnswers && q.CorrectOption == opt.Key;
+
+                            var optClass = "border-outline-variant-soft text-on-surface/70";
+                            var dotClass = "border-on-surface/20";
+                            var innerClass = "scale-0";
+
+                            if (showAnswers && isActualCorrect)
+                            {
+                                optClass = "border-green-500 bg-green-50 text-green-900";
+                                dotClass = "border-green-500";
+                                innerClass = "bg-green-500 scale-100";
+                            }
+                            else if (showAnswers && isSelected && !isActualCorrect)
+                            {
+                                optClass = "border-red-500 bg-red-50 text-red-900";
+                                dotClass = "border-red-500";
+                                innerClass = "bg-red-500 scale-100";
+                            }
+                            else if (!showAnswers && isSelected)
+                            {
+                                // Teacher hasn't published answers: just show which option the student chose (neutral blue)
+                                optClass = "border-blue-400 bg-blue-50 text-blue-900";
+                                dotClass = "border-blue-400";
+                                innerClass = "bg-blue-400 scale-100";
+                            }
+
+                            <div class="px-6 py-4 rounded-xl border-2 @optClass flex items-center gap-4">
+                                <div class="w-5 h-5 rounded-full border-2 @dotClass flex items-center justify-center shrink-0">
+                                    <div class="w-2.5 h-2.5 rounded-full @innerClass transition-transform"></div>
                                 </div>
+                                <span class="font-bold w-6">@opt.Key.</span>
+                                <span>@Html.Raw(opt.Value)</span>
                             </div>
                         }
                     </div>
-                }
-            </div>
-        }
 
-    </main>
+                    @if (Model.AllowViewExplanation && !string.IsNullOrEmpty(q.Explanation))
+                    {
+                        <div class="pl-14">
+                            <div class="bg-surface-container-low p-4 rounded-xl text-sm border border-outline-variant-soft">
+                                <strong class="text-primary block mb-1">Giải thích:</strong>
+                                @Html.Raw(q.Explanation)
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
 
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         @if(Model.ScoreHistory != null && Model.ScoreHistory.Any())
         {
             <text>
             document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('scoreChart').getContext('2d');
-                
-                // Highlight the current exam
-                const pointColors = [];
-                const pointRadii = [];
-                const currentSessionId = @Model.SessionId;
-                
+                const canvas = document.getElementById('scoreChart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
                 new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -216,12 +208,12 @@
                         datasets: [{
                             label: 'Điểm số',
                             data: [@string.Join(",", Model.ScoreHistory.Select(s => s.Score.ToString(System.Globalization.CultureInfo.InvariantCulture)))],
-                            borderColor: '#1a61a4',
-                            backgroundColor: 'rgba(26, 97, 164, 0.1)',
+                            borderColor: '#0369A1',
+                            backgroundColor: 'rgba(3, 105, 161, 0.10)',
                             borderWidth: 3,
                             tension: 0.4,
                             fill: true,
-                            pointBackgroundColor: '#1a61a4',
+                            pointBackgroundColor: '#0369A1',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,
@@ -268,5 +260,4 @@
             </text>
         }
     </script>
-</body>
-</html>
+}

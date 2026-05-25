@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using OnlineExam.Models;
+using OnlineExam.Services.Search;
 using OnlineExam.ViewModels;
 using System.Security.Claims;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OnlineExam.Controllers
 {
@@ -14,10 +16,12 @@ namespace OnlineExam.Controllers
     public class StudentController : Controller
     {
         private readonly OnlineExamDbContext _context;
+        private readonly IMeiliSearchService? _meiliSearch;
 
-        public StudentController(OnlineExamDbContext context)
+        public StudentController(OnlineExamDbContext context, IMeiliSearchService? meiliSearch = null)
         {
             _context = context;
+            _meiliSearch = meiliSearch;
         }
 
         private void AutoSubmitExpiredExams(User student)
@@ -82,6 +86,16 @@ namespace OnlineExam.Controllers
                 .Select(s => s.ExamSessionId)
                 .ToList();
 
+            var submissions = _context.Submissions
+                .Where(s => s.StudentId == student.Id)
+                .ToList();
+
+            var sessionLookup = examSessions.ToDictionary(s => s.Id);
+            var completedSubmissions = submissions
+                .Where(s => (s.Status == 1 || s.Status == 2) && s.Score.HasValue && sessionLookup.ContainsKey(s.ExamSessionId))
+                .OrderByDescending(s => s.SubmittedAt ?? DateTime.MinValue)
+                .ToList();
+
             var examItems = new List<StudentExamItemVM>();
 
             foreach (var session in examSessions)
@@ -116,7 +130,7 @@ namespace OnlineExam.Controllers
                 .Select(s => new StudentScoreChartItemVM
                 {
                     ExamName = s.ExamSession.SessionName,
-                    Score = (double)s.Score,
+                    Score = s.Score ?? 0,
                     SubmittedAt = s.SubmittedAt ?? DateTime.Now
                 })
                 .ToList();
@@ -125,25 +139,172 @@ namespace OnlineExam.Controllers
             {
                 StudentName = student.FullName,
                 PendingExamsCount = pendingExamsCount,
+                TotalExamsCount = examItems.Count,
+                CompletedExamsCount = completedSubmissions.Select(s => s.ExamSessionId).Distinct().Count(),
+                AverageScore = completedSubmissions.Any() ? completedSubmissions.Average(s => s.Score ?? 0) : 0,
                 Exams = examItems.OrderByDescending(e => e.StartTime).ToList(),
                 JoinedClasses = joinedClasses,
-                ScoreHistory = scoreHistory
+                ScoreHistory = scoreHistory,
+                RecentResults = completedSubmissions
+                    .Take(5)
+                    .Select(s =>
+                    {
+                        var session = sessionLookup[s.ExamSessionId];
+                        return new StudentRecentResultVM
+                        {
+                            ExamSessionId = s.ExamSessionId,
+                            ExamName = session.SessionName,
+                            ClassName = session.Classroom.ClassName,
+                            Score = s.Score ?? 0,
+                            SubmittedAt = s.SubmittedAt ?? DateTime.Now
+                        };
+                    })
+                    .ToList()
             };
 
             return View(vm);
         }
 
         [HttpGet]
-        public IActionResult JoinClass()
+        public async Task<IActionResult> JoinClass(string? searchKeyword, string sortBy = "joined_desc", int page = 1)
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             var student = _context.Users.FirstOrDefault(u => u.Email == userEmail);
             if (student == null) return RedirectToAction("Login", "Auth");
-            return View();
+
+            page = Math.Max(1, page);
+            const int pageSize = 6;
+
+            var joinedClassQuery = _context.ClassroomMembers
+                .AsNoTracking()
+                .Where(cm => cm.StudentId == student.Id && cm.Classroom.IsDeleted != true)
+                .Select(cm => new
+                {
+                    cm.ClassroomId,
+                    cm.Classroom.ClassName,
+                    TeacherName = cm.Classroom.Teacher.FullName,
+                    cm.Classroom.JoinCode,
+                    cm.JoinedAt
+                });
+
+            var keyword = searchKeyword?.Trim();
+            var showMeiliWarning = false;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var usedMeili = false;
+                if (await IsMeiliAvailableAsync())
+                {
+                    var searchableClasses = await joinedClassQuery
+                        .Select(x => new StudentClassroomSearchDocument
+                        {
+                            Id = x.ClassroomId,
+                            ClassName = x.ClassName,
+                            TeacherName = x.TeacherName,
+                            JoinCode = x.JoinCode
+                        })
+                        .ToListAsync();
+
+                    await _meiliSearch!.IndexStudentClassroomsAsync(student.Id, searchableClasses);
+                    var matchedClassIds = await _meiliSearch.SearchStudentClassroomIdsAsync(student.Id, keyword!);
+                    if (matchedClassIds.Count > 0)
+                    {
+                        joinedClassQuery = joinedClassQuery.Where(x => matchedClassIds.Contains(x.ClassroomId));
+                    }
+                    else
+                    {
+                        joinedClassQuery = joinedClassQuery.Where(_ => false);
+                    }
+
+                    usedMeili = true;
+                }
+
+                if (!usedMeili)
+                {
+                    showMeiliWarning = true;
+                    joinedClassQuery = joinedClassQuery.Where(x =>
+                        x.ClassName.Contains(keyword!) ||
+                        x.TeacherName.Contains(keyword!) ||
+                        x.JoinCode.Contains(keyword!));
+                }
+            }
+
+            joinedClassQuery = sortBy switch
+            {
+                "joined_asc" => joinedClassQuery.OrderBy(x => x.JoinedAt),
+                "name_asc" => joinedClassQuery.OrderBy(x => x.ClassName),
+                "name_desc" => joinedClassQuery.OrderByDescending(x => x.ClassName),
+                "exam_desc" => joinedClassQuery.OrderByDescending(x => _context.ExamSessions.Count(s => s.ClassroomId == x.ClassroomId)),
+                "exam_asc" => joinedClassQuery.OrderBy(x => _context.ExamSessions.Count(s => s.ClassroomId == x.ClassroomId)),
+                _ => joinedClassQuery.OrderByDescending(x => x.JoinedAt)
+            };
+
+            var totalItems = await joinedClassQuery.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+
+            var joinedClassPage = await joinedClassQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var classroomIds = joinedClassPage.Select(x => x.ClassroomId).ToList();
+            var sessions = await _context.ExamSessions
+                .AsNoTracking()
+                .Where(s => classroomIds.Contains(s.ClassroomId))
+                .Select(s => new
+                {
+                    s.Id,
+                    s.ClassroomId,
+                    s.SessionName,
+                    s.StartTime,
+                    s.EndTime,
+                    s.AllowViewExplanation,
+                    s.Classroom.ClassName
+                })
+                .ToListAsync();
+
+            var vm = new StudentJoinClassVM
+            {
+                StudentName = student.FullName,
+                JoinedClasses = joinedClassPage.Select(item =>
+                {
+                    var classSessions = sessions.Where(s => s.ClassroomId == item.ClassroomId)
+                        .OrderByDescending(s => s.StartTime)
+                        .ToList();
+
+                    return new StudentJoinedClassItemVM
+                    {
+                        ClassroomId = item.ClassroomId,
+                        ClassName = item.ClassName,
+                        TeacherName = item.TeacherName,
+                        JoinCode = item.JoinCode,
+                        JoinedAt = item.JoinedAt,
+                        ExamCount = classSessions.Count,
+                        RecentExams = classSessions.Take(3).Select(s => new StudentJoinedClassExamVM
+                        {
+                            SessionId = s.Id,
+                            SessionName = s.SessionName,
+                            StartTime = s.StartTime,
+                            EndTime = s.EndTime,
+                            Status = DateTime.Now < s.StartTime ? "Chưa mở" : (DateTime.Now > s.EndTime ? "Đã đóng" : "Đang mở")
+                        }).ToList()
+                    };
+                }).OrderByDescending(c => c.JoinedAt).ToList()
+            };
+
+            ViewBag.SearchKeyword = searchKeyword;
+            ViewBag.SortBy = sortBy;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+            ViewBag.ShowMeiliSearchWarning = showMeiliWarning;
+
+            return View(vm);
         }
 
         [HttpGet]
-        public IActionResult MyExams()
+        public async Task<IActionResult> MyExams(string? searchKeyword, string statusFilter = "all", int page = 1)
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             var student = _context.Users.FirstOrDefault(u => u.Email == userEmail);
@@ -152,27 +313,72 @@ namespace OnlineExam.Controllers
             AutoSubmitExpiredExams(student);
 
             var now = DateTime.Now;
+            page = Math.Max(1, page);
+            const int pageSize = 6;
 
-            var joinedClassIds = _context.ClassroomMembers
+            var joinedClassIds = await _context.ClassroomMembers
                 .Where(cm => cm.StudentId == student.Id)
                 .Select(cm => cm.ClassroomId)
-                .ToList();
+                .ToListAsync();
 
-            var joinedClasses = _context.Classrooms
+            var joinedClasses = await _context.Classrooms
                 .Where(c => joinedClassIds.Contains(c.Id) && c.IsDeleted != true)
                 .Select(c => new ClassroomVM { Id = c.Id, ClassName = c.ClassName })
-                .ToList();
+                .ToListAsync();
 
-            var sessions = _context.ExamSessions
+            var sessionQuery = _context.ExamSessions
+                .AsNoTracking()
                 .Include(s => s.Classroom)
                 .ThenInclude(c => c.Teacher)
                 .Include(s => s.ExamPaper)
-                .Where(s => joinedClassIds.Contains(s.ClassroomId))
-                .ToList();
+                .Where(s => joinedClassIds.Contains(s.ClassroomId));
 
-            var submissions = _context.Submissions
+            var keyword = searchKeyword?.Trim();
+            var showMeiliWarning = false;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var usedMeili = false;
+                if (await IsMeiliAvailableAsync())
+                {
+                    var searchableSessions = await sessionQuery
+                        .Select(s => new StudentExamSessionSearchDocument
+                        {
+                            Id = s.Id,
+                            SessionName = s.SessionName,
+                            ClassName = s.Classroom.ClassName,
+                            TeacherName = s.Classroom.Teacher.FullName
+                        })
+                        .ToListAsync();
+
+                    await _meiliSearch!.IndexStudentExamSessionsAsync(student.Id, searchableSessions);
+                    var matchedSessionIds = await _meiliSearch.SearchStudentExamSessionIdsAsync(student.Id, keyword!);
+                    if (matchedSessionIds.Count > 0)
+                    {
+                        sessionQuery = sessionQuery.Where(s => matchedSessionIds.Contains(s.Id));
+                    }
+                    else
+                    {
+                        sessionQuery = sessionQuery.Where(_ => false);
+                    }
+
+                    usedMeili = true;
+                }
+
+                if (!usedMeili)
+                {
+                    showMeiliWarning = true;
+                    sessionQuery = sessionQuery.Where(s =>
+                        s.SessionName.Contains(keyword!) ||
+                        s.Classroom.ClassName.Contains(keyword!) ||
+                        s.Classroom.Teacher.FullName.Contains(keyword!));
+                }
+            }
+
+            var sessions = await sessionQuery.ToListAsync();
+
+            var submissions = await _context.Submissions
                 .Where(s => s.StudentId == student.Id)
-                .ToList();
+                .ToListAsync();
 
             var examItems = new List<StudentExamItemVM>();
 
@@ -195,42 +401,139 @@ namespace OnlineExam.Controllers
                 });
             }
 
+            if (!string.Equals(statusFilter, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                examItems = examItems.Where(e =>
+                {
+                    var status = e.Status;
+                    return statusFilter switch
+                    {
+                        "Chưa làm" => status == "Chưa làm",
+                        "Sắp hết hạn" => status == "Sắp hết hạn",
+                        "Đã nộp" => status == "Đã nộp",
+                        "Đã đóng" => status == "Đã đóng" || status == "Chưa mở",
+                        _ => true
+                    };
+                }).ToList();
+            }
+
+            var orderedItems = examItems.OrderByDescending(e => e.StartTime).ToList();
+            var totalItems = orderedItems.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+
+            var pagedItems = orderedItems
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
             var vm = new StudentDashboardVM
             {
                 StudentName = student.FullName,
-                Exams = examItems.OrderByDescending(e => e.StartTime).ToList(),
+                Exams = pagedItems,
                 JoinedClasses = joinedClasses
             };
+
+            ViewBag.SearchKeyword = searchKeyword;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+            ViewBag.ShowMeiliSearchWarning = showMeiliWarning;
 
             return View(vm);
         }
 
         [HttpGet]
-        public IActionResult Results()
+        public async Task<IActionResult> Results(string? searchKeyword, string sortBy = "submitted_desc", int page = 1)
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             var student = _context.Users.FirstOrDefault(u => u.Email == userEmail);
             if (student == null) return RedirectToAction("Login", "Auth");
 
             AutoSubmitExpiredExams(student);
+            page = Math.Max(1, page);
+            const int pageSize = 5;
 
-            var submittedExams = _context.Submissions
+            var submittedExamQuery = _context.Submissions
+                .AsNoTracking()
                 .Include(s => s.ExamSession)
                 .Include(s => s.ExamSession.Classroom)
                 .Where(s => s.StudentId == student.Id && (s.Status == 1 || s.Status == 2))
-                .OrderByDescending(s => s.SubmittedAt)
-                .ToList();
+                .AsQueryable();
 
-            var scoreHistory = submittedExams
+            var keyword = searchKeyword?.Trim();
+            var showMeiliWarning = false;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var usedMeili = false;
+                if (await IsMeiliAvailableAsync())
+                {
+                    var searchableSubmissions = await submittedExamQuery
+                        .Select(s => new StudentSubmissionSearchDocument
+                        {
+                            Id = s.Id,
+                            ExamName = s.ExamSession.SessionName,
+                            ClassName = s.ExamSession.Classroom.ClassName,
+                            Score = s.Score,
+                            SubmittedAt = s.SubmittedAt
+                        })
+                        .ToListAsync();
+
+                    await _meiliSearch!.IndexStudentSubmissionsAsync(student.Id, searchableSubmissions);
+                    var matchedSubmissionIds = await _meiliSearch.SearchStudentSubmissionIdsAsync(student.Id, keyword!);
+                    if (matchedSubmissionIds.Count > 0)
+                    {
+                        submittedExamQuery = submittedExamQuery.Where(s => matchedSubmissionIds.Contains(s.Id));
+                    }
+                    else
+                    {
+                        submittedExamQuery = submittedExamQuery.Where(_ => false);
+                    }
+
+                    usedMeili = true;
+                }
+
+                if (!usedMeili)
+                {
+                    showMeiliWarning = true;
+                    submittedExamQuery = submittedExamQuery.Where(s =>
+                        s.ExamSession.SessionName.Contains(keyword!) ||
+                        s.ExamSession.Classroom.ClassName.Contains(keyword!));
+                }
+            }
+
+            submittedExamQuery = sortBy switch
+            {
+                "submitted_asc" => submittedExamQuery.OrderBy(s => s.SubmittedAt),
+                "score_desc" => submittedExamQuery.OrderByDescending(s => s.Score),
+                "score_asc" => submittedExamQuery.OrderBy(s => s.Score),
+                _ => submittedExamQuery.OrderByDescending(s => s.SubmittedAt)
+            };
+
+            var totalItems = await submittedExamQuery.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Min(page, totalPages);
+
+            var submittedExams = await submittedExamQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var scoreHistory = await _context.Submissions
+                .AsNoTracking()
+                .Include(s => s.ExamSession)
+                .Where(s => s.StudentId == student.Id && (s.Status == 1 || s.Status == 2) && s.Score != null)
                 .Where(s => s.Score != null)
                 .OrderBy(s => s.SubmittedAt)
                 .Select(s => new StudentScoreChartItemVM
                 {
                     ExamName = s.ExamSession.SessionName,
-                    Score = (double)s.Score,
+                    Score = s.Score ?? 0,
                     SubmittedAt = s.SubmittedAt ?? DateTime.Now
                 })
-                .ToList();
+                .ToListAsync();
 
             var vm = new StudentResultsVM
             {
@@ -238,6 +541,14 @@ namespace OnlineExam.Controllers
                 Submissions = submittedExams,
                 ScoreHistory = scoreHistory
             };
+
+            ViewBag.SearchKeyword = searchKeyword;
+            ViewBag.SortBy = sortBy;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+            ViewBag.ShowMeiliSearchWarning = showMeiliWarning;
 
             return View(vm);
         }
@@ -293,6 +604,15 @@ namespace OnlineExam.Controllers
             if (!isMember) return Forbid();
 
             AutoSubmitExpiredExams(student);
+
+            // Enforce session password: redirect to password entry if a password is set
+            var accessKey = $"ExamAccess_{id}";
+            var hasAccess = TempData[accessKey] as string == "1";
+            // If there's a password and the student hasn't been granted access, redirect to password prompt
+            if (!string.IsNullOrEmpty(session.SessionPassword) && !hasAccess)
+            {
+                return RedirectToAction("EnterExamPassword", new { sessionId = id });
+            }
 
             var submission = _context.Submissions.FirstOrDefault(s => s.ExamSessionId == id && s.StudentId == student.Id);
             if (submission != null && (submission.Status == 1 || submission.Status == 2))
@@ -354,6 +674,56 @@ namespace OnlineExam.Controllers
             return View(vm);
         }
 
+        [HttpGet]
+        public IActionResult EnterExamPassword(int sessionId)
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var student = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (student == null) return RedirectToAction("Login", "Auth");
+
+            var session = _context.ExamSessions.Include(s => s.Classroom).FirstOrDefault(s => s.Id == sessionId);
+            if (session == null) return NotFound("Không tìm thấy ca thi.");
+
+            var isMember = _context.ClassroomMembers.Any(cm => cm.ClassroomId == session.ClassroomId && cm.StudentId == student.Id);
+            if (!isMember) return Forbid();
+
+            // If no password configured, redirect directly
+            if (string.IsNullOrEmpty(session.SessionPassword)) return RedirectToAction("TakeExam", new { id = sessionId });
+
+            ViewData["SessionId"] = sessionId;
+            ViewData["SessionName"] = session.SessionName;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EnterExamPassword(int sessionId, string password)
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var student = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+            if (student == null) return RedirectToAction("Login", "Auth");
+
+            var session = _context.ExamSessions.FirstOrDefault(s => s.Id == sessionId);
+            if (session == null) return NotFound("Không tìm thấy ca thi.");
+
+            var isMember = _context.ClassroomMembers.Any(cm => cm.ClassroomId == session.ClassroomId && cm.StudentId == student.Id);
+            if (!isMember) return Forbid();
+
+            if (string.IsNullOrEmpty(session.SessionPassword)) return RedirectToAction("TakeExam", new { id = sessionId });
+
+            if (password != session.SessionPassword)
+            {
+                ViewData["SessionId"] = sessionId;
+                ViewData["SessionName"] = session.SessionName;
+                ViewData["Error"] = "Mật khẩu không đúng.";
+                return View();
+            }
+
+            // Grant temporary access via TempData for the next redirect
+            TempData[$"ExamAccess_{sessionId}"] = "1";
+            return RedirectToAction("TakeExam", new { id = sessionId });
+        }
+
         [HttpPost]
         public IActionResult SubmitExam([FromBody] SubmitExamDTO dto)
         {
@@ -370,6 +740,7 @@ namespace OnlineExam.Controllers
             }
 
             var session = _context.ExamSessions.FirstOrDefault(s => s.Id == dto.SessionId);
+            if (session == null) return Json(new { success = false, message = "Không tìm thấy ca thi." });
             var questions = _context.Questions.Where(q => q.ExamPaperId == session.ExamPaperId).ToList();
 
             int correctCount = 0;
@@ -440,7 +811,7 @@ namespace OnlineExam.Controllers
                 .Select(s => new StudentScoreChartItemVM
                 {
                     ExamName = s.ExamSession.SessionName,
-                    Score = (double)s.Score,
+                    Score = s.Score ?? 0,
                     SubmittedAt = s.SubmittedAt ?? DateTime.Now
                 })
                 .ToList();
@@ -456,6 +827,7 @@ namespace OnlineExam.Controllers
                 SubmittedAt = submission.SubmittedAt,
                 WarningCount = submission.WarningCount ?? 0,
                 AllowViewScore = session.AllowViewScore ?? true,
+                AllowViewExplanation = session.AllowViewExplanation ?? true,
                 ScoreHistory = scoreHistory
             };
 
@@ -473,16 +845,34 @@ namespace OnlineExam.Controllers
                         OptionB = q.OptionB,
                         OptionC = q.OptionC,
                         OptionD = q.OptionD,
-                        CorrectOption = q.CorrectOption.ToString(),
-                        Explanation = q.Explanation,
-                        SelectedOption = ans?.SelectedOption,
-                        IsCorrect = ans?.IsCorrect
+                        // Only reveal the correct answer if teacher has enabled "Công bố lời giải"
+                        CorrectOption = vm.AllowViewExplanation ? q.CorrectOption : null,
+                        Explanation = vm.AllowViewExplanation ? q.Explanation : null,
+                        SelectedOption = ans?.SelectedOption ?? string.Empty,
+                        IsCorrect = ans?.IsCorrect ?? false
                     });
                 }
                 vm.Details = detailsList;
             }
 
             return View(vm);
+        }
+
+        private async Task<bool> IsMeiliAvailableAsync()
+        {
+            if (_meiliSearch is null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return await _meiliSearch.IsAvailableAsync();
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿-- 1. Tạo Database nếu chưa tồn tại
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'OnlineExamDB')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'OnlineExamDBWeb')
 BEGIN
-    CREATE DATABASE OnlineExamDB;
+    CREATE DATABASE OnlineExamDBWeb;
 END
 GO
 
-USE OnlineExamDB;
+USE OnlineExamDBWeb;
 GO
 
 -- 2. Bảng Users (Tài khoản)
@@ -114,11 +114,19 @@ BEGIN
     ALTER TABLE ExamSessions ADD AllowViewExplanation BIT NOT NULL CONSTRAINT DF_ExamSessions_AllowViewExplanation DEFAULT(1);
 END
 GO
-
-IF COL_LENGTH('ExamSessions', 'AllowViewScore') IS NOT NULL AND COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NOT NULL
+-- Ensure AllowViewScore column exists (nullable with default)
+IF COL_LENGTH('ExamSessions', 'AllowViewScore') IS NULL
 BEGIN
-    EXEC('UPDATE ExamSessions SET AllowViewExplanation = AllowViewScore');
+    ALTER TABLE ExamSessions ADD AllowViewScore BIT NULL CONSTRAINT DF_ExamSessions_AllowViewScore DEFAULT(1);
 END
+GO
+
+-- If AllowViewExplanation exists and AllowViewScore is missing/NULL, copy values
+IF COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NOT NULL AND COL_LENGTH('ExamSessions', 'AllowViewScore') IS NOT NULL
+BEGIN
+    UPDATE ExamSessions SET AllowViewScore = AllowViewExplanation WHERE AllowViewScore IS NULL;
+END
+GO
 GO
 
 IF COL_LENGTH('ExamSessions', 'ShuffleQuestions') IS NULL

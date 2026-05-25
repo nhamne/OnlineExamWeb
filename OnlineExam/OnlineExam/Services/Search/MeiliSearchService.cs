@@ -30,6 +30,9 @@ public class MeiliSearchService : IMeiliSearchService
     private readonly string _studentIndex;
     private readonly string _examPaperIndex;
     private readonly string _examSessionIndex;
+    private readonly string _studentClassroomIndex;
+    private readonly string _studentExamSessionIndex;
+    private readonly string _studentSubmissionIndex;
 
     public bool IsEnabled => _enabled;
 
@@ -77,6 +80,9 @@ public class MeiliSearchService : IMeiliSearchService
         _studentIndex = section.GetValue<string>("StudentsIndex") ?? "classroom_students";
         _examPaperIndex = section.GetValue<string>("ExamPapersIndex") ?? "teacher_exam_papers";
         _examSessionIndex = section.GetValue<string>("ExamSessionsIndex") ?? "teacher_exam_sessions";
+        _studentClassroomIndex = section.GetValue<string>("StudentClassroomsIndex") ?? "student_classrooms";
+        _studentExamSessionIndex = section.GetValue<string>("StudentExamSessionsIndex") ?? "student_exam_sessions";
+        _studentSubmissionIndex = section.GetValue<string>("StudentSubmissionsIndex") ?? "student_submissions";
 
         if (!string.IsNullOrWhiteSpace(hostUrl))
         {
@@ -267,6 +273,141 @@ public class MeiliSearchService : IMeiliSearchService
         };
 
         return await SearchIdListAsync($"indexes/{_examSessionIndex}/search", request, cancellationToken);
+    }
+
+    public async Task IndexStudentClassroomsAsync(int studentId, IEnumerable<StudentClassroomSearchDocument> classrooms, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await EnsureFilterableAttributesAsync(_studentClassroomIndex, new[] { "studentId" }, cancellationToken);
+
+            var payload = classrooms.Select(x =>
+            {
+                x.StudentId = studentId;
+                return x;
+            }).ToList();
+
+            await PostJsonAsync($"indexes/{_studentClassroomIndex}/documents?primaryKey=Id", payload, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to index student classrooms into MeiliSearch. Falling back to SQL only.");
+        }
+    }
+
+    public async Task<IReadOnlyList<int>> SearchStudentClassroomIdsAsync(int studentId, string keyword, int limit = 300, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null || string.IsNullOrWhiteSpace(keyword))
+        {
+            return Array.Empty<int>();
+        }
+
+        await EnsureFilterableAttributesAsync(_studentClassroomIndex, new[] { "studentId" }, cancellationToken);
+
+        var request = new
+        {
+            q = keyword,
+            limit,
+            filter = $"studentId = {studentId}",
+            attributesToRetrieve = new[] { "id" }
+        };
+
+        return await SearchIdListAsync($"indexes/{_studentClassroomIndex}/search", request, cancellationToken);
+    }
+
+    public async Task IndexStudentExamSessionsAsync(int studentId, IEnumerable<StudentExamSessionSearchDocument> examSessions, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await EnsureFilterableAttributesAsync(_studentExamSessionIndex, new[] { "studentId" }, cancellationToken);
+
+            var payload = examSessions.Select(x =>
+            {
+                x.StudentId = studentId;
+                return x;
+            }).ToList();
+
+            await PostJsonAsync($"indexes/{_studentExamSessionIndex}/documents?primaryKey=Id", payload, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to index student exam sessions into MeiliSearch. Falling back to SQL only.");
+        }
+    }
+
+    public async Task<IReadOnlyList<int>> SearchStudentExamSessionIdsAsync(int studentId, string keyword, int limit = 400, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null || string.IsNullOrWhiteSpace(keyword))
+        {
+            return Array.Empty<int>();
+        }
+
+        await EnsureFilterableAttributesAsync(_studentExamSessionIndex, new[] { "studentId" }, cancellationToken);
+
+        var request = new
+        {
+            q = keyword,
+            limit,
+            filter = $"studentId = {studentId}",
+            attributesToRetrieve = new[] { "id" }
+        };
+
+        return await SearchIdListAsync($"indexes/{_studentExamSessionIndex}/search", request, cancellationToken);
+    }
+
+    public async Task IndexStudentSubmissionsAsync(int studentId, IEnumerable<StudentSubmissionSearchDocument> submissions, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await EnsureFilterableAttributesAsync(_studentSubmissionIndex, new[] { "studentId" }, cancellationToken);
+
+            var payload = submissions.Select(x =>
+            {
+                x.StudentId = studentId;
+                return x;
+            }).ToList();
+
+            await PostJsonAsync($"indexes/{_studentSubmissionIndex}/documents?primaryKey=Id", payload, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to index student submissions into MeiliSearch. Falling back to SQL only.");
+        }
+    }
+
+    public async Task<IReadOnlyList<int>> SearchStudentSubmissionIdsAsync(int studentId, string keyword, int limit = 500, CancellationToken cancellationToken = default)
+    {
+        if (!_enabled || _httpClient.BaseAddress is null || string.IsNullOrWhiteSpace(keyword))
+        {
+            return Array.Empty<int>();
+        }
+
+        await EnsureFilterableAttributesAsync(_studentSubmissionIndex, new[] { "studentId" }, cancellationToken);
+
+        var request = new
+        {
+            q = keyword,
+            limit,
+            filter = $"studentId = {studentId}",
+            attributesToRetrieve = new[] { "id" }
+        };
+
+        return await SearchIdListAsync($"indexes/{_studentSubmissionIndex}/search", request, cancellationToken);
     }
 
     private async Task EnsureFilterableAttributesAsync(string indexName, IEnumerable<string> attributes, CancellationToken cancellationToken)

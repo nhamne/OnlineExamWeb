@@ -4,7 +4,7 @@
 }
 
 <div class="max-w-6xl mx-auto space-y-6">
-<a href="@Url.Action("Classes", "Teacher")" class="inline-flex items-center text-sm text-[#005bbf] font-semibold hover:underline">
+<a href="@Url.Action("Classes", "Teacher")" class="inline-flex items-center text-sm text-[#0369A1] font-semibold hover:underline">
                     <span class="material-symbols-outlined text-[18px] mr-1">arrow_back</span>
                     Quay lại danh sách lớp
                 </a>
@@ -13,7 +13,7 @@
             <div>
                 
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">@Model.ClassName</h1>
-                <p class="text-slate-500 mt-1">Mã tham gia: <span class="font-mono font-bold text-[#005bbf]">@Model.JoinCode</span></p>
+                <p class="text-slate-500 mt-1">Mã tham gia: <span class="font-mono font-bold text-[#0369A1]">@Model.JoinCode</span></p>
             </div>
             <div class="px-4 py-2 rounded-xl bg-[#f2f3fd] text-sm text-slate-600">
                 Tổng sinh viên: <span class="font-bold text-slate-800">@Model.TotalItems</span>
@@ -28,13 +28,13 @@
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Tìm kiếm sinh viên</label>
             <div class="relative">
                 <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">search</span>
-                <input name="searchKeyword" value="@Model.SearchKeyword" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-3 focus:ring-2 focus:ring-[#005bbf]/20 focus:border-[#005bbf]" placeholder="Nhập tên hoặc email sinh viên..." />
+                <input name="searchKeyword" value="@Model.SearchKeyword" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-3 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]" placeholder="Nhập tên hoặc email sinh viên..." />
             </div>
         </div>
 
         <div class="md:col-span-2">
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Số dòng/trang</label>
-            <select name="pageSize" class="w-full h-11 rounded-xl border border-slate-200 px-3 focus:ring-2 focus:ring-[#005bbf]/20 focus:border-[#005bbf]">
+            <select name="pageSize" class="w-full h-11 rounded-xl border border-slate-200 px-3 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]">
                 @if (Model.PageSize == 5)
                 {
                     <option value="5" selected>5</option>
@@ -71,12 +71,20 @@
         </div>
 
         <div class="md:col-span-2 flex gap-2">
-            <button type="submit" class="h-11 w-full rounded-xl bg-[#005bbf] text-white font-bold hover:bg-[#1a73e8] transition-colors">Tìm</button>
+            <button type="submit" class="h-11 w-full rounded-xl bg-[#0369A1] text-white font-bold hover:bg-[#0369A1] transition-colors">Tìm</button>
             <a href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId })" class="h-11 px-4 rounded-xl bg-slate-100 text-slate-600 font-semibold flex items-center hover:bg-slate-200 transition-colors">Reset</a>
         </div>
     </form>
 
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-visible">
+        @{
+            ViewData["exportUrl"] = $"/Teacher/ExportClassStudents?id={Model.ClassroomId}";
+            ViewData["deleteUrl"] = "/Teacher/DeleteStudents";
+            ViewData["hideCopy"] = true; // hide copy action on student list
+            ViewData["hideSettings"] = true; // hide gear/settings dropdown on this page
+        }
+        @await Html.PartialAsync("_ListActions")
+
         <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
             <p id="selected-count-label" class="text-sm font-semibold text-slate-500">Chưa chọn học sinh nào</p>
             <button id="btn-bulk-remove" type="button" class="h-10 px-4 rounded-xl bg-rose-600 text-white font-bold inline-flex items-center gap-2 hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -90,7 +98,7 @@
                 <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
                         <th class="px-5 py-3 w-12 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                            <input id="check-all-students" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-[#005bbf] focus:ring-[#005bbf]/30" />
+                            <input id="check-all-students" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-[#0369A1] focus:ring-[#0369A1]/30" />
                         </th>
                         <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">STT</th>
                         <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Họ tên</th>
@@ -107,9 +115,9 @@
                         {
                             index++;
                             var removeFormId = $"remove-student-form-{student.StudentId}";
-                            <tr class="group hover:bg-slate-50/80 transition-colors">
+                            <tr data-student-row-id="@student.StudentId" class="group hover:bg-slate-50/80 transition-colors">
                                 <td class="px-5 py-4">
-                                    <input type="checkbox" class="student-select-checkbox h-4 w-4 rounded border-slate-300 text-[#005bbf] focus:ring-[#005bbf]/30" value="@student.StudentId" />
+                                    <input type="checkbox" class="student-select-checkbox h-4 w-4 rounded border-slate-300 text-[#0369A1] focus:ring-[#0369A1]/30" value="@student.StudentId" />
                                 </td>
                                 <td class="px-5 py-4 text-sm text-slate-500">@index</td>
                                 <td class="px-5 py-4 font-semibold text-slate-800">@student.FullName</td>
@@ -173,29 +181,9 @@
 
     @if (Model.TotalPages > 1)
     {
-        var visiblePages = new SortedSet<int> { 1, Model.TotalPages };
-        for (var p = Model.CurrentPage - 1; p <= Model.CurrentPage + 1; p++)
-        {
-            if (p >= 1 && p <= Model.TotalPages)
-            {
-                visiblePages.Add(p);
-            }
-        }
-
-        if (Model.CurrentPage <= 3)
-        {
-            visiblePages.Add(2);
-            visiblePages.Add(3);
-        }
-
-        if (Model.CurrentPage >= Model.TotalPages - 2)
-        {
-            visiblePages.Add(Model.TotalPages - 1);
-            visiblePages.Add(Model.TotalPages - 2);
-        }
-
-        visiblePages.RemoveWhere(pageNumber => pageNumber < 1 || pageNumber > Model.TotalPages);
-        var orderedPages = visiblePages.ToList();
+        var startPage = Math.Max(1, Model.CurrentPage - 2);
+        var endPage = Math.Min(Model.TotalPages, startPage + 4);
+        startPage = Math.Max(1, endPage - 4);
 
         <div class="flex flex-wrap items-center justify-between gap-3">
             <p class="text-sm text-slate-500">Trang <span class="font-bold text-slate-700">@Model.CurrentPage</span> / @Model.TotalPages</p>
@@ -204,14 +192,8 @@
                     <span class="material-symbols-outlined text-[20px]">chevron_left</span>
                 </a>
 
-                @for (var i = 0; i < orderedPages.Count; i++)
+                @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
                 {
-                    var pageNumber = orderedPages[i];
-                    if (i > 0 && pageNumber - orderedPages[i - 1] > 1)
-                    {
-                        <span class="h-10 min-w-10 px-2 rounded-xl bg-slate-100 text-[#5ca0f0] text-sm font-bold inline-flex items-center justify-center">...</span>
-                    }
-
                     <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#5ca0f0] text-white" : "bg-slate-100 text-[#5ca0f0] hover:bg-[#e8f1ff]")" href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId, searchKeyword = Model.SearchKeyword, page = pageNumber, pageSize = Model.PageSize })">@pageNumber</a>
                 }
 
@@ -224,6 +206,8 @@
 </div>
 
 @section Scripts {
+    <script src="/js/list-actions.js"></script>
+    <script>window.ListActions && window.ListActions.init('body');</script>
     <script>
         const checkAllStudents = document.getElementById('check-all-students');
         const studentCheckboxes = Array.from(document.querySelectorAll('.student-select-checkbox'));

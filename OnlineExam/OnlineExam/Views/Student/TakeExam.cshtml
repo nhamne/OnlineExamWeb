@@ -194,6 +194,40 @@
         <p class="text-on-surface/50 mt-2">Vui lòng không đóng trình duyệt.</p>
     </div>
 
+    <!-- App Toast (Local to TakeExam) -->
+    <div id="app-toast-container" class="fixed top-4 right-4 z-[140] pointer-events-none">
+        <div id="app-toast" class="hidden min-w-[280px] max-w-[420px] rounded-2xl border bg-white shadow-[0_20px_40px_rgba(15,23,42,0.12)] px-4 py-3 flex items-start gap-3 pointer-events-auto">
+            <div id="app-toast-icon" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="flex-1">
+                <p id="app-toast-title" class="font-bold text-sm">Thông báo</p>
+                <p id="app-toast-message" class="text-sm mt-0.5 text-slate-600">Nội dung thông báo</p>
+            </div>
+            <button id="app-toast-close" class="text-slate-400 hover:text-slate-600 transition-colors" type="button" aria-label="Đóng thông báo">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- App Confirm (Local to TakeExam) -->
+    <div id="app-confirm-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" id="app-confirm-backdrop"></div>
+        <div class="relative w-full max-w-sm transform rounded-2xl bg-white p-6 text-left shadow-2xl transition-all duration-300 scale-95 opacity-0" id="app-confirm-panel">
+            <div class="mb-5 flex items-center gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-100 sm:h-10 sm:w-10">
+                    <span class="material-symbols-outlined text-rose-600">warning</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900" id="app-confirm-title">Xác nhận</h3>
+            </div>
+            <p class="text-sm text-slate-600 mb-6" id="app-confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="flex gap-3">
+                <button id="app-confirm-cancel" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-[13px] hover:bg-slate-50 transition-colors">Hủy bỏ</button>
+                <button id="app-confirm-ok" class="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-[13px] hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     @{
         var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var endLocal = Model.EndTime.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(Model.EndTime, DateTimeKind.Local) : Model.EndTime;
@@ -210,8 +244,79 @@
         
         let answers = {};
         let warningCount = 0;
+        let _lastWarningTimestamp = 0; // ms since epoch, prevents duplicate increments from multiple rapid events
         let isSubmitting = false;
         let isDialogActive = false;
+
+        // --- 0. UI COMPONENTS LOGIC ---
+        (() => {
+            const toastEl = document.getElementById('app-toast');
+            const iconEl = document.getElementById('app-toast-icon');
+            const titleEl = document.getElementById('app-toast-title');
+            const messageEl = document.getElementById('app-toast-message');
+            const closeEl = document.getElementById('app-toast-close');
+            let hideToastTimer;
+
+            function hideToast() {
+                if (toastEl) toastEl.classList.add('hidden');
+            }
+
+            function showToast(message, type = 'success') {
+                if (!toastEl) return;
+                toastEl.classList.remove('border-emerald-200', 'border-rose-200', 'border-amber-200');
+                iconEl.classList.remove('bg-emerald-100', 'text-emerald-600', 'bg-rose-100', 'text-rose-600', 'bg-amber-100', 'text-amber-600');
+                
+                let icon = 'check_circle', title = 'Thành công', rootC = 'border-emerald-200', iconWrapC = 'bg-emerald-100 text-emerald-600';
+                if (type === 'error') { icon = 'error'; title = 'Thất bại'; rootC = 'border-rose-200'; iconWrapC = 'bg-rose-100 text-rose-600'; }
+                if (type === 'warning') { icon = 'warning'; title = 'Cảnh báo'; rootC = 'border-amber-200'; iconWrapC = 'bg-amber-100 text-amber-600'; }
+
+                toastEl.classList.add(rootC);
+                iconEl.classList.add(...iconWrapC.split(' '));
+                const iSpan = iconEl.querySelector('span');
+                if (iSpan) iSpan.textContent = icon;
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                toastEl.classList.remove('hidden');
+                clearTimeout(hideToastTimer);
+                hideToastTimer = setTimeout(hideToast, 3200);
+            }
+
+            if (closeEl) closeEl.addEventListener('click', hideToast);
+            window.appToast = { show: showToast, error: (m) => showToast(m, 'error'), warning: (m) => showToast(m, 'warning') };
+
+            const cModal = document.getElementById('app-confirm-modal');
+            const cPanel = document.getElementById('app-confirm-panel');
+            const cTitle = document.getElementById('app-confirm-title');
+            const cMsg = document.getElementById('app-confirm-message');
+            const cOk = document.getElementById('app-confirm-ok');
+            const cCancel = document.getElementById('app-confirm-cancel');
+            const cBackdrop = document.getElementById('app-confirm-backdrop');
+            let onConfirmAction = null;
+
+            function closeConfirm() {
+                if (!cModal) return;
+                cModal.classList.add('opacity-0'); cPanel.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => { cModal.classList.add('hidden'); cModal.classList.remove('flex'); }, 300);
+                onConfirmAction = null;
+                setTimeout(() => { isDialogActive = false; }, 500); // Wait for modal close
+            }
+
+            function showConfirm(title, message, callback) {
+                if (!cModal) return;
+                isDialogActive = true;
+                cTitle.innerText = title || 'Xác nhận';
+                cMsg.innerText = message || '?';
+                onConfirmAction = callback;
+                cModal.classList.remove('hidden'); cModal.classList.add('flex');
+                setTimeout(() => { cModal.classList.remove('opacity-0'); cPanel.classList.remove('scale-95', 'opacity-0'); }, 10);
+            }
+
+            if (cCancel) cCancel.addEventListener('click', closeConfirm);
+            if (cBackdrop) cBackdrop.addEventListener('click', closeConfirm);
+            if (cOk) cOk.addEventListener('click', () => { if (onConfirmAction) onConfirmAction(); closeConfirm(); });
+            window.appConfirm = { show: showConfirm };
+        })();
 
         // --- 1. COUNTDOWN TIMER ---
         const timerEl = document.getElementById('countdownTimer');
@@ -293,27 +398,27 @@
             if (!isForceSubmit) {
                 const totalQ = @Model.Questions.Count;
                 const answeredQ = Object.keys(answers).length;
-                isDialogActive = true;
-                if (answeredQ < totalQ) {
-                    const confirmSubmit = confirm(`Bạn mới làm ${answeredQ}/${totalQ} câu. Bạn có chắc chắn muốn nộp bài không?`);
-                    setTimeout(() => isDialogActive = false, 500);
-                    if (!confirmSubmit) return;
-                } else {
-                    const confirmSubmit = confirm(`Bạn có chắc chắn muốn nộp bài?`);
-                    setTimeout(() => isDialogActive = false, 500);
-                    if (!confirmSubmit) return;
-                }
+                
+                const msg = answeredQ < totalQ 
+                    ? `Bạn mới làm ${answeredQ}/${totalQ} câu. Bạn có chắc chắn muốn nộp bài không?`
+                    : `Bạn có chắc chắn muốn nộp bài?`;
+                
+                window.appConfirm.show('Xác nhận nộp bài', msg, () => executeSubmit(false));
+                return; // Stop here, wait for callback
+            } else {
+                executeSubmit(true);
             }
 
-            isSubmitting = true;
-            document.getElementById('submitOverlay').classList.remove('hidden');
+            async function executeSubmit(force) {
+                isSubmitting = true;
+                document.getElementById('submitOverlay').classList.remove('hidden');
 
-            const payload = {
-                SessionId: sessionId,
-                Answers: Object.keys(answers).map(k => ({ QuestionId: parseInt(k), SelectedOption: answers[k] })),
-                IsForceSubmit: isForceSubmit,
-                WarningCount: warningCount
-            };
+                const payload = {
+                    SessionId: sessionId,
+                    Answers: Object.keys(answers).map(k => ({ QuestionId: parseInt(k), SelectedOption: answers[k] })),
+                    IsForceSubmit: force,
+                    WarningCount: warningCount
+                };
 
             try {
                 const res = await fetch('/Student/SubmitExam', {
@@ -326,12 +431,12 @@
                 if (data.success) {
                     window.location.href = data.redirectUrl;
                 } else {
-                    alert(data.message || 'Có lỗi xảy ra khi nộp bài.');
+                    if (window.appToast) window.appToast.error(data.message || 'Có lỗi xảy ra khi nộp bài.');
                     document.getElementById('submitOverlay').classList.add('hidden');
                     isSubmitting = false;
                 }
             } catch (e) {
-                alert('Lỗi mạng. Vui lòng thử lại.');
+                if (window.appToast) window.appToast.error('Lỗi mạng. Vui lòng thử lại.');
                 document.getElementById('submitOverlay').classList.add('hidden');
                 isSubmitting = false;
             } finally {
@@ -339,16 +444,22 @@
                     isDialogActive = false;
                 }
             }
+        } // end executeSubmit
         }
 
         // --- 4. ANTI-CHEAT LOGIC ---
         function incrementWarning(reason) {
-            if(isSubmitting || isDialogActive) return;
+            if (isSubmitting || isDialogActive) return;
+            const now = Date.now();
+            // ignore duplicate increments that happen within 1s
+            if (now - _lastWarningTimestamp < 1000) return;
+            _lastWarningTimestamp = now;
+
             warningCount++;
             document.getElementById('warningCountDisplay').innerText = warningCount;
-            isDialogActive = true;
-            alert(`CẢNH BÁO VI PHẠM: ${reason}. Hệ thống đã ghi nhận vi phạm lần thứ ${warningCount}.`);
-            setTimeout(() => isDialogActive = false, 500);
+            if (window.appToast) {
+                window.appToast.warning(`CẢNH BÁO VI PHẠM: ${reason}. Vi phạm lần thứ ${warningCount}.`);
+            }
         }
 
         document.addEventListener("visibilitychange", () => {

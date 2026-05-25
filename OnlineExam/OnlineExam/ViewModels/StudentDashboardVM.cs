@@ -7,9 +7,15 @@ namespace OnlineExam.ViewModels
     {
         public string StudentName { get; set; }
         public int PendingExamsCount { get; set; }
+        public int TotalExamsCount { get; set; }
+        public int CompletedExamsCount { get; set; }
+        public double AverageScore { get; set; }
         public List<StudentExamItemVM> Exams { get; set; } = new List<StudentExamItemVM>();
         public List<ClassroomVM> JoinedClasses { get; set; } = new List<ClassroomVM>();
         public List<StudentScoreChartItemVM> ScoreHistory { get; set; } = new List<StudentScoreChartItemVM>();
+        public List<StudentRecentResultVM> RecentResults { get; set; } = new List<StudentRecentResultVM>();
+
+        public double CompletionRate => TotalExamsCount <= 0 ? 0 : (double)CompletedExamsCount / TotalExamsCount * 100.0;
     }
 
     public class StudentResultsVM
@@ -26,11 +32,15 @@ namespace OnlineExam.ViewModels
         public DateTime SubmittedAt { get; set; }
     }
 
-    public class ClassroomVM
+    public class StudentRecentResultVM
     {
-        public int Id { get; set; }
+        public int ExamSessionId { get; set; }
+        public string ExamName { get; set; }
         public string ClassName { get; set; }
+        public double Score { get; set; }
+        public DateTime SubmittedAt { get; set; }
     }
+
 
     public class StudentExamItemVM
     {

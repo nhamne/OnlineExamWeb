@@ -19,6 +19,8 @@ public class TeacherSessionListVM
 
     public List<SessionOptionVM> ExamPapers { get; set; } = new();
 
+    public List<string> Subjects { get; set; } = new();
+
     public string? SearchKeyword { get; set; }
 
     public string StatusFilter { get; set; } = "all";
@@ -31,6 +33,8 @@ public class SessionOptionVM
     public int Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
+
+    public string Subject { get; set; } = string.Empty;
 
     public int? DurationInMinutes { get; set; }
 }

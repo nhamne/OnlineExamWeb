@@ -7,13 +7,13 @@
     var greeting = hour < 12 ? "Chào buổi sáng" : hour < 18 ? "Chào buổi chiều" : "Chào buổi tối";
 }
 
-<div class="animate-fade-in">
+<div class="animate-fade-in max-w-7xl mx-auto space-y-8 ">
     <section class="bg-[#e7f1ff] rounded-[32px] p-8 lg:p-12 mb-8 flex flex-col md:flex-row items-center justify-between overflow-visible relative">
         <div class="z-10 text-center md:text-left mb-8 md:mb-0">
             <h1 class="text-2xl lg:text-5xl font-extrabold text-[#004493] tracking-tight mb-4">
                 @greeting, @Model.TeacherName!
             </h1>
-            <p class="text-[#1a73e8] text-lg max-w-md font-medium leading-relaxed">
+            <p class="text-[#0369A1] text-lg max-w-md font-medium leading-relaxed">
                 Hãy cùng kiến tạo những trải nghiệm học tập tuyệt vời cho học sinh của bạn ngày hôm nay.
             </p>
             <div class="mt-8 flex gap-6 justify-center md:justify-start">
@@ -232,13 +232,6 @@
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-100 p-6 rounded-[32px] shadow-sm mt-8">
-                <h4 class="font-extrabold text-sm mb-4 flex items-center text-slate-800"><span class="material-symbols-outlined text-brand-blue mr-2 text-lg">pie_chart</span> Phân bố điểm số (Tổng quan)</h4>
-                <div class="relative h-64 w-full flex items-center justify-center">
-                    <canvas id="scoreChart"></canvas>
-                    <p id="noDataMsg" class="absolute text-slate-400 text-xs font-medium hidden">Chưa có dữ liệu bài nộp.</p>
-                </div>
-            </div>
         </div>
     </div>
 </div>

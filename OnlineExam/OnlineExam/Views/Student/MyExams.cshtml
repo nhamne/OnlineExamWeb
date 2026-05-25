@@ -1,310 +1,157 @@
-@{
-    Layout = null;
-}
 @model OnlineExam.ViewModels.StudentDashboardVM
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Ca thi của tôi | The Academic Sanctuary</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#1a61a4',
-                        'primary-container': '#75aef7',
-                        'surface': '#f7f9fb',
-                        'surface-container-low': '#f0f4f7',
-                        'on-surface': '#2c3437',
-                        'outline-variant-soft': 'rgba(172, 179, 183, 0.15)',
-                    },
-                    fontFamily: {
-                        'headline': ['Manrope', 'sans-serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    },
-                    backgroundImage: {
-                        'knowledge-flow': 'linear-gradient(135deg, #1a61a4 0%, #75aef7 100%)',
-                    },
-                    boxShadow: {
-                        'ambient': '0 20px 40px rgba(44, 52, 55, 0.06)',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; color: #2c3437; }
-        .font-headline { font-family: 'Manrope', sans-serif; }
-        .transition-soft { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .hover-scale:hover { transform: translateY(-4px); }
-        .glass-dock { background: rgba(247, 249, 251, 0.8); backdrop-filter: blur(12px); }
-    </style>
-</head>
-<body class="bg-surface min-h-screen flex flex-col md:flex-row">
+@{
+    var currentKeyword = (string?)ViewBag.SearchKeyword ?? string.Empty;
+    var currentStatus = (string?)ViewBag.StatusFilter ?? "all";
+    var currentPage = (int?)ViewBag.CurrentPage ?? 1;
+    var totalPages = (int?)ViewBag.TotalPages ?? 1;
+    var totalItems = (int?)ViewBag.TotalItems ?? (Model.Exams?.Count ?? 0);
+}
 
-    <!-- Sidebar thu gọn width -->
-    <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low hidden md:flex flex-col py-8 px-5 z-40 border-r border-outline-variant-soft">
-        <div class="flex items-center gap-3 px-2 mb-12">
-            <div class="w-10 h-10 bg-knowledge-flow rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
-                <span class="material-symbols-outlined text-[20px]">school</span>
+<div class="max-w-7xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+            <h1 class=" flex items-center text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">Ca thi của tôi</h1> <div class="font-bold text-slate-700 w-[20px] h-[20px] bg-slate-300 rounded-full flex items-center justify-center">@totalItems</div>
             </div>
-            <h1 class="text-xl font-extrabold font-headline tracking-tight text-primary truncate">Thi Online</h1>
-        </div>
-
-        <nav class="space-y-2 flex-1">
-            <a href="/Student/Index" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
-                <span class="material-symbols-outlined text-[22px]">grid_view</span>
-                <span class="text-sm">Trang chủ</span>
-            </a>
-            <a href="/Student/JoinClass" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
-                <span class="material-symbols-outlined text-[22px]">person_add</span>
-                <span class="text-sm">Tham gia lớp</span>
-            </a>
-            <a href="/Student/MyExams" class="flex items-center gap-3 px-4 py-3.5 bg-white text-primary rounded-xl shadow-ambient font-bold transition-soft">
-                <span class="material-symbols-outlined text-[22px]">calendar_today</span>
-                <span class="text-sm">Ca thi của tôi</span>
-            </a>
-            <a href="/Student/Results" class="flex items-center gap-3 px-4 py-3.5 text-on-surface/60 hover:text-primary transition-soft rounded-xl hover:bg-white/50 font-medium">
-                <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
-                <span class="text-sm">Kết quả</span>
-            </a>
-        </nav>
-
-        <div class="pt-6 border-t border-outline-variant-soft mt-auto">
-            <a href="/Auth/Logout" class="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:text-red-500 transition-soft font-medium">
-                <span class="material-symbols-outlined text-[22px]">logout</span>
-                <span class="text-sm">Đăng xuất</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col md:ml-64 min-h-screen">
-        <div class="flex-1 w-full max-w-7xl mx-auto p-6 md:p-10 flex flex-col">
-            
-            <header class="flex justify-between items-center mb-10 w-full">
-                <div class="relative hidden lg:block w-96">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface/30">search</span>
-                    <input type="text" placeholder="Tìm kiếm bài thi..."
-                           class="w-full pl-12 pr-6 py-3.5 bg-surface-container-low border border-transparent rounded-xl focus:border-primary/20 focus:bg-white transition-all outline-none text-sm">
-                </div>
-                <div class="flex items-center gap-4 ml-auto">
-                    <button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface/60 hover:bg-white hover:shadow-ambient transition-soft relative">
-                        <span class="material-symbols-outlined text-[22px]">notifications</span>
-                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full"></span>
-                    </button>
-                    <div class="w-10 h-10 rounded-full bg-knowledge-flow p-[2px]">
-                        <div class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                            <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(Model.StudentName)&background=random" alt="User">
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <section class="mb-10 w-full flex items-center gap-4">
-                <div class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-outline-variant-soft flex items-center justify-center text-primary shrink-0">
-                    <span class="material-symbols-outlined text-[28px]">calendar_today</span>
-                </div>
-                <div>
-                    <h2 class="text-3xl font-extrabold font-headline tracking-tight">Ca thi của tôi</h2>
-                    <p class="text-on-surface/50 text-sm mt-1">Danh sách tất cả các bài kiểm tra được giao.</p>
-                </div>
-            </section>
-
-            <div class="flex flex-wrap gap-2 mb-8 w-full" id="class-filters">
-                <button class="filter-btn active px-6 py-2.5 bg-knowledge-flow text-white rounded-lg font-bold shadow-md hover-scale transition-soft text-sm" data-id="all" onclick="filterExams('all', this)">Tất cả trạng thái</button>
-                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-primary/30 hover:text-primary transition-soft text-sm hover-scale" data-id="Chưa làm" onclick="filterExams('Chưa làm', this)">Chưa làm</button>
-                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-orange-500/50 hover:text-orange-600 transition-soft text-sm hover-scale" data-id="Sắp hết hạn" onclick="filterExams('Sắp hết hạn', this)">Sắp hết hạn</button>
-                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-green-500/50 hover:text-green-600 transition-soft text-sm hover-scale" data-id="Đã nộp" onclick="filterExams('Đã nộp', this)">Đã nộp</button>
-                <button class="filter-btn px-6 py-2.5 bg-white text-on-surface/70 rounded-lg font-semibold shadow-sm border border-outline-variant-soft hover:border-outline-variant-soft hover:text-on-surface/50 transition-soft text-sm hover-scale" data-id="Đã đóng" onclick="filterExams('Đã đóng', this)">Đã đóng / Chưa mở</button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-12" id="exam-list">
-                @if (Model.Exams != null && Model.Exams.Any())
-                {
-                    foreach (var exam in Model.Exams)
-                    {
-                        var statusFilter = exam.Status;
-                        if(statusFilter == "Chưa mở") statusFilter = "Đã đóng"; // Group them for filtering
-
-                        if (exam.Status == "Chưa làm")
-                        {
-                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group relative overflow-hidden flex flex-col border border-transparent hover:border-primary/20" data-status="@statusFilter">
-                                <div class="flex justify-between items-start mb-6">
-                                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-primary shrink-0">
-                                        <span class="material-symbols-outlined text-[24px]">assignment</span>
-                                    </div>
-                                    <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-blue-50 text-primary rounded-md">@exam.Status</span>
-                                </div>
-                                <h3 class="text-xl font-bold font-headline mb-4 group-hover:text-primary transition-colors line-clamp-2">@exam.Title</h3>
-                                <p class="text-xs text-on-surface/50 font-semibold mb-4 truncate">@exam.ClassName</p>
-                                
-                                <div class="space-y-2 mb-8 mt-auto">
-                                    <div class="flex items-center gap-2 text-on-surface/50">
-                                        <span class="material-symbols-outlined text-[18px]">person</span>
-                                        <span class="text-xs font-medium truncate">GV. @exam.TeacherName</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-on-surface/50">
-                                        <span class="material-symbols-outlined text-[18px]">schedule</span>
-                                        <span class="text-xs font-medium">@exam.Duration phút</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-primary">
-                                        <span class="material-symbols-outlined text-[18px]">event</span>
-                                        <span class="text-xs font-bold">Hạn: @exam.EndTime.ToString("dd/MM HH:mm")</span>
-                                    </div>
-                                </div>
-                                <a href="/Student/TakeExam/@exam.ExamSessionId" class="block text-center w-full py-3 bg-knowledge-flow text-white rounded-xl text-sm font-bold shadow-md hover:shadow-primary/30 transition-soft mt-auto">
-                                    Vào thi
-                                </a>
-                            </div>
-                        }
-                        else if (exam.Status == "Sắp hết hạn")
-                        {
-                            <div class="exam-card bg-white p-8 rounded-2xl shadow-ambient hover-scale transition-soft group flex flex-col border border-transparent hover:border-orange-500/20" data-status="@statusFilter">
-                                <div class="flex justify-between items-start mb-6">
-                                    <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500 shrink-0">
-                                        <span class="material-symbols-outlined text-[24px]">warning</span>
-                                    </div>
-                                    <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-orange-50 text-orange-600 rounded-md">@exam.Status</span>
-                                </div>
-                                <h3 class="text-xl font-bold font-headline mb-4 group-hover:text-orange-500 transition-colors line-clamp-2">@exam.Title</h3>
-                                <p class="text-xs text-on-surface/50 font-semibold mb-4 truncate">@exam.ClassName</p>
-                                
-                                <div class="space-y-2 mb-8 mt-auto">
-                                    <div class="flex items-center gap-2 text-on-surface/50">
-                                        <span class="material-symbols-outlined text-[18px]">person</span>
-                                        <span class="text-xs font-medium truncate">GV. @exam.TeacherName</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-on-surface/50">
-                                        <span class="material-symbols-outlined text-[18px]">schedule</span>
-                                        <span class="text-xs font-medium">@exam.Duration phút</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-orange-600">
-                                        <span class="material-symbols-outlined text-[18px]">alarm</span>
-                                        <span class="text-xs font-bold animate-pulse">Hết hạn: @exam.EndTime.ToString("HH:mm")</span>
-                                    </div>
-                                </div>
-                                <a href="/Student/TakeExam/@exam.ExamSessionId" class="block text-center w-full py-3 bg-orange-500 text-white rounded-xl text-sm font-bold shadow-md transition-soft mt-auto hover:bg-orange-600">
-                                    Vào thi
-                                </a>
-                            </div>
-                        }
-                        else if (exam.Status == "Đã đóng" || exam.Status == "Chưa mở")
-                        {
-                            <div class="exam-card bg-surface-container-low/50 p-8 rounded-2xl border border-outline-variant-soft transition-soft flex flex-col" data-status="@statusFilter">
-                                <div class="flex justify-between items-start mb-6 opacity-60">
-                                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-on-surface/40 shrink-0 shadow-sm">
-                                        <span class="material-symbols-outlined text-[24px]">lock</span>
-                                    </div>
-                                    <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-white text-on-surface/40 rounded-md shadow-sm">@exam.Status</span>
-                                </div>
-                                <h3 class="text-xl font-bold font-headline mb-4 text-on-surface/40 line-clamp-2">@exam.Title</h3>
-                                <p class="text-xs text-on-surface/40 font-semibold mb-4 truncate">@exam.ClassName</p>
-                                
-                                <div class="space-y-2 mb-8 mt-auto opacity-60">
-                                    <div class="flex items-center gap-2 text-on-surface/40">
-                                        <span class="material-symbols-outlined text-[18px]">person</span>
-                                        <span class="text-xs truncate">GV. @exam.TeacherName</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-on-surface/40">
-                                        <span class="material-symbols-outlined text-[18px]">schedule</span>
-                                        <span class="text-xs">@exam.Duration phút</span>
-                                    </div>
-                                </div>
-                                <button disabled class="w-full py-3 bg-on-surface/5 text-on-surface/30 rounded-xl text-sm font-bold cursor-not-allowed mt-auto">
-                                    Không khả dụng
-                                </button>
-                            </div>
-                        }
-                        else if (exam.Status == "Đã nộp")
-                        {
-                            <div class="exam-card bg-green-50/30 p-8 rounded-2xl shadow-sm border border-green-100 hover-scale transition-soft group flex flex-col" data-status="@statusFilter">
-                                <div class="flex justify-between items-start mb-6">
-                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 shrink-0">
-                                        <span class="material-symbols-outlined text-[24px]">task_alt</span>
-                                    </div>
-                                    <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-green-100 text-green-700 rounded-md">Đã nộp</span>
-                                </div>
-                                <h3 class="text-xl font-bold font-headline mb-4 text-green-800 group-hover:text-green-600 transition-colors line-clamp-2">@exam.Title</h3>
-                                <p class="text-xs text-green-700/60 font-semibold mb-4 truncate">@exam.ClassName</p>
-                                
-                                <div class="space-y-2 mb-8 mt-auto">
-                                    <div class="flex items-center gap-2 text-green-700/60">
-                                        <span class="material-symbols-outlined text-[18px]">person</span>
-                                        <span class="text-xs font-medium truncate">GV. @exam.TeacherName</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-green-700/60">
-                                        <span class="material-symbols-outlined text-[18px]">schedule</span>
-                                        <span class="text-xs font-medium">@exam.Duration phút</span>
-                                    </div>
-                                </div>
-                                <a href="/Student/ExamResult/@exam.ExamSessionId" class="block text-center w-full py-3 bg-green-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-green-600 transition-soft mt-auto">
-                                    Xem kết quả
-                                </a>
-                            </div>
-                        }
-                    }
-                }
-                else
-                {
-                    <div class="col-span-full py-20 text-center flex flex-col items-center">
-                        <span class="material-symbols-outlined text-6xl text-on-surface/20 mb-4">folder_open</span>
-                        <h4 class="text-xl font-bold text-on-surface/50 mb-2">Không có ca thi nào</h4>
-                        <p class="text-on-surface/40">Bạn hiện chưa tham gia lớp học nào có bài thi.</p>
-                    </div>
-                }
-
-            </div>
-            
-            <footer class="mt-auto py-8 text-on-surface/30 text-xs font-medium uppercase tracking-widest text-center md:text-left w-full border-t border-outline-variant-soft">
-                &copy; 2024 Thi Online • The Academic Sanctuary Design System
-            </footer>
+            <p class="text-sm text-slate-500 mt-2">Danh sách tất cả các bài kiểm tra được giao.</p>
         </div>
     </div>
 
-    <nav class="md:hidden fixed bottom-4 left-4 right-4 h-16 glass-dock rounded-2xl border border-white/20 shadow-2xl flex justify-around items-center z-50 px-2">
-        <a href="/Student/Index" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
-            <span class="material-symbols-outlined text-[22px]">grid_view</span>
-            <span class="text-[9px] font-bold mt-1">Trang chủ</span>
-        </a>
-        <a href="/Student/JoinClass" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
-            <span class="material-symbols-outlined text-[22px]">person_add</span>
-            <span class="text-[9px] font-bold mt-1">Tham gia</span>
-        </a>
-        <a href="/Student/MyExams" class="flex flex-col items-center text-primary w-16">
-            <span class="material-symbols-outlined fill-1 text-[22px]">calendar_today</span>
-            <span class="text-[9px] font-bold mt-1">Ca thi</span>
-        </a>
-        <a href="/Student/Results" class="flex flex-col items-center text-on-surface/40 hover:text-primary w-16">
-            <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
-            <span class="text-[9px] font-bold mt-1">Kết quả</span>
-        </a>
-    </nav>
-
-    <script>
-        function filterExams(statusId, btn) {
-            // Update active state
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('bg-knowledge-flow', 'text-white', 'shadow-md');
-                b.classList.add('bg-white', 'text-on-surface/70', 'shadow-sm', 'border', 'border-outline-variant-soft');
+    @if (ViewBag.ShowMeiliSearchWarning == true)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.appToast) window.appToast.warning("Không kết nối được với Meilisearch. Hệ thống đã tự động chuyển sang tìm kiếm thường.");
             });
-            btn.classList.remove('bg-white', 'text-on-surface/70', 'shadow-sm', 'border', 'border-outline-variant-soft');
-            btn.classList.add('bg-knowledge-flow', 'text-white', 'shadow-md');
+        </script>
+    }
 
-            // Filter cards
-            document.querySelectorAll('.exam-card').forEach(card => {
-                if (statusId === 'all' || card.getAttribute('data-status') === statusId) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+    <form method="get" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+        <div class="md:col-span-8">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Tìm kiếm ca thi</label>
+            <div class="relative">
+                <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">search</span>
+                <input id="examSearchInput" name="searchKeyword" value="@currentKeyword" type="text" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-4 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]" placeholder="Nhập tên ca thi, lớp học hoặc giáo viên..." />
+            </div>
+        </div>
+
+        <div class="md:col-span-4">
+            <label class="text-xs font-semibold text-transparent uppercase tracking-widest block mb-2 select-none">.</label>
+            <select id="classFilterSelect" name="statusFilter" class="w-full h-11 rounded-xl border border-slate-200 px-4 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] bg-white">
+                <option value="all" selected="@(currentStatus == "all")">Tất cả trạng thái</option>
+                <option value="Chưa làm" selected="@(currentStatus == "Chưa làm")">Chưa làm</option>
+                <option value="Sắp hết hạn" selected="@(currentStatus == "Sắp hết hạn")">Sắp hết hạn</option>
+                <option value="Đã nộp" selected="@(currentStatus == "Đã nộp")">Đã nộp</option>
+            </select>
+        </div>
+        <input type="hidden" name="page" value="1" />
+    </form>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-12" id="exam-list">
+        @if (Model.Exams != null && Model.Exams.Any())
+        {
+            foreach (var exam in Model.Exams)
+            {
+                var statusText = exam.Status;
+                var isSubmitted = exam.Status == "Đã nộp";
+                var isOpen = exam.Status == "Chưa làm" || exam.Status == "Sắp hết hạn";
+                var isUpcoming = exam.Status == "Chưa mở"; // not started yet
+                var toneClass = isSubmitted ? "border-[#dbeafe]" : (isOpen ? "border-[#dbeafe]" : "border-slate-100");
+                var headToneClass = isSubmitted ? "bg-[#f2f3fd] text-[#0369A1]" : (isOpen ? "bg-[#f2f3fd] text-[#0369A1]" : "bg-slate-50 text-slate-400");
+                var badgeToneClass = isSubmitted ? "bg-[#e8f1ff] text-[#0369A1]" : (isOpen ? "bg-[#e8f1ff] text-[#0369A1]" : "bg-slate-100 text-slate-500");
+                var disabledClass = "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none";
+                var buttonClass = isSubmitted ? "bg-[#0369A1] hover:bg-[#025b88] text-white" : (isOpen ? "bg-[#0369A1] hover:bg-[#025b88] text-white" : disabledClass);
+                var buttonHref = isSubmitted ? $"/Student/ExamResult/{exam.ExamSessionId}" : (isOpen ? $"/Student/TakeExam/{exam.ExamSessionId}" : "#");
+                var buttonText = isSubmitted ? "Xem kết quả" : (isOpen ? "Vào thi" : (isUpcoming ? "Sắp diễn ra" : "Đã kết thúc"));
+
+                <a href="@buttonHref"
+                   class="exam-card block bg-white rounded-2xl overflow-hidden shadow-[0px_12px_28px_rgba(25,28,35,0.06)] border @toneClass @(isOpen || isSubmitted ? "hover:-translate-y-1 transition-transform duration-300" : "pointer-events-none") flex flex-col"
+                         >
+                    <div class="h-32 flex items-center justify-center relative @headToneClass">
+                        <span class="material-symbols-outlined text-[72px]" style="font-variation-settings: 'FILL' 1;">assignment</span>
+                        <div class="absolute top-3 right-3 px-3 py-1 rounded-full @badgeToneClass text-xs font-bold backdrop-blur-sm">
+                            @statusText
+                        </div>
+                    </div>
+
+                    <div class="p-5 flex flex-col gap-4 flex-1">
+                        <div>
+                            <h3 class="font-bold text-[18px] text-slate-800 leading-tight line-clamp-2">@exam.Title</h3>
+                            <p class="text-sm text-slate-500 mt-1 line-clamp-1">@exam.ClassName</p>
+                        </div>
+
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-[#0369A1]">person</span>
+                                <span class="font-medium truncate">GV. @exam.TeacherName</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-[#0369A1]">schedule</span>
+                                <span class="font-medium">@exam.Duration phút</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-[#0369A1]">event</span>
+                                <span class="font-semibold text-[#0369A1]">@(isSubmitted ? $"Nộp lúc: {exam.EndTime:dd/MM HH:mm}" : $"Hạn: {exam.EndTime:dd/MM HH:mm}")</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-2">
+                            <div class="w-full py-3 rounded-xl text-sm font-bold text-center @buttonClass">
+                                @buttonText
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            }
         }
+        else
+        {
+            <div class="col-span-full py-20 text-center flex flex-col items-center bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm">
+                <span class="material-symbols-outlined text-6xl text-on-surface/20 mb-4">folder_open</span>
+                <h4 class="text-xl font-bold text-on-surface/50 mb-2">Không có ca thi nào</h4>
+                <p class="text-on-surface/40">Bạn hiện chưa tham gia lớp học nào có bài thi.</p>
+            </div>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, startPage + 4);
+        startPage = Math.Max(1, endPage - 4);
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(currentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+               href="@Url.Action("MyExams", "Student", new { searchKeyword = currentKeyword, statusFilter = currentStatus, page = currentPage - 1 })"
+               aria-label="Trang trước">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </a>
+            @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+            {
+                <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == currentPage ? "bg-[#0369A1] text-white" : "bg-slate-100 text-[#0369A1] hover:bg-[#e8f1ff]")"
+                   href="@Url.Action("MyExams", "Student", new { searchKeyword = currentKeyword, statusFilter = currentStatus, page = pageNumber })">@pageNumber</a>
+            }
+            <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(currentPage == totalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+               href="@Url.Action("MyExams", "Student", new { searchKeyword = currentKeyword, statusFilter = currentStatus, page = currentPage + 1 })"
+               aria-label="Trang sau">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const examSearchInput = document.getElementById('examSearchInput');
+        const classFilterSelect = document.getElementById('classFilterSelect');
+        let examSearchTimer;
+
+        examSearchInput?.addEventListener('input', () => {
+            clearTimeout(examSearchTimer);
+            examSearchTimer = setTimeout(() => {
+                examSearchInput.closest('form')?.submit();
+            }, 350);
+        });
+        classFilterSelect?.addEventListener('change', () => classFilterSelect.closest('form')?.submit());
     </script>
-</body>
-</html>
+}

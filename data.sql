@@ -1,4 +1,4 @@
-USE OnlineExamDB;
+USE OnlineExamDBWeb;
 GO
 
 -- 1. Insert Users (3 Teachers, 12 Students)
@@ -188,12 +188,12 @@ END
 GO
 
 -- 6. Insert ExamSessions (Ca thi)
-<<<<<<< Updated upstream
 -- Không dùng hardcoded ID để tránh lỗi khóa ngoại trên DB đã có dữ liệu.
 -- Việc bổ sung ca thi được xử lý ở khối top-up bên dưới (map theo JoinCode và Title).
 
 -- 6.1 Top-up ExamSessions: bổ sung các ca thi còn thiếu theo SessionName + ClassroomId
-INSERT INTO ExamSessions (SessionName, ClassroomId, ExamPaperId, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewExplanation, IsShuffled, ShuffleQuestions, ShuffleAnswers, Notes)
+-- Thêm cột AllowViewScore vào dữ liệu chèn, giá trị khởi tạo lấy theo AllowViewExplanation
+INSERT INTO ExamSessions (SessionName, ClassroomId, ExamPaperId, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewScore, AllowViewExplanation, IsShuffled, ShuffleQuestions, ShuffleAnswers, Notes)
 SELECT
     s.SessionName,
     c.Id,
@@ -202,28 +202,29 @@ SELECT
     s.EndTime,
     s.DurationInMinutes,
     s.SessionPassword,
+    s.AllowViewScore,
     s.AllowViewExplanation,
     s.IsShuffled,
     s.ShuffleQuestions,
     s.ShuffleAnswers,
     s.Notes
 FROM (VALUES
-    (N'Ca thi sáng - Lập trình Web', 'WEBNC1', N'Bài kiểm tra ASP.NET MVC Giữa kỳ', DATEADD(hour, -4, GETDATE()), DATEADD(hour, -2, GETDATE()), 45, '123456', 1, 1, 1, 1, N'Học sinh được phép sử dụng máy tính bỏ túi.'),
-    (N'Kiểm tra 15 phút CSDL', 'CSDL02', N'Trắc nghiệm SQL Server Cơ bản', DATEADD(hour, -1, GETDATE()), DATEADD(hour, 1, GETDATE()), 15, NULL, 0, 1, 1, 0, N'Không được mở tài liệu trong quá trình làm bài.'),
-    (N'Ca thi Java OOP', 'JAVA03', N'Bài tập Java OOP', DATEADD(day, 1, GETDATE()), DATEADD(day, 1, DATEADD(hour, 1, GETDATE())), 30, 'JAVA30', 1, 1, 1, 1, N'Ôn tập kế thừa và đa hình.'),
-    (N'Quiz Python cơ bản', 'PYTHN4', N'Quiz Python Cơ bản', DATEADD(day, 2, GETDATE()), DATEADD(day, 2, DATEADD(hour, 1, GETDATE())), 20, NULL, 1, 1, 1, 1, N'Trả lời nhanh trong 20 phút.'),
-    (N'Ca thi UI/UX', 'UIUX05', N'Thiết kế giao diện UI/UX', DATEADD(day, 3, GETDATE()), DATEADD(day, 3, DATEADD(hour, 1, GETDATE())), 25, 'UX2026', 1, 1, 1, 1, N'Đánh giá nguyên tắc thiết kế.'),
-    (N'Ca thi CTDL & GT', 'CTDL06', N'CTDL & GT Cơ bản', DATEADD(day, 4, GETDATE()), DATEADD(day, 4, DATEADD(hour, 1, GETDATE())), 45, NULL, 1, 1, 1, 1, N'Bài kiểm tra chương cây và đồ thị.'),
-    (N'Ca thi Toán rời rạc', 'TOAN07', N'Toán rời rạc 1', DATEADD(day, 5, GETDATE()), DATEADD(day, 5, DATEADD(hour, 1, GETDATE())), 30, 'MATH07', 1, 1, 1, 1, N'Có câu logic và tổ hợp.'),
-    (N'Ca thi Mạng máy tính', 'MANG08', N'Mạng máy tính 1', DATEADD(day, 6, GETDATE()), DATEADD(day, 6, DATEADD(hour, 1, GETDATE())), 35, NULL, 1, 1, 1, 1, N'Kiểm tra kiến thức mạng cơ bản.'),
-    (N'Ca thi An toàn thông tin', 'ATTT09', N'An toàn thông tin 1', DATEADD(day, 7, GETDATE()), DATEADD(day, 7, DATEADD(hour, 1, GETDATE())), 30, 'SAFE09', 1, 1, 1, 1, N'Tập trung vào mã hóa và xác thực.'),
-    (N'Ca thi Hệ điều hành', 'HDH010', N'Hệ điều hành 1', DATEADD(day, 8, GETDATE()), DATEADD(day, 8, DATEADD(hour, 1, GETDATE())), 40, NULL, 1, 1, 1, 1, N'Bài thi về tiến trình và bộ nhớ.'),
-    (N'Ca thi Nhập môn AI', 'AI011', N'Nhập môn AI 1', DATEADD(day, 9, GETDATE()), DATEADD(day, 9, DATEADD(hour, 1, GETDATE())), 25, 'AI11', 1, 1, 1, 1, N'Đề thi khởi động về AI.'),
-    (N'Ca thi Kiểm thử phần mềm', 'TEST12', N'Kiểm thử phần mềm 1', DATEADD(day, 10, GETDATE()), DATEADD(day, 10, DATEADD(hour, 1, GETDATE())), 30, NULL, 1, 1, 1, 1, N'Tập trung vào quy trình testing.'),
-    (N'Ca thi Phân tích hệ thống', 'PTHT13', N'Phân tích hệ thống 1', DATEADD(day, 11, GETDATE()), DATEADD(day, 11, DATEADD(hour, 1, GETDATE())), 35, 'SYS13', 1, 1, 1, 1, N'Đánh giá nghiệp vụ và use case.'),
-    (N'Ca thi CSDL nâng cao', 'CSDL14', N'CSDL nâng cao 1', DATEADD(day, 12, GETDATE()), DATEADD(day, 12, DATEADD(hour, 1, GETDATE())), 40, NULL, 1, 1, 1, 1, N'Bài thi nâng cao về dữ liệu.'),
-    (N'Ca thi Web Frontend React', 'REACT15', N'Web Frontend React 1', DATEADD(day, 13, GETDATE()), DATEADD(day, 13, DATEADD(hour, 1, GETDATE())), 30, 'REACT15', 1, 1, 1, 1, N'Kiểm tra React và component.')
-) AS s(SessionName, ClassroomJoinCode, ExamTitle, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewExplanation, IsShuffled, ShuffleQuestions, ShuffleAnswers, Notes)
+    (N'Ca thi sáng - Lập trình Web', 'WEBNC1', N'Bài kiểm tra ASP.NET MVC Giữa kỳ', DATEADD(hour, -4, GETDATE()), DATEADD(hour, -2, GETDATE()), 45, '123456', 1, 1, 1, 1, 1, N'Học sinh được phép sử dụng máy tính bỏ túi.'),
+    (N'Kiểm tra 15 phút CSDL', 'CSDL02', N'Trắc nghiệm SQL Server Cơ bản', DATEADD(hour, -1, GETDATE()), DATEADD(hour, 1, GETDATE()), 15, NULL, 0, 0, 1, 1, 0, N'Không được mở tài liệu trong quá trình làm bài.'),
+    (N'Ca thi Java OOP', 'JAVA03', N'Bài tập Java OOP', DATEADD(day, 1, GETDATE()), DATEADD(day, 1, DATEADD(hour, 1, GETDATE())), 30, 'JAVA30', 1, 1, 1, 1, 1, N'Ôn tập kế thừa và đa hình.'),
+    (N'Quiz Python cơ bản', 'PYTHN4', N'Quiz Python Cơ bản', DATEADD(day, 2, GETDATE()), DATEADD(day, 2, DATEADD(hour, 1, GETDATE())), 20, NULL, 1, 1, 1, 1, 1, N'Trả lời nhanh trong 20 phút.'),
+    (N'Ca thi UI/UX', 'UIUX05', N'Thiết kế giao diện UI/UX', DATEADD(day, 3, GETDATE()), DATEADD(day, 3, DATEADD(hour, 1, GETDATE())), 25, 'UX2026', 1, 1, 1, 1, 1, N'Đánh giá nguyên tắc thiết kế.'),
+    (N'Ca thi CTDL & GT', 'CTDL06', N'CTDL & GT Cơ bản', DATEADD(day, 4, GETDATE()), DATEADD(day, 4, DATEADD(hour, 1, GETDATE())), 45, NULL, 1, 1, 1, 1, 1, N'Bài kiểm tra chương cây và đồ thị.'),
+    (N'Ca thi Toán rời rạc', 'TOAN07', N'Toán rời rạc 1', DATEADD(day, 5, GETDATE()), DATEADD(day, 5, DATEADD(hour, 1, GETDATE())), 30, 'MATH07', 1, 1, 1, 1, 1, N'Có câu logic và tổ hợp.'),
+    (N'Ca thi Mạng máy tính', 'MANG08', N'Mạng máy tính 1', DATEADD(day, 6, GETDATE()), DATEADD(day, 6, DATEADD(hour, 1, GETDATE())), 35, NULL, 1, 1, 1, 1, 1, N'Kiểm tra kiến thức mạng cơ bản.'),
+    (N'Ca thi An toàn thông tin', 'ATTT09', N'An toàn thông tin 1', DATEADD(day, 7, GETDATE()), DATEADD(day, 7, DATEADD(hour, 1, GETDATE())), 30, 'SAFE09', 1, 1, 1, 1, 1, N'Tập trung vào mã hóa và xác thực.'),
+    (N'Ca thi Hệ điều hành', 'HDH010', N'Hệ điều hành 1', DATEADD(day, 8, GETDATE()), DATEADD(day, 8, DATEADD(hour, 1, GETDATE())), 40, NULL, 1, 1, 1, 1, 1, N'Bài thi về tiến trình và bộ nhớ.'),
+    (N'Ca thi Nhập môn AI', 'AI011', N'Nhập môn AI 1', DATEADD(day, 9, GETDATE()), DATEADD(day, 9, DATEADD(hour, 1, GETDATE())), 25, 'AI11', 1, 1, 1, 1, 1, N'Đề thi khởi động về AI.'),
+    (N'Ca thi Kiểm thử phần mềm', 'TEST12', N'Kiểm thử phần mềm 1', DATEADD(day, 10, GETDATE()), DATEADD(day, 10, DATEADD(hour, 1, GETDATE())), 30, NULL, 1, 1, 1, 1, 1, N'Tập trung vào quy trình testing.'),
+    (N'Ca thi Phân tích hệ thống', 'PTHT13', N'Phân tích hệ thống 1', DATEADD(day, 11, GETDATE()), DATEADD(day, 11, DATEADD(hour, 1, GETDATE())), 35, 'SYS13', 1, 1, 1, 1, 1, N'Đánh giá nghiệp vụ và use case.'),
+    (N'Ca thi CSDL nâng cao', 'CSDL14', N'CSDL nâng cao 1', DATEADD(day, 12, GETDATE()), DATEADD(day, 12, DATEADD(hour, 1, GETDATE())), 40, NULL, 1, 1, 1, 1, 1, N'Bài thi nâng cao về dữ liệu.'),
+    (N'Ca thi Web Frontend React', 'REACT15', N'Web Frontend React 1', DATEADD(day, 13, GETDATE()), DATEADD(day, 13, DATEADD(hour, 1, GETDATE())), 30, 'REACT15', 1, 1, 1, 1, 1, N'Kiểm tra React và component.')
+) AS s(SessionName, ClassroomJoinCode, ExamTitle, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewScore, AllowViewExplanation, IsShuffled, ShuffleQuestions, ShuffleAnswers, Notes)
 INNER JOIN Classrooms c ON c.JoinCode = s.ClassroomJoinCode AND c.IsDeleted = 0
 OUTER APPLY (
     SELECT TOP 1 ep.Id
@@ -239,16 +240,6 @@ WHERE NOT EXISTS (
       AND es.ClassroomId = c.Id
 )
 AND ep.Id IS NOT NULL;
-=======
-IF NOT EXISTS (SELECT 1 FROM ExamSessions)
-BEGIN
-    INSERT INTO ExamSessions (SessionName, ClassroomId, ExamPaperId, StartTime, EndTime, DurationInMinutes, SessionPassword, AllowViewScore, IsShuffled) VALUES
-    (N'Ca thi sáng - Lập trình Web', 1, 1, DATEADD(hour, -2, GETDATE()), DATEADD(day, 2, GETDATE()), 45, '123456', 1, 1), -- Đang mở, Còn nhiều thời gian (>24h) -> Chưa làm
-    (N'Kiểm tra 15 phút CSDL', 2, 2, DATEADD(day, 1, GETDATE()), DATEADD(day, 1, DATEADD(hour, 1, GETDATE())), 15, NULL, 0, 1), -- Chưa đến giờ -> Chưa mở
-    (N'Thi thử SQL Server - Đã đóng', 2, 2, DATEADD(day, -2, GETDATE()), DATEADD(day, -1, GETDATE()), 30, NULL, 1, 0), -- Đã qua hạn -> Đã đóng
-    (N'Quiz ASP.NET - Sắp hết hạn', 1, 1, DATEADD(hour, -5, GETDATE()), DATEADD(hour, 5, GETDATE()), 20, NULL, 1, 1); -- Còn < 24h -> Sắp hết hạn
-END
->>>>>>> Stashed changes
 GO
 
 -- 7. Insert Submissions (nhiều bài nộp mẫu để test phân trang)

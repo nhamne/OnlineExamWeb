@@ -11,89 +11,145 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = OnlineExam
 build_property.RootNamespace = OnlineExam
-build_property.ProjectDir = E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam\
+build_property.ProjectDir = C:\OnlineExamWeb\OnlineExam\OnlineExam\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = E:\CHECK\HK2 2025 - 2026\Lap trinh web nang cao\OnlineExamWeb\OnlineExamWeb\OnlineExam\OnlineExam
+build_property.MSBuildProjectDirectory = C:\OnlineExamWeb\OnlineExam\OnlineExam
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/AuthForm.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/AuthForm.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxBdXRoRm9ybS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/Login.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/Register.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Auth/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Home/Index.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Home/Privacy.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/Error.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Profile/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_AuthLayout.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_AuthLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BdXRoTGF5b3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_Sidebar.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_ListActions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MaXN0QWN0aW9ucy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_Sidebar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9TaWRlYmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/ExamResult.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/EnterExamPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxFbnRlckV4YW1QYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/ExamResult.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxFeGFtUmVzdWx0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/Index.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/JoinClass.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/JoinClass.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxKb2luQ2xhc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/MyExams.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/MyExams.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxNeUV4YW1zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/Results.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/Results.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxSZXN1bHRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/TakeExam.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Student/TakeExam.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxUYWtlRXhhbS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Index.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Classes.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxDbGFzc2VzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/CreateExam.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxDcmVhdGVFeGFtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/EditExam.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFZGl0RXhhbS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/ExamDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFeGFtRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Exams.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFeGFtcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/ExportDocument.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFeHBvcnREb2N1bWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/_ViewImports.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/ManageClass.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxNYW5hZ2VDbGFzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/MonitorSession.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxNb25pdG9yU2Vzc2lvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/OcrScanner.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxPY3JTY2FubmVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Reports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxSZXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Teacher/Sessions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxTZXNzaW9ucy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/_ViewStart.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/CHECK/HK2 2025 - 2026/Lap trinh web nang cao/OnlineExamWeb/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_Layout.cshtml]
+[C:/OnlineExamWeb/OnlineExam/OnlineExam/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-tz6xupl3tp

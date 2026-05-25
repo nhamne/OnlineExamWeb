@@ -37,11 +37,11 @@
 <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <h1 class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#005bbf] leading-none tracking-tight">Danh sách lớp học</h1>
+            <h1 class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">Danh sách lớp học</h1>
             <p class="text-sm text-slate-500 mt-2">Tổng số lớp học: <span class="font-bold text-slate-700">@Model.TotalItems</span></p>
         </div>
 
-        <button id="btn-open-create-modal" class="bg-gradient-to-r from-[#005bbf] to-[#1a73e8] text-white px-6 py-3 rounded-xl font-bold text-[15px] flex items-center gap-2 shadow-[0_8px_20px_-6px_rgba(0,91,191,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(0,91,191,0.5)] active:scale-[0.98] transition-all duration-300">
+        <button id="btn-open-create-modal" class="bg-[#0369A1] text-white flex items-center justify-center px-6 py-3 rounded-xl font-bold text-[15px] flex items-center gap-2 shadow-[0_8px_20px_-6px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(3,105,161,0.5)] active:scale-[0.98] transition-all duration-300">
             <span class="material-symbols-outlined text-[20px]">add</span>
             Tạo lớp học mới
         </button>
@@ -49,13 +49,11 @@
 
     @if (Model.ShowMeiliSearchWarning)
     {
-        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 flex items-start gap-3">
-            <span class="material-symbols-outlined text-[22px] mt-0.5">cloud_off</span>
-            <div>
-                <p class="font-bold">Không kết nối được với Meilisearch</p>
-                <p class="text-sm mt-1">Hệ thống đã tự động chuyển sang tìm kiếm bằng SQL, nên kết quả vẫn hiển thị bình thường.</p>
-            </div>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.appToast) window.appToast.warning("Không kết nối được với Meilisearch. Hệ thống đã tự động chuyển sang tìm kiếm thường.");
+            });
+        </script>
     }
 
     <form id="class-filter-form" method="get" asp-action="Classes" asp-controller="Teacher" class="bg-white rounded-2xl p-4 md:p-5 border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
@@ -63,8 +61,8 @@
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Tìm kiếm lớp học</label>
             <div class="relative">
                 <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">search</span>
-                <input id="search-keyword" name="searchKeyword" value="@Model.SearchKeyword" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-14 focus:ring-2 focus:ring-[#005bbf]/20 focus:border-[#005bbf]" placeholder="Nhập tên lớp hoặc mã tham gia..." />
-                <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 h-8.5 w-8.5 rounded-lg bg-[#005bbf] text-white inline-flex items-center justify-center hover:bg-[#1a73e8] transition-colors" title="Tìm kiếm" aria-label="Tìm kiếm">
+                <input id="search-keyword" name="searchKeyword" value="@Model.SearchKeyword" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-14 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]" placeholder="Nhập tên lớp hoặc mã tham gia..." />
+                <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 h-8.5 w-8.5 rounded-lg bg-[#0369A1] text-white inline-flex items-center justify-center hover:bg-[#0369A1] transition-colors" title="Tìm kiếm" aria-label="Tìm kiếm">
                     <span class="material-symbols-outlined text-[18px] p-2">search</span>
                 </button>
             </div>
@@ -73,7 +71,7 @@
         <div class="md:col-span-3">
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Lọc theo sĩ số</label>
             <div class="relative">
-                <select id="student-filter" name="studentFilter" class="w-full h-11 appearance-none rounded-xl border border-slate-200 pl-3 pr-11 focus:ring-2 focus:ring-[#005bbf]/20 focus:border-[#005bbf]">
+                <select id="student-filter" name="studentFilter" class="w-full h-11 appearance-none rounded-xl border border-slate-200 pl-3 pr-11 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]">
                     @if (Model.StudentFilter == "all")
                     {
                         <option value="all" selected>Tất cả</option>
@@ -114,7 +112,7 @@
         <div class="md:col-span-3">
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Sắp xếp</label>
             <div class="relative">
-                <select id="sort-by" name="sortBy" class="w-full h-11 appearance-none rounded-xl border border-slate-200 pl-3 pr-11 focus:ring-2 focus:ring-[#005bbf]/20 focus:border-[#005bbf]">
+                <select id="sort-by" name="sortBy" class="w-full h-11 appearance-none rounded-xl border border-slate-200 pl-3 pr-11 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]">
                     @if (Model.SortBy == "created_desc")
                     {
                         <option value="created_desc" selected>Mới nhất</option>
@@ -191,7 +189,7 @@
             {
                 <div class="class-card relative bg-white rounded-2xl overflow-hidden shadow-[0px_12px_28px_rgba(25,28,35,0.06)] hover:-translate-y-1 transition-transform duration-300 flex flex-col">
                     <div class="class-card-actions absolute top-3 right-3 z-[2] flex items-center gap-2">
-                        <button type="button" class="btn-open-edit-class h-9 w-9 rounded-lg bg-white/90 text-slate-600 border border-slate-200 hover:bg-[#005bbf] hover:text-white transition-colors" title="Chỉnh sửa lớp" data-class-id="@item.Id" data-class-name="@item.ClassName">
+                        <button type="button" class="btn-open-edit-class h-9 w-9 rounded-lg bg-white/90 text-slate-600 border border-slate-200 hover:bg-[#0369A1] hover:text-white transition-colors" title="Chỉnh sửa lớp" data-class-id="@item.Id" data-class-name="@item.ClassName">
                             <span class="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button type="button" class="btn-open-delete-class h-9 w-9 rounded-lg bg-white/90 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white transition-colors" title="Xóa lớp" data-class-id="@item.Id" data-class-name="@item.ClassName">
@@ -199,7 +197,7 @@
                         </button>
                     </div>
 
-                    <div class="h-36 bg-gradient-to-br from-[#005bbf] to-[#1a73e8] flex items-center justify-center">
+                    <div class="h-36 bg-[#0369A1] flex items-center justify-center">
                         <span class="material-symbols-outlined text-white text-[72px]" style="font-variation-settings: 'FILL' 1;">school</span>
                     </div>
 
@@ -212,9 +210,9 @@
                         <div class="bg-[#f2f3fd] p-3 rounded-xl flex items-center justify-between gap-3">
                             <div>
                                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Mã tham gia</p>
-                                <p class="font-mono text-[#005bbf] tracking-wider font-bold text-[14px]">@item.JoinCode</p>
+                                <p class="font-mono text-[#0369A1] tracking-wider font-bold text-[14px]">@item.JoinCode</p>
                             </div>
-                            <button type="button" class="btn-copy-join-code w-9 h-9 rounded-lg bg-white text-[#005bbf] hover:bg-[#005bbf] hover:text-white transition-colors" data-code="@item.JoinCode" title="Sao chép mã">
+                            <button type="button" class="btn-copy-join-code w-9 h-9 rounded-lg bg-white text-[#0369A1] hover:bg-[#0369A1] hover:text-white transition-colors" data-code="@item.JoinCode" title="Sao chép mã">
                                 <span class="material-symbols-outlined text-[18px]">content_copy</span>
                             </button>
                         </div>
@@ -224,7 +222,7 @@
                                 <span class="material-symbols-outlined text-[20px]">group</span>
                                 <span class="text-sm font-semibold">@item.StudentCount sinh viên</span>
                             </div>
-                            <a href="@Url.Action("ManageClass", "Teacher", new { id = item.Id })" class="text-[#005bbf] font-bold text-sm hover:underline inline-flex items-center gap-1">
+                            <a href="@Url.Action("ManageClass", "Teacher", new { id = item.Id })" class="text-[#0369A1] font-bold text-sm hover:underline inline-flex items-center gap-1">
                                 Quản lý <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                             </a>
                         </div>
@@ -235,47 +233,21 @@
 
         @if (Model.TotalPages > 1)
         {
-            var visiblePages = new SortedSet<int> { 1, Model.TotalPages };
-            for (var p = Model.CurrentPage - 1; p <= Model.CurrentPage + 1; p++)
-            {
-                if (p >= 1 && p <= Model.TotalPages)
-                {
-                    visiblePages.Add(p);
-                }
-            }
-
-            if (Model.CurrentPage <= 3)
-            {
-                visiblePages.Add(2);
-                visiblePages.Add(3);
-            }
-
-            if (Model.CurrentPage >= Model.TotalPages - 2)
-            {
-                visiblePages.Add(Model.TotalPages - 1);
-                visiblePages.Add(Model.TotalPages - 2);
-            }
-
-            visiblePages.RemoveWhere(pageNumber => pageNumber < 1 || pageNumber > Model.TotalPages);
-            var orderedPages = visiblePages.ToList();
+            var startPage = Math.Max(1, Model.CurrentPage - 2);
+            var endPage = Math.Min(Model.TotalPages, startPage + 4);
+            startPage = Math.Max(1, endPage - 4);
 
             <div class="flex flex-wrap items-center justify-end gap-2">
-                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = Model.CurrentPage - 1 })" aria-label="Trang trước">
+                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(Model.CurrentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = Model.CurrentPage - 1 })" aria-label="Trang trước">
                     <span class="material-symbols-outlined text-[20px]">chevron_left</span>
                 </a>
 
-                @for (var i = 0; i < orderedPages.Count; i++)
+                @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
                 {
-                    var pageNumber = orderedPages[i];
-                    if (i > 0 && pageNumber - orderedPages[i - 1] > 1)
-                    {
-                        <span class="h-10 min-w-10 px-2 rounded-xl bg-slate-100 text-[#5ca0f0] text-sm font-bold inline-flex items-center justify-center">...</span>
-                    }
-
-                    <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#5ca0f0] text-white" : "bg-slate-100 text-[#5ca0f0] hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = pageNumber })">@pageNumber</a>
+                    <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#0369A1] text-white" : "bg-slate-100 text-[#0369A1] hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = pageNumber })">@pageNumber</a>
                 }
 
-                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == Model.TotalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = Model.CurrentPage + 1 })" aria-label="Trang sau">
+                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(Model.CurrentPage == Model.TotalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("Classes", "Teacher", new { searchKeyword = Model.SearchKeyword, studentFilter = Model.StudentFilter, sortBy = Model.SortBy, page = Model.CurrentPage + 1 })" aria-label="Trang sau">
                     <span class="material-symbols-outlined text-[20px]">chevron_right</span>
                 </a>
             </div>
@@ -293,7 +265,7 @@
     <div id="modal-create" class="bg-white w-full max-w-[500px] rounded-2xl shadow-[0px_12px_32px_rgba(25,28,35,0.12)] hidden flex-col modal-enter">
         <div class="px-8 pt-8 pb-4 border-b border-[#e6e8f2]/50">
             <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 rounded-xl bg-[#005bbf] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(0,91,191,0.2)]">
+                <div class="w-10 h-10 rounded-xl bg-[#0369A1] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(3,105,161,0.2)]">
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_home</span>
                 </div>
                 <h2 class="text-[24px] font-['Manrope',_sans-serif] font-bold text-[#191c23]">Tạo lớp học mới</h2>
@@ -303,13 +275,13 @@
 
         <div class="px-8 py-6 space-y-2">
             <label for="input-className" class="text-[11px] font-bold text-[#414754] tracking-widest uppercase">Tên lớp học (bắt buộc)</label>
-            <input type="text" id="input-className" placeholder="Ví dụ: Lập trình Web Nâng cao - D18CNPM1" class="w-full px-4 py-3 border border-[#c1c6d6] rounded-lg focus:border-[#005bbf] focus:ring-2 focus:ring-[#005bbf]/20 text-[#191c23]" />
+            <input type="text" id="input-className" autocomplete="off" placeholder="Ví dụ: Lập trình Web Nâng cao - D18CNPM1" class="w-full px-4 py-3 border border-[#c1c6d6] rounded-lg focus:border-[#0369A1] focus:ring-2 focus:ring-[#0369A1]/20 text-[#191c23]" />
             <div id="error-className" class="text-[#d32f2f] text-[12px] hidden"></div>
         </div>
 
         <div class="px-8 py-5 bg-[#f9f9ff] rounded-b-2xl flex justify-end items-center gap-3">
-            <button type="button" id="btn-cancel-create" class="px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
-            <button type="button" id="btn-submit-create" class="px-6 py-2.5 bg-[#005bbf] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_12px_rgba(0,91,191,0.2)] hover:bg-[#1a73e8] active:scale-[0.98] transition-all flex items-center gap-2">
+            <button type="button" id="btn-cancel-create" class="px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
+            <button type="button" id="btn-submit-create" class="px-6 py-2.5 bg-[#0369A1] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_12px_rgba(3,105,161,0.2)] hover:bg-[#0369A1] active:scale-[0.98] transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 Tạo lớp học
             </button>
@@ -324,10 +296,10 @@
         <p class="text-[#414754] text-[15px] mb-6 leading-relaxed">Chia sẻ mã bên dưới để học sinh tham gia lớp.</p>
         <div class="w-full bg-[#f9f9ff] border border-dashed border-[#c1c6d6] rounded-2xl py-6 mb-8">
             <span class="text-[11px] font-bold text-[#414754] uppercase mb-2 block">Mã tham gia</span>
-            <span id="success-joinCode" class="text-[32px] font-['Manrope',_sans-serif] font-bold tracking-widest text-[#005bbf]">LOADING</span>
+            <span id="success-joinCode" class="text-[32px] font-['Manrope',_sans-serif] font-bold tracking-widest text-[#0369A1]">LOADING</span>
         </div>
         <div class="w-full flex flex-col gap-2">
-            <button type="button" id="btn-copy-code" class="w-full bg-[#005bbf] text-white font-bold text-[15px] py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,91,191,0.2)] hover:bg-[#1a73e8] transition-colors">
+            <button type="button" id="btn-copy-code" class="w-full bg-[#0369A1] text-white font-bold text-[15px] py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(3,105,161,0.2)] hover:bg-[#0369A1] transition-colors">
                 <span class="material-symbols-outlined text-[20px]">content_copy</span>
                 Sao chép mã
             </button>
@@ -338,7 +310,7 @@
     <div id="modal-edit" class="bg-white w-full max-w-[520px] rounded-2xl shadow-[0px_12px_32px_rgba(25,28,35,0.12)] hidden flex-col modal-enter">
         <div class="px-8 pt-8 pb-4 border-b border-[#e6e8f2]/50">
             <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 rounded-xl bg-[#f2f3fd] flex items-center justify-center text-[#005bbf]">
+                <div class="w-10 h-10 rounded-xl bg-[#f2f3fd] flex items-center justify-center text-[#0369A1]">
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit</span>
                 </div>
                 <h2 class="text-[24px] font-['Manrope',_sans-serif] font-bold text-[#191c23]">Chỉnh sửa lớp học</h2>
@@ -348,13 +320,13 @@
 
         <div class="px-8 py-6 space-y-2">
             <label for="input-edit-className" class="text-[11px] font-bold text-[#414754] tracking-widest uppercase">Tên lớp học mới</label>
-            <input type="text" id="input-edit-className" class="w-full px-4 py-3 border border-[#c1c6d6] rounded-lg focus:border-[#005bbf] focus:ring-2 focus:ring-[#005bbf]/20 text-[#191c23]" />
+            <input type="text" id="input-edit-className" autocomplete="off" class="w-full px-4 py-3 border border-[#c1c6d6] rounded-lg focus:border-[#0369A1] focus:ring-2 focus:ring-[#0369A1]/20 text-[#191c23]" />
             <div id="error-edit-className" class="text-[#d32f2f] text-[12px] hidden"></div>
         </div>
 
         <div class="px-8 py-5 bg-[#f9f9ff] rounded-b-2xl flex justify-end items-center gap-3">
-            <button type="button" id="btn-cancel-edit" class="px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
-            <button type="button" id="btn-submit-edit" class="px-6 py-2.5 bg-[#005bbf] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_12px_rgba(0,91,191,0.2)] hover:bg-[#1a73e8] active:scale-[0.98] transition-all flex items-center gap-2">
+            <button type="button" id="btn-cancel-edit" class="px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
+            <button type="button" id="btn-submit-edit" class="px-6 py-2.5 bg-[#0369A1] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_12px_rgba(3,105,161,0.2)] hover:bg-[#0369A1] active:scale-[0.98] transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">save</span>
                 Lưu thay đổi
             </button>
@@ -371,7 +343,7 @@
         </div>
 
         <div class="px-8 py-5 bg-[#f9f9ff] rounded-b-2xl flex justify-end items-center gap-3">
-            <button type="button" id="btn-cancel-delete" class="px-6 py-2.5 text-[#005bbf] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
+            <button type="button" id="btn-cancel-delete" class="px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-xl transition-colors">Hủy</button>
             <button type="button" id="btn-submit-delete" class="px-6 py-2.5 bg-rose-600 text-white font-bold text-[14px] rounded-xl shadow-[0_4px_12px_rgba(220,38,38,0.2)] hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">delete</span>
                 Xóa lớp

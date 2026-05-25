@@ -25,4 +25,16 @@ public interface IMeiliSearchService
     Task IndexTeacherExamSessionsAsync(int teacherId, IEnumerable<ExamSessionSearchDocument> examSessions, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<int>> SearchTeacherExamSessionIdsAsync(int teacherId, string keyword, int limit = 400, CancellationToken cancellationToken = default);
+
+    Task IndexStudentClassroomsAsync(int studentId, IEnumerable<StudentClassroomSearchDocument> classrooms, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<int>> SearchStudentClassroomIdsAsync(int studentId, string keyword, int limit = 300, CancellationToken cancellationToken = default);
+
+    Task IndexStudentExamSessionsAsync(int studentId, IEnumerable<StudentExamSessionSearchDocument> examSessions, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<int>> SearchStudentExamSessionIdsAsync(int studentId, string keyword, int limit = 400, CancellationToken cancellationToken = default);
+
+    Task IndexStudentSubmissionsAsync(int studentId, IEnumerable<StudentSubmissionSearchDocument> submissions, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<int>> SearchStudentSubmissionIdsAsync(int studentId, string keyword, int limit = 500, CancellationToken cancellationToken = default);
 }

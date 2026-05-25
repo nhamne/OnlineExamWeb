@@ -10,6 +10,8 @@ public class TeacherExamListVM
     public string? SearchKeyword { get; set; }
 
     public string SortBy { get; set; } = "created_desc";
+
+    public bool ShowMeiliSearchWarning { get; set; }
 }
 
 public class TeacherExamItemVM
