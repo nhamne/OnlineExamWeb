@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using OnlineExam.Models;
 using OnlineExam.Services.Search;
 
@@ -6,7 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<OnlineExamDbContext>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Missing connection string 'DefaultConnection'. Set it in appsettings.json or as ConnectionStrings__DefaultConnection in the deployment environment.");
+}
+
+builder.Services.AddDbContext<OnlineExamDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 builder.Services.AddHttpClient<IMeiliSearchService, MeiliSearchService>();
 
 builder.Services.AddSession(); // Đăng ký dịch vụ thẻ nhớ tạm
