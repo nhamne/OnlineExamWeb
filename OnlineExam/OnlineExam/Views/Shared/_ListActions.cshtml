@@ -1,0 +1,71 @@
+@{
+    // Expected ViewData:
+    // data-export-url (string), data-delete-url (string), data-copy-url (string, optional), hideCopy (bool)
+    var exportUrl = ViewData["exportUrl"] as string ?? "/";
+    var deleteUrl = ViewData["deleteUrl"] as string ?? "/";
+    var copyUrl = ViewData["copyUrl"] as string ?? null;
+    var hideCopy = ViewData["hideCopy"] as bool? ?? false;
+    var hideSettings = ViewData["hideSettings"] as bool? ?? false;
+}
+
+<div class="flex items-center justify-between gap-3 px-5 py-3">
+    <div class="flex items-center gap-2">
+        <span class="text-sm font-bold text-slate-700">Công cụ:</span>
+    </div>
+
+    <div class="flex items-center border border-slate-200 rounded-lg bg-white h-9 relative">
+        <button class="list-actions-export-btn flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:bg-slate-50 transition-colors text-[12px] font-semibold border-r border-slate-200 focus:outline-none" type="button">
+            <span class="material-symbols-outlined !text-sm">download</span>
+            Export File
+        </button>
+        <div class="list-actions-export-menu hidden absolute left-0 top-full mt-2 bg-white shadow-2xl border border-gray-100 rounded-xl w-[200px] z-[9999] py-2">
+            <p class="px-4 py-1 text-[9px] font-black text-gray-400 uppercase tracking-widest">Định dạng</p>
+            <button type="button" data-format="csv" class="list-actions-export-format flex items-center w-full text-left gap-2 px-4 py-2 hover:bg-blue-50 text-[#0369A1] text-[11px] font-bold">
+                <span class="material-symbols-outlined !text-sm">table_chart</span> Xuất CSV (.csv)
+            </button>
+        </div>
+
+        @if (!hideSettings)
+        {
+            <div class="relative h-full">
+                <button class="list-actions-gear-btn px-2 h-full text-slate-600 hover:bg-slate-50 flex items-center focus:outline-none" type="button">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+
+                <div class="list-actions-gear-menu hidden absolute right-0 top-full mt-2 bg-white shadow-2xl border border-gray-100 rounded-xl w-52 z-[9999] py-2">
+                    <p class="px-4 py-1 text-[9px] font-black text-gray-400 uppercase tracking-widest">Thao tác</p>
+                    <button type="button" class="list-actions-delete-btn flex items-center w-full text-left gap-2 px-4 py-2 hover:bg-red-50 text-red-600 text-[11px] font-bold">
+                        <span class="material-symbols-outlined !text-sm">delete_sweep</span> Xóa mục đã chọn
+                    </button>
+                    @if (!hideCopy)
+                    {
+                        <button type="button" class="list-actions-copy-btn flex items-center w-full text-left gap-2 px-4 py-2 hover:bg-blue-50 text-[#0369A1] text-[11px] font-bold">
+                            <span class="material-symbols-outlined !text-sm">content_copy</span> Sao chép nhanh
+                        </button>
+                    }
+                    <hr class="my-1 border-gray-50">
+                    <p class="px-4 py-1 text-[9px] font-black text-gray-400 uppercase tracking-widest">Hiển thị cột</p>
+                    <label class="flex items-center gap-2 px-4 py-2 text-[11px] cursor-pointer hover:bg-gray-50">
+                        <input type="checkbox" checked class="list-actions-col-toggle col-toggle rounded text-[#0369A1] w-3 h-3" data-col="2"> <span>Mã</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2 text-[11px] cursor-pointer hover:bg-gray-50">
+                        <input type="checkbox" checked class="list-actions-col-toggle col-toggle rounded text-[#0369A1] w-3 h-3" data-col="3"> <span>Tên</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2 text-[11px] cursor-pointer hover:bg-gray-50">
+                        <input type="checkbox" checked class="list-actions-col-toggle col-toggle rounded text-[#0369A1] w-3 h-3" data-col="4"> <span>Email</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2 text-[11px] cursor-pointer hover:bg-gray-50">
+                        <input type="checkbox" checked class="list-actions-col-toggle col-toggle rounded text-[#0369A1] w-3 h-3" data-col="5"> <span>Ngày tham gia</span>
+                    </label>
+                    <hr class="my-1 border-gray-50">
+                    <button type="button" class="list-actions-hide-btn flex items-center w-full text-left gap-2 px-4 py-2 hover:bg-gray-50 text-[11px] font-bold">
+                        <span class="material-symbols-outlined !text-sm">visibility_off</span> Ẩn học sinh đã chọn
+                    </button>
+                    <button type="button" class="list-actions-show-hidden-btn flex items-center w-full text-left gap-2 px-4 py-2 hover:bg-gray-50 text-[11px] font-bold hidden">
+                        <span class="material-symbols-outlined !text-sm">visibility</span> Hiện học sinh ẩn
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

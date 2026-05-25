@@ -1,0 +1,282 @@
+@model OnlineExam.ViewModels.StudentJoinClassVM
+@{
+    ViewData["Title"] = "Tham gia lớp học";
+    var currentKeyword = (string?)ViewBag.SearchKeyword ?? string.Empty;
+    var currentSortBy = (string?)ViewBag.SortBy ?? "joined_desc";
+    var currentPage = (int?)ViewBag.CurrentPage ?? 1;
+    var totalPages = (int?)ViewBag.TotalPages ?? 1;
+    var totalItems = (int?)ViewBag.TotalItems ?? (Model.JoinedClasses?.Count ?? 0);
+}
+
+@section Styles {
+    <style>
+        .student-class-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .student-class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px rgba(25, 28, 35, 0.10);
+        }
+
+        .exam-chip {
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .exam-chip:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+}
+
+<div class="max-w-7xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">Danh sách lớp học</h1>
+            <p class="text-sm text-slate-500 mt-2">Tổng số lớp học: <span class="font-bold text-slate-700" id="joinedClassCount">@totalItems</span></p>
+        </div>
+
+        <button id="toggleJoinPanelBtn" type="button" class="flex items-center justify-center w-full md:w-auto bg-[#0369A1] text-white px-6 py-3 rounded-xl font-bold text-[15px] gap-2 shadow-[0_8px_20px_-6px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(3,105,161,0.5)] active:scale-[0.98] transition-all duration-300">
+            <span class="material-symbols-outlined text-[20px]">group_add</span>
+            Tham gia lớp học
+        </button>
+    </div>
+
+    @* MeiliSearch warning moved to Scripts section so appToast is available *@
+
+    <form method="get" class="bg-white rounded-2xl p-4 md:p-5 border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+        <div class="md:col-span-7">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Tìm kiếm lớp học</label>
+            <div class="relative">
+                <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">search</span>
+                <input id="classSearchInput" name="searchKeyword" value="@currentKeyword" type="text" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-4 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]" placeholder="Nhập tên lớp, giáo viên hoặc bài thi..." />
+            </div>
+        </div>
+
+        <div class="md:col-span-5">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Sắp xếp lớp</label>
+            <div class="relative">
+                <select id="sortClassSelect" name="sortBy" class="w-full h-11 appearance-none rounded-xl border border-slate-200 pl-4 pr-11 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] bg-white">
+                    <option value="joined_desc" selected="@(currentSortBy == "joined_desc")">Mới tham gia nhất</option>
+                    <option value="joined_asc" selected="@(currentSortBy == "joined_asc")">Lâu nhất</option>
+                    <option value="name_asc" selected="@(currentSortBy == "name_asc")">Tên lớp A-Z</option>
+                    <option value="name_desc" selected="@(currentSortBy == "name_desc")">Tên lớp Z-A</option>
+                    <option value="exam_desc" selected="@(currentSortBy == "exam_desc")">Nhiều bài thi nhất</option>
+                    <option value="exam_asc" selected="@(currentSortBy == "exam_asc")">Ít bài thi nhất</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">expand_more</span>
+            </div>
+        </div>
+        <input type="hidden" name="page" value="1" />
+    </form>
+
+    <div id="joinPanel" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 md:p-6 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div class="md:col-span-9">
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Mã lớp học</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">vpn_key</span>
+                    <input type="text" id="joinCodeInput" placeholder="VD: WEBNC1" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-4 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1] uppercase tracking-wide font-bold placeholder:normal-case placeholder:font-normal" />
+                </div>
+            </div>
+
+            <div class="md:col-span-3 flex gap-2">
+                <button onclick="submitJoinClass()" id="submitBtn" class="h-11 w-full rounded-xl bg-[#0369A1] text-white font-bold inline-flex items-center justify-center gap-2 hover:bg-[#0369A1] transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">login</span>
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+
+        <p id="joinClassError" class="text-red-500 text-sm font-semibold hidden flex items-center gap-2 mt-4"><span class="material-symbols-outlined text-sm">error</span> <span id="errorMsg"></span></p>
+        <p id="joinClassSuccess" class="text-green-600 text-sm font-semibold hidden flex items-center gap-2 mt-4"><span class="material-symbols-outlined text-sm">check_circle</span> <span id="successMsg"></span></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="classGrid">
+        @if (Model.JoinedClasses != null && Model.JoinedClasses.Any())
+        {
+            foreach (var item in Model.JoinedClasses)
+            {
+                 <div class="student-class-card class-item bg-white rounded-2xl overflow-hidden shadow-[0px_12px_28px_rgba(25,28,35,0.06)] border border-slate-100 flex flex-col">
+                    <div class="h-32 bg-[#0369A1] flex items-center justify-center relative">
+                        <span class="material-symbols-outlined text-white text-[72px]" style="font-variation-settings: 'FILL' 1;">school</span>
+                        <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-sm">
+                            @item.ExamCount bài thi
+                        </div>
+                    </div>
+
+                    <div class="p-5 flex flex-col gap-4 flex-1">
+                        <div>
+                            <h2 class="font-bold text-[18px] text-slate-800 leading-tight line-clamp-2">@item.ClassName</h2>
+                            <p class="text-sm text-slate-500 mt-1">Ngày tham gia: @(item.JoinedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</p>
+                        </div>
+
+                        <div class="bg-[#f2f3fd] p-3 rounded-xl flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Giáo viên</p>
+                                <p class="font-semibold text-[#0369A1] tracking-wide text-[14px] line-clamp-1">@item.TeacherName</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-lg bg-white text-[#0369A1] flex items-center justify-center shrink-0" title="Giảng viên phụ trách">
+                                <span class="material-symbols-outlined text-[18px]">person</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Bài thi gần đây</p>
+                            <div class="space-y-2">
+                                @if (item.RecentExams.Any())
+                                {
+                                    foreach (var exam in item.RecentExams)
+                                    {
+                                        <a href="@Url.Action("ExamResult", "Student", new { id = exam.SessionId })"
+                                           class="exam-chip rounded-xl border border-slate-100 bg-white p-3 shadow-sm flex items-start justify-between gap-3 hover:border-[#0369A1]/20 hover:bg-[#f8fbff]">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-slate-800 leading-snug line-clamp-1">@exam.SessionName</p>
+                                                <p class="text-xs text-slate-500 mt-1">@exam.StartTime.ToString("dd/MM/yyyy HH:mm")</p>
+                                            </div>
+                                            <span class="inline-flex shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">@exam.Status</span>
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-500 text-sm">
+                                        Lớp này chưa có bài thi nào.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="md:col-span-3 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm p-10 text-center text-slate-500">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-[#f2f3fd] text-[#0369A1] flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-[32px]">school</span>
+                </div>
+                <p class="font-semibold text-slate-700">Bạn chưa tham gia lớp học nào.</p>
+                <p class="text-sm mt-1">Nhấn nút <span class="font-bold text-[#0369A1]">Tham gia lớp học</span> để nhập mã lớp.</p>
+            </div>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, startPage + 4);
+        startPage = Math.Max(1, endPage - 4);
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(currentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+               href="@Url.Action("JoinClass", "Student", new { searchKeyword = currentKeyword, sortBy = currentSortBy, page = currentPage - 1 })"
+               aria-label="Trang trước">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </a>
+            @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+            {
+                <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == currentPage ? "bg-[#0369A1] text-white" : "bg-slate-100 text-[#0369A1] hover:bg-[#e8f1ff]")"
+                   href="@Url.Action("JoinClass", "Student", new { searchKeyword = currentKeyword, sortBy = currentSortBy, page = pageNumber })">@pageNumber</a>
+            }
+            <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#0369A1] flex items-center justify-center transition-colors @(currentPage == totalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+               href="@Url.Action("JoinClass", "Student", new { searchKeyword = currentKeyword, sortBy = currentSortBy, page = currentPage + 1 })"
+               aria-label="Trang sau">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @if (ViewBag.ShowMeiliSearchWarning == true)
+    {
+        <script>
+            const meiliMsg = "Không kết nối được với Meilisearch. Hệ thống đã tự động chuyển sang tìm kiếm thường.";
+            if (window.appToast && typeof window.appToast.warning === 'function') {
+                window.appToast.warning(meiliMsg);
+            } else if (window.appToast && typeof window.appToast.show === 'function') {
+                window.appToast.show(meiliMsg, 'warning');
+            }
+        </script>
+    }
+    <script>
+        const joinPanel = document.getElementById('joinPanel');
+        const toggleJoinPanelBtn = document.getElementById('toggleJoinPanelBtn');
+        const classSearchInput = document.getElementById('classSearchInput');
+        const sortClassSelect = document.getElementById('sortClassSelect');
+
+        function toggleJoinPanel() {
+            if (!joinPanel) return;
+            joinPanel.classList.toggle('hidden');
+        }
+
+        if (toggleJoinPanelBtn) {
+            toggleJoinPanelBtn.addEventListener('click', toggleJoinPanel);
+        }
+
+        let classSearchTimer;
+        classSearchInput?.addEventListener('input', () => {
+            clearTimeout(classSearchTimer);
+            classSearchTimer = setTimeout(() => {
+                classSearchInput.closest('form')?.submit();
+            }, 350);
+        });
+        sortClassSelect?.addEventListener('change', () => sortClassSelect.closest('form')?.submit());
+
+        async function submitJoinClass() {
+            const codeInput = document.getElementById('joinCodeInput');
+            const code = codeInput.value.trim();
+            const errorEl = document.getElementById('joinClassError');
+            const successEl = document.getElementById('joinClassSuccess');
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const btn = document.getElementById('submitBtn');
+
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            if (!code) {
+                errorMsg.textContent = 'Vui lòng nhập mã lớp học.';
+                errorEl.classList.remove('hidden');
+                codeInput.focus();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            try {
+                const formData = new FormData();
+                formData.append('joinCode', code);
+
+                const res = await fetch('/Student/JoinClass', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    successMsg.textContent = data.message || 'Tham gia lớp thành công!';
+                    successEl.classList.remove('hidden');
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    errorMsg.textContent = data.message || 'Mã lớp không hợp lệ.';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Đã có lỗi mạng xảy ra. Vui lòng thử lại.';
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        }
+
+        document.getElementById('joinCodeInput')?.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                submitJoinClass();
+            }
+        });
+    </script>
+}
