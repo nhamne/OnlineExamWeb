@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\baekn\Downloads\devploy_lan2</_PublishTargetUrl>
+    <History>True|2026-05-25T07:37:25.7986915Z||;True|2026-05-25T14:37:07.3640623+07:00||;True|2026-05-25T14:24:08.4629264+07:00||;True|2026-05-25T13:47:18.4023481+07:00||;True|2026-05-25T09:20:47.2184890+07:00||;True|2026-05-25T09:01:26.7950043+07:00||;True|2026-05-25T09:01:03.6081763+07:00||;True|2026-05-25T08:38:49.3915734+07:00||;True|2026-05-25T08:28:28.8457563+07:00||;False|2026-05-25T08:21:03.4140663+07:00||;True|2026-05-25T07:34:45.2784583+07:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>
