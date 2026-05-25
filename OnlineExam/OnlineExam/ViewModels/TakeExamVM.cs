@@ -11,6 +11,7 @@ namespace OnlineExam.ViewModels
         public int DurationInMinutes { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public DateTime StudentStartTime { get; set; }
         public bool IsShuffled { get; set; }
         public List<ExamQuestionVM> Questions { get; set; } = new List<ExamQuestionVM>();
     }

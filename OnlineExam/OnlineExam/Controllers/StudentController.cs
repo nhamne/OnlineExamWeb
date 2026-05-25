@@ -656,6 +656,7 @@ namespace OnlineExam.Controllers
                 DurationInMinutes = session.DurationInMinutes,
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,
+                StudentStartTime = submission.StartedAt,
                 IsShuffled = session.IsShuffled ?? false,
                 Questions = questions.Select(q => new ExamQuestionVM
                 {

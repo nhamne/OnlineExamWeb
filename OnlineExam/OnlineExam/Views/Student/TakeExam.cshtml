@@ -231,9 +231,14 @@
     @{
         var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var endLocal = Model.EndTime.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(Model.EndTime, DateTimeKind.Local) : Model.EndTime;
+        var studentStartLocal = Model.StudentStartTime.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(Model.StudentStartTime, DateTimeKind.Local) : Model.StudentStartTime;
+        
+        var studentDurationEnd = studentStartLocal.AddMinutes(Model.DurationInMinutes);
+        var actualEndLocal = studentDurationEnd < endLocal ? studentDurationEnd : endLocal;
+        
         var serverNowLocal = DateTime.Now;
 
-        var endTimeMs = (long)(endLocal.ToUniversalTime() - epoch).TotalMilliseconds;
+        var endTimeMs = (long)(actualEndLocal.ToUniversalTime() - epoch).TotalMilliseconds;
         var serverTimeMs = (long)(serverNowLocal.ToUniversalTime() - epoch).TotalMilliseconds;
     }
     <script>
