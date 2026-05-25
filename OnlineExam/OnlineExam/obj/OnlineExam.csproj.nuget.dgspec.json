@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ngoc Nhi\\Desktop\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {}
+    "C:\\Users\\Ngoc Nhi\\Downloads\\LTWNC-20260521T080747Z-3-001\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ngoc Nhi\\Desktop\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {
+    "C:\\Users\\Ngoc Nhi\\Downloads\\LTWNC-20260521T080747Z-3-001\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ngoc Nhi\\Desktop\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
+        "projectUniqueName": "C:\\Users\\Ngoc Nhi\\Downloads\\LTWNC-20260521T080747Z-3-001\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
         "projectName": "OnlineExam",
-        "projectPath": "C:\\Users\\Ngoc Nhi\\Desktop\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
+        "projectPath": "C:\\Users\\Ngoc Nhi\\Downloads\\LTWNC-20260521T080747Z-3-001\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\OnlineExam.csproj",
         "packagesPath": "C:\\Users\\Ngoc Nhi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ngoc Nhi\\Desktop\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\obj\\",
+        "outputPath": "C:\\Users\\Ngoc Nhi\\Downloads\\LTWNC-20260521T080747Z-3-001\\LTWNC\\OnlineExamWeb\\OnlineExam\\OnlineExam\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -30,6 +30,7 @@
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -44,10 +45,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore.Design": {
@@ -78,6 +80,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[8.0.26, 8.0.26]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -86,7 +106,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.309/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

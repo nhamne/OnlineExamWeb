@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OnlineExam.Models;
 
@@ -19,6 +20,7 @@ public partial class ExamPaper
 
     public string? Status { get; set; }
 
+    [NotMapped]
     public int? Duration { get; set; }
 
     public virtual ICollection<ExamSession> ExamSessions { get; set; } = new List<ExamSession>();

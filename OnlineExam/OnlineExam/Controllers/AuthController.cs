@@ -31,8 +31,16 @@ namespace OnlineExam.Controllers
             }
 
             var passwordHasher = new PasswordHasher<User>();
-            var verificationResult = passwordHasher.VerifyHashedPassword(new User(), storedPassword, enteredPassword);
-            return verificationResult == PasswordVerificationResult.Success || verificationResult == PasswordVerificationResult.SuccessRehashNeeded;
+            try
+            {
+                var verificationResult = passwordHasher.VerifyHashedPassword(new User(), storedPassword, enteredPassword);
+                return verificationResult == PasswordVerificationResult.Success || verificationResult == PasswordVerificationResult.SuccessRehashNeeded;
+            }
+            catch (FormatException)
+            {
+                // Handles legacy/plain-text or invalid hash formats without crashing.
+                return false;
+            }
         }
 
         private AuthPageViewModel BuildAuthPageViewModel(string? role, bool isRegister, string? errorMessage = null)
