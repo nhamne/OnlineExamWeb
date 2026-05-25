@@ -1,2 +1,0 @@
-C:\OnlineExamWeb\OnlineExam\OnlineExam\wwwroot\js\list-actions.js
-C:\OnlineExamWeb\OnlineExam\OnlineExam\wwwroot\js\password-toggle.js
