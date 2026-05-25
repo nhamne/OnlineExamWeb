@@ -1,0 +1,356 @@
+@model OnlineExam.ViewModels.ClassroomManageVM
+@{
+    ViewData["Title"] = "Quản lý lớp học";
+}
+
+<div class="max-w-6xl mx-auto space-y-6">
+<a href="@Url.Action("Classes", "Teacher")" class="inline-flex items-center text-sm text-[#0369A1] font-semibold hover:underline">
+                    <span class="material-symbols-outlined text-[18px] mr-1">arrow_back</span>
+                    Quay lại danh sách lớp
+                </a>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 md:p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">@Model.ClassName</h1>
+                <p class="text-slate-500 mt-1">Mã tham gia: <span class="font-mono font-bold text-[#0369A1]">@Model.JoinCode</span></p>
+            </div>
+            <div class="px-4 py-2 rounded-xl bg-[#f2f3fd] text-sm text-slate-600">
+                Tổng sinh viên: <span class="font-bold text-slate-800">@Model.TotalItems</span>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" asp-action="ManageClass" asp-controller="Teacher" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+        <input type="hidden" name="id" value="@Model.ClassroomId" />
+
+        <div class="md:col-span-8">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Tìm kiếm sinh viên</label>
+            <div class="relative">
+                <span class="material-symbols-outlined text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">search</span>
+                <input name="searchKeyword" value="@Model.SearchKeyword" class="w-full h-11 rounded-xl border border-slate-200 pl-10 pr-3 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]" placeholder="Nhập tên hoặc email sinh viên..." />
+            </div>
+        </div>
+
+        <div class="md:col-span-2">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-2">Số dòng/trang</label>
+            <select name="pageSize" class="w-full h-11 rounded-xl border border-slate-200 px-3 focus:ring-2 focus:ring-[#0369A1]/20 focus:border-[#0369A1]">
+                @if (Model.PageSize == 5)
+                {
+                    <option value="5" selected>5</option>
+                }
+                else
+                {
+                    <option value="5">5</option>
+                }
+                @if (Model.PageSize == 10)
+                {
+                    <option value="10" selected>10</option>
+                }
+                else
+                {
+                    <option value="10">10</option>
+                }
+                @if (Model.PageSize == 20)
+                {
+                    <option value="20" selected>20</option>
+                }
+                else
+                {
+                    <option value="20">20</option>
+                }
+                @if (Model.PageSize == 50)
+                {
+                    <option value="50" selected>50</option>
+                }
+                else
+                {
+                    <option value="50">50</option>
+                }
+            </select>
+        </div>
+
+        <div class="md:col-span-2 flex gap-2">
+            <button type="submit" class="h-11 w-full rounded-xl bg-[#0369A1] text-white font-bold hover:bg-[#0369A1] transition-colors">Tìm</button>
+            <a href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId })" class="h-11 px-4 rounded-xl bg-slate-100 text-slate-600 font-semibold flex items-center hover:bg-slate-200 transition-colors">Reset</a>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-visible">
+        @{
+            ViewData["exportUrl"] = $"/Teacher/ExportClassStudents?id={Model.ClassroomId}";
+            ViewData["deleteUrl"] = "/Teacher/DeleteStudents";
+            ViewData["hideCopy"] = true; // hide copy action on student list
+            ViewData["hideSettings"] = true; // hide gear/settings dropdown on this page
+        }
+        @await Html.PartialAsync("_ListActions")
+
+        <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+            <p id="selected-count-label" class="text-sm font-semibold text-slate-500">Chưa chọn học sinh nào</p>
+            <button id="btn-bulk-remove" type="button" class="h-10 px-4 rounded-xl bg-rose-600 text-white font-bold inline-flex items-center gap-2 hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <span class="material-symbols-outlined text-[18px]">person_remove</span>
+                Xóa học sinh đã chọn
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-5 py-3 w-12 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                            <input id="check-all-students" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-[#0369A1] focus:ring-[#0369A1]/30" />
+                        </th>
+                        <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">STT</th>
+                        <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Họ tên</th>
+                        <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Email</th>
+                        <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Ngày tham gia</th>
+                        <th class="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @if (Model.Students.Any())
+                    {
+                        var index = (Model.CurrentPage - 1) * Model.PageSize;
+                        foreach (var student in Model.Students)
+                        {
+                            index++;
+                            var removeFormId = $"remove-student-form-{student.StudentId}";
+                            <tr data-student-row-id="@student.StudentId" class="group hover:bg-slate-50/80 transition-colors">
+                                <td class="px-5 py-4">
+                                    <input type="checkbox" class="student-select-checkbox h-4 w-4 rounded border-slate-300 text-[#0369A1] focus:ring-[#0369A1]/30" value="@student.StudentId" />
+                                </td>
+                                <td class="px-5 py-4 text-sm text-slate-500">@index</td>
+                                <td class="px-5 py-4 font-semibold text-slate-800">@student.FullName</td>
+                                <td class="px-5 py-4 text-slate-600">@student.Email</td>
+                                <td class="px-5 py-4 text-slate-500">@student.JoinedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-5 py-4 text-right">
+                                    <form id="@removeFormId" method="post" asp-action="RemoveStudentFromClass" asp-controller="Teacher" class="inline-flex">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.ClassroomId" />
+                                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                                        <input type="hidden" name="searchKeyword" value="@Model.SearchKeyword" />
+                                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                        <button type="button" class="single-remove-trigger h-9 w-9 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100" title="Xóa học sinh khỏi lớp" data-form-id="@removeFormId" data-student-name="@student.FullName">
+                                            <span class="material-symbols-outlined text-[18px]">person_remove</span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="px-5 py-10 text-center text-slate-500 font-semibold">Không có sinh viên nào trong lớp hoặc không khớp từ khóa.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <form id="bulk-remove-form" method="post" asp-action="RemoveStudentsFromClass" asp-controller="Teacher" class="hidden">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.ClassroomId" />
+        <input type="hidden" name="searchKeyword" value="@Model.SearchKeyword" />
+        <input type="hidden" name="page" value="@Model.CurrentPage" />
+        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+        <div id="bulk-selected-students"></div>
+    </form>
+
+    <div id="remove-confirm-overlay" class="fixed top-0 left-0 w-screen h-screen min-h-screen !m-0 !mt-0 bg-[#191c23]/45 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_20px_50px_rgba(25,28,35,0.2)] border border-slate-100 overflow-hidden">
+            <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                <div class="w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined">person_remove</span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Xác nhận xóa học sinh</h3>
+                <p id="remove-confirm-message" class="text-sm text-slate-500 mt-2">Bạn có chắc muốn xóa học sinh này khỏi lớp?</p>
+            </div>
+            <div class="px-6 py-4 bg-slate-50/70 flex items-center justify-end gap-3">
+                <button id="btn-cancel-remove" type="button" class="h-10 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition-colors">
+                    Hủy
+                </button>
+                <button id="btn-confirm-remove" type="button" class="h-10 px-4 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 transition-colors">
+                    Xóa khỏi lớp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        var startPage = Math.Max(1, Model.CurrentPage - 2);
+        var endPage = Math.Min(Model.TotalPages, startPage + 4);
+        startPage = Math.Max(1, endPage - 4);
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-slate-500">Trang <span class="font-bold text-slate-700">@Model.CurrentPage</span> / @Model.TotalPages</p>
+            <div class="flex items-center gap-2">
+                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId, searchKeyword = Model.SearchKeyword, page = Model.CurrentPage - 1, pageSize = Model.PageSize })" aria-label="Trang trước">
+                    <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                </a>
+
+                @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                {
+                    <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#5ca0f0] text-white" : "bg-slate-100 text-[#5ca0f0] hover:bg-[#e8f1ff]")" href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId, searchKeyword = Model.SearchKeyword, page = pageNumber, pageSize = Model.PageSize })">@pageNumber</a>
+                }
+
+                <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == Model.TotalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")" href="@Url.Action("ManageClass", "Teacher", new { id = Model.ClassroomId, searchKeyword = Model.SearchKeyword, page = Model.CurrentPage + 1, pageSize = Model.PageSize })" aria-label="Trang sau">
+                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="/js/list-actions.js"></script>
+    <script>window.ListActions && window.ListActions.init('body');</script>
+    <script>
+        const checkAllStudents = document.getElementById('check-all-students');
+        const studentCheckboxes = Array.from(document.querySelectorAll('.student-select-checkbox'));
+        const selectedCountLabel = document.getElementById('selected-count-label');
+        const btnBulkRemove = document.getElementById('btn-bulk-remove');
+        const bulkRemoveForm = document.getElementById('bulk-remove-form');
+        const bulkSelectedStudents = document.getElementById('bulk-selected-students');
+        const removeConfirmOverlay = document.getElementById('remove-confirm-overlay');
+        const removeConfirmMessage = document.getElementById('remove-confirm-message');
+        const btnCancelRemove = document.getElementById('btn-cancel-remove');
+        const btnConfirmRemove = document.getElementById('btn-confirm-remove');
+        const singleRemoveButtons = Array.from(document.querySelectorAll('.single-remove-trigger'));
+
+        let pendingRemoveAction = null;
+
+        function openRemoveConfirm(message, action) {
+            pendingRemoveAction = action;
+
+            if (removeConfirmMessage) {
+                removeConfirmMessage.textContent = message;
+            }
+
+            if (removeConfirmOverlay) {
+                removeConfirmOverlay.classList.remove('hidden');
+                removeConfirmOverlay.classList.add('flex');
+            }
+        }
+
+        function closeRemoveConfirm() {
+            pendingRemoveAction = null;
+
+            if (removeConfirmOverlay) {
+                removeConfirmOverlay.classList.add('hidden');
+                removeConfirmOverlay.classList.remove('flex');
+            }
+        }
+
+        function getSelectedStudentIds() {
+            return studentCheckboxes
+                .filter((checkbox) => checkbox.checked)
+                .map((checkbox) => checkbox.value);
+        }
+
+        function updateSelectedState() {
+            const selectedIds = getSelectedStudentIds();
+            const selectedCount = selectedIds.length;
+
+            if (selectedCountLabel) {
+                selectedCountLabel.textContent = selectedCount > 0
+                    ? `Đã chọn ${selectedCount} học sinh`
+                    : 'Chưa chọn học sinh nào';
+            }
+
+            if (btnBulkRemove) {
+                btnBulkRemove.disabled = selectedCount === 0;
+            }
+
+            if (checkAllStudents) {
+                checkAllStudents.checked = studentCheckboxes.length > 0 && selectedCount === studentCheckboxes.length;
+                checkAllStudents.indeterminate = selectedCount > 0 && selectedCount < studentCheckboxes.length;
+            }
+        }
+
+        if (checkAllStudents) {
+            checkAllStudents.addEventListener('change', () => {
+                studentCheckboxes.forEach((checkbox) => {
+                    checkbox.checked = checkAllStudents.checked;
+                });
+
+                updateSelectedState();
+            });
+        }
+
+        studentCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', updateSelectedState);
+        });
+
+        if (btnBulkRemove && bulkRemoveForm && bulkSelectedStudents) {
+            btnBulkRemove.addEventListener('click', () => {
+                const selectedIds = getSelectedStudentIds();
+                if (selectedIds.length === 0) {
+                    return;
+                }
+
+                openRemoveConfirm(`Bạn có chắc muốn xóa ${selectedIds.length} học sinh đã chọn khỏi lớp?`, () => {
+                    bulkSelectedStudents.innerHTML = '';
+                    selectedIds.forEach((id) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'studentIds';
+                        input.value = id;
+                        bulkSelectedStudents.appendChild(input);
+                    });
+
+                    bulkRemoveForm.submit();
+                });
+            });
+        }
+
+        singleRemoveButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const formId = button.getAttribute('data-form-id');
+                const studentName = button.getAttribute('data-student-name') || 'học sinh này';
+                const form = formId ? document.getElementById(formId) : null;
+
+                if (!form) {
+                    return;
+                }
+
+                openRemoveConfirm(`Bạn có chắc muốn xóa ${studentName} khỏi lớp?`, () => {
+                    form.submit();
+                });
+            });
+        });
+
+        if (btnCancelRemove) {
+            btnCancelRemove.addEventListener('click', closeRemoveConfirm);
+        }
+
+        if (btnConfirmRemove) {
+            btnConfirmRemove.addEventListener('click', () => {
+                if (typeof pendingRemoveAction === 'function') {
+                    pendingRemoveAction();
+                }
+
+                closeRemoveConfirm();
+            });
+        }
+
+        if (removeConfirmOverlay) {
+            removeConfirmOverlay.addEventListener('click', (event) => {
+                if (event.target === removeConfirmOverlay) {
+                    closeRemoveConfirm();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeRemoveConfirm();
+            }
+        });
+
+        updateSelectedState();
+    </script>
+}

@@ -1,0 +1,493 @@
+@model OnlineExam.ViewModels.TakeExamVM
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Làm bài: @Model.SessionName</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#1a61a4',
+                        'primary-container': '#75aef7',
+                        'surface': '#f7f9fb',
+                        'surface-container-low': '#f0f4f7',
+                        'on-surface': '#2c3437',
+                        'outline-variant-soft': 'rgba(172, 179, 183, 0.15)',
+                    },
+                    fontFamily: {
+                        'headline': ['Manrope', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #2c3437; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .transition-soft { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .radio-custom:checked + div {
+            border-color: #1a61a4;
+            background-color: rgba(26, 97, 164, 0.05);
+        }
+        .radio-custom:checked + div .radio-inner {
+            background-color: #1a61a4;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen flex flex-col">
+
+    <!-- Header / Topbar -->
+    <header class="bg-white border-b border-outline-variant-soft px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">assignment</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold font-headline text-on-surface">@Model.SessionName</h1>
+                <p class="text-xs text-on-surface/50 font-semibold">@Model.ClassName</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="bg-red-50 px-6 py-2 rounded-xl flex items-center gap-3 border border-red-100 shadow-inner">
+                <span class="material-symbols-outlined text-red-500 animate-pulse">timer</span>
+                <div class="text-2xl font-black font-headline text-red-600 tracking-wider" id="countdownTimer">--:--:--</div>
+            </div>
+            
+            <button onclick="submitExam(false)" class="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-soft flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">send</span>
+                Nộp bài
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Sidebar: Question Nav -->
+        <aside class="w-80 bg-white border-r border-outline-variant-soft flex flex-col h-[calc(100vh-80px)] overflow-y-auto">
+            <div class="p-6 border-b border-outline-variant-soft">
+                <h3 class="font-bold text-on-surface/70 uppercase tracking-widest text-xs mb-4">Danh sách câu hỏi</h3>
+                <div class="grid grid-cols-5 gap-2">
+                    @for (int i = 0; i < Model.Questions.Count; i++)
+                    {
+                        var q = Model.Questions[i];
+                        <button onclick="scrollToQuestion('q-@q.Id')" id="nav-@q.Id" class="w-10 h-10 rounded-lg border-2 border-outline-variant-soft flex items-center justify-center font-bold text-sm text-on-surface/50 hover:bg-surface-container-low transition-colors">
+                            @(i + 1)
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="p-6 bg-yellow-50/50 flex-1">
+                <div class="flex items-start gap-3 text-yellow-700">
+                    <span class="material-symbols-outlined text-xl">warning</span>
+                    <div class="text-sm">
+                        <p class="font-bold mb-1">Cảnh báo Anti-cheat</p>
+                        <p class="text-yellow-700/80 mb-2">Hệ thống đang ghi hình trạng thái làm bài. Vui lòng không chuyển tab hoặc thoát toàn màn hình.</p>
+                        <div class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md font-bold text-xs">
+                            Vi phạm: <span id="warningCountDisplay">0</span> lần
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Content: Questions -->
+        <div class="flex-1 h-[calc(100vh-80px)] overflow-y-auto p-8 lg:p-12" id="questionContainer">
+            <div class="max-w-4xl mx-auto flex flex-col min-h-full pb-10">
+                
+                <div id="questionsWrapper" class="flex-1">
+                @for (int i = 0; i < Model.Questions.Count; i++)
+                {
+                    var q = Model.Questions[i];
+                    <div id="q-@q.Id" class="bg-white p-8 rounded-2xl shadow-sm border border-outline-variant-soft question-block" data-id="@q.Id" data-index="@i" style="display: @(i == 0 ? "block" : "none");">
+                        <div class="flex gap-4 mb-6">
+                            <div class="w-10 h-10 shrink-0 bg-surface-container-low rounded-xl flex items-center justify-center font-bold font-headline text-primary">
+                                @(i + 1)
+                            </div>
+                            <div class="text-lg font-medium leading-relaxed pt-1">
+                                @Html.Raw(q.Content)
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pl-14">
+                            <!-- Option A -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="radio" name="q-@q.Id" value="A" class="peer sr-only radio-custom" onchange="markAnswered(@q.Id, 'A')">
+                                <div class="px-6 py-4 rounded-xl border-2 border-outline-variant-soft transition-all group-hover:border-primary/40 flex items-center gap-4">
+                                    <div class="w-5 h-5 rounded-full border-2 border-on-surface/20 flex items-center justify-center shrink-0">
+                                        <div class="w-2.5 h-2.5 rounded-full radio-inner scale-0 transition-transform"></div>
+                                    </div>
+                                    <span class="font-bold text-on-surface/40 w-6">A.</span>
+                                    <span>@Html.Raw(q.OptionA)</span>
+                                </div>
+                            </label>
+                            
+                            <!-- Option B -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="radio" name="q-@q.Id" value="B" class="peer sr-only radio-custom" onchange="markAnswered(@q.Id, 'B')">
+                                <div class="px-6 py-4 rounded-xl border-2 border-outline-variant-soft transition-all group-hover:border-primary/40 flex items-center gap-4">
+                                    <div class="w-5 h-5 rounded-full border-2 border-on-surface/20 flex items-center justify-center shrink-0">
+                                        <div class="w-2.5 h-2.5 rounded-full radio-inner scale-0 transition-transform"></div>
+                                    </div>
+                                    <span class="font-bold text-on-surface/40 w-6">B.</span>
+                                    <span>@Html.Raw(q.OptionB)</span>
+                                </div>
+                            </label>
+
+                            <!-- Option C -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="radio" name="q-@q.Id" value="C" class="peer sr-only radio-custom" onchange="markAnswered(@q.Id, 'C')">
+                                <div class="px-6 py-4 rounded-xl border-2 border-outline-variant-soft transition-all group-hover:border-primary/40 flex items-center gap-4">
+                                    <div class="w-5 h-5 rounded-full border-2 border-on-surface/20 flex items-center justify-center shrink-0">
+                                        <div class="w-2.5 h-2.5 rounded-full radio-inner scale-0 transition-transform"></div>
+                                    </div>
+                                    <span class="font-bold text-on-surface/40 w-6">C.</span>
+                                    <span>@Html.Raw(q.OptionC)</span>
+                                </div>
+                            </label>
+
+                            <!-- Option D -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="radio" name="q-@q.Id" value="D" class="peer sr-only radio-custom" onchange="markAnswered(@q.Id, 'D')">
+                                <div class="px-6 py-4 rounded-xl border-2 border-outline-variant-soft transition-all group-hover:border-primary/40 flex items-center gap-4">
+                                    <div class="w-5 h-5 rounded-full border-2 border-on-surface/20 flex items-center justify-center shrink-0">
+                                        <div class="w-2.5 h-2.5 rounded-full radio-inner scale-0 transition-transform"></div>
+                                    </div>
+                                    <span class="font-bold text-on-surface/40 w-6">D.</span>
+                                    <span>@Html.Raw(q.OptionD)</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                }
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex justify-between items-center mt-8 pt-6 border-t border-outline-variant-soft">
+                    <button id="btnPrev" onclick="changeQuestion(-1)" class="px-6 py-3 rounded-xl font-bold bg-surface-container-low text-on-surface hover:bg-outline-variant-soft transition-soft flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span> Câu trước
+                    </button>
+                    <button id="btnNext" onclick="changeQuestion(1)" class="px-6 py-3 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 transition-soft flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Câu tiếp <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Overlay Nộp bài -->
+    <div id="submitOverlay" class="fixed inset-0 bg-white/90 backdrop-blur-md z-[100] hidden flex flex-col items-center justify-center">
+        <span class="material-symbols-outlined text-6xl text-primary animate-spin mb-4">progress_activity</span>
+        <h2 class="text-2xl font-bold font-headline text-primary">Đang nộp bài...</h2>
+        <p class="text-on-surface/50 mt-2">Vui lòng không đóng trình duyệt.</p>
+    </div>
+
+    <!-- App Toast (Local to TakeExam) -->
+    <div id="app-toast-container" class="fixed top-4 right-4 z-[140] pointer-events-none">
+        <div id="app-toast" class="hidden min-w-[280px] max-w-[420px] rounded-2xl border bg-white shadow-[0_20px_40px_rgba(15,23,42,0.12)] px-4 py-3 flex items-start gap-3 pointer-events-auto">
+            <div id="app-toast-icon" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="flex-1">
+                <p id="app-toast-title" class="font-bold text-sm">Thông báo</p>
+                <p id="app-toast-message" class="text-sm mt-0.5 text-slate-600">Nội dung thông báo</p>
+            </div>
+            <button id="app-toast-close" class="text-slate-400 hover:text-slate-600 transition-colors" type="button" aria-label="Đóng thông báo">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- App Confirm (Local to TakeExam) -->
+    <div id="app-confirm-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" id="app-confirm-backdrop"></div>
+        <div class="relative w-full max-w-sm transform rounded-2xl bg-white p-6 text-left shadow-2xl transition-all duration-300 scale-95 opacity-0" id="app-confirm-panel">
+            <div class="mb-5 flex items-center gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-100 sm:h-10 sm:w-10">
+                    <span class="material-symbols-outlined text-rose-600">warning</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900" id="app-confirm-title">Xác nhận</h3>
+            </div>
+            <p class="text-sm text-slate-600 mb-6" id="app-confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="flex gap-3">
+                <button id="app-confirm-cancel" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-[13px] hover:bg-slate-50 transition-colors">Hủy bỏ</button>
+                <button id="app-confirm-ok" class="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-[13px] hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    @{
+        var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endLocal = Model.EndTime.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(Model.EndTime, DateTimeKind.Local) : Model.EndTime;
+        var serverNowLocal = DateTime.Now;
+
+        var endTimeMs = (long)(endLocal.ToUniversalTime() - epoch).TotalMilliseconds;
+        var serverTimeMs = (long)(serverNowLocal.ToUniversalTime() - epoch).TotalMilliseconds;
+    }
+    <script>
+        const endTimeMs = @endTimeMs;
+        const serverRenderTimeMs = @serverTimeMs;
+        const initialPerformanceTime = performance.now();
+        const sessionId = @Model.SessionId;
+        
+        let answers = {};
+        let warningCount = 0;
+        let _lastWarningTimestamp = 0; // ms since epoch, prevents duplicate increments from multiple rapid events
+        let isSubmitting = false;
+        let isDialogActive = false;
+
+        // --- 0. UI COMPONENTS LOGIC ---
+        (() => {
+            const toastEl = document.getElementById('app-toast');
+            const iconEl = document.getElementById('app-toast-icon');
+            const titleEl = document.getElementById('app-toast-title');
+            const messageEl = document.getElementById('app-toast-message');
+            const closeEl = document.getElementById('app-toast-close');
+            let hideToastTimer;
+
+            function hideToast() {
+                if (toastEl) toastEl.classList.add('hidden');
+            }
+
+            function showToast(message, type = 'success') {
+                if (!toastEl) return;
+                toastEl.classList.remove('border-emerald-200', 'border-rose-200', 'border-amber-200');
+                iconEl.classList.remove('bg-emerald-100', 'text-emerald-600', 'bg-rose-100', 'text-rose-600', 'bg-amber-100', 'text-amber-600');
+                
+                let icon = 'check_circle', title = 'Thành công', rootC = 'border-emerald-200', iconWrapC = 'bg-emerald-100 text-emerald-600';
+                if (type === 'error') { icon = 'error'; title = 'Thất bại'; rootC = 'border-rose-200'; iconWrapC = 'bg-rose-100 text-rose-600'; }
+                if (type === 'warning') { icon = 'warning'; title = 'Cảnh báo'; rootC = 'border-amber-200'; iconWrapC = 'bg-amber-100 text-amber-600'; }
+
+                toastEl.classList.add(rootC);
+                iconEl.classList.add(...iconWrapC.split(' '));
+                const iSpan = iconEl.querySelector('span');
+                if (iSpan) iSpan.textContent = icon;
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                toastEl.classList.remove('hidden');
+                clearTimeout(hideToastTimer);
+                hideToastTimer = setTimeout(hideToast, 3200);
+            }
+
+            if (closeEl) closeEl.addEventListener('click', hideToast);
+            window.appToast = { show: showToast, error: (m) => showToast(m, 'error'), warning: (m) => showToast(m, 'warning') };
+
+            const cModal = document.getElementById('app-confirm-modal');
+            const cPanel = document.getElementById('app-confirm-panel');
+            const cTitle = document.getElementById('app-confirm-title');
+            const cMsg = document.getElementById('app-confirm-message');
+            const cOk = document.getElementById('app-confirm-ok');
+            const cCancel = document.getElementById('app-confirm-cancel');
+            const cBackdrop = document.getElementById('app-confirm-backdrop');
+            let onConfirmAction = null;
+
+            function closeConfirm() {
+                if (!cModal) return;
+                cModal.classList.add('opacity-0'); cPanel.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => { cModal.classList.add('hidden'); cModal.classList.remove('flex'); }, 300);
+                onConfirmAction = null;
+                setTimeout(() => { isDialogActive = false; }, 500); // Wait for modal close
+            }
+
+            function showConfirm(title, message, callback) {
+                if (!cModal) return;
+                isDialogActive = true;
+                cTitle.innerText = title || 'Xác nhận';
+                cMsg.innerText = message || '?';
+                onConfirmAction = callback;
+                cModal.classList.remove('hidden'); cModal.classList.add('flex');
+                setTimeout(() => { cModal.classList.remove('opacity-0'); cPanel.classList.remove('scale-95', 'opacity-0'); }, 10);
+            }
+
+            if (cCancel) cCancel.addEventListener('click', closeConfirm);
+            if (cBackdrop) cBackdrop.addEventListener('click', closeConfirm);
+            if (cOk) cOk.addEventListener('click', () => { if (onConfirmAction) onConfirmAction(); closeConfirm(); });
+            window.appConfirm = { show: showConfirm };
+        })();
+
+        // --- 1. COUNTDOWN TIMER ---
+        const timerEl = document.getElementById('countdownTimer');
+        
+        const timerInterval = setInterval(() => {
+            const elapsedSinceLoad = performance.now() - initialPerformanceTime;
+            const currentAbsoluteTimeMs = serverRenderTimeMs + elapsedSinceLoad;
+            const distance = endTimeMs - currentAbsoluteTimeMs;
+
+            if (distance <= 0) {
+                clearInterval(timerInterval);
+                timerEl.innerHTML = "00:00:00";
+                submitExam(true); // Force submit
+                return;
+            }
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timerEl.innerHTML = 
+                String(hours).padStart(2, '0') + ":" + 
+                String(minutes).padStart(2, '0') + ":" + 
+                String(seconds).padStart(2, '0');
+        }, 1000);
+
+        // --- 2. QUESTION NAV LOGIC ---
+        let currentQuestionIndex = 0;
+        const totalQuestions = @Model.Questions.Count;
+
+        function showQuestion(index) {
+            document.querySelectorAll('.question-block').forEach((block, i) => {
+                block.style.display = i === index ? 'block' : 'none';
+            });
+            currentQuestionIndex = index;
+            
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            if (btnPrev) btnPrev.disabled = index === 0;
+            if (btnNext) btnNext.disabled = index === totalQuestions - 1;
+            
+            document.querySelectorAll('[id^="nav-"]').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary/30');
+            });
+            const activeNavBtn = document.querySelectorAll('[id^="nav-"]')[index];
+            if (activeNavBtn) activeNavBtn.classList.add('ring-4', 'ring-primary/30');
+        }
+
+        function changeQuestion(step) {
+            const newIndex = currentQuestionIndex + step;
+            if (newIndex >= 0 && newIndex < totalQuestions) {
+                showQuestion(newIndex);
+            }
+        }
+
+        function scrollToQuestion(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                showQuestion(parseInt(el.getAttribute('data-index')));
+            }
+        }
+
+        // Init first question
+        showQuestion(0);
+
+        function markAnswered(qId, option) {
+            answers[qId] = option;
+            const navBtn = document.getElementById('nav-' + qId);
+            if (navBtn) {
+                navBtn.classList.remove('border-outline-variant-soft', 'text-on-surface/50');
+                navBtn.classList.add('bg-primary', 'text-white', 'border-primary');
+            }
+        }
+
+        // --- 3. SUBMIT EXAM ---
+        async function submitExam(isForceSubmit) {
+            if (isSubmitting) return;
+            
+            if (!isForceSubmit) {
+                const totalQ = @Model.Questions.Count;
+                const answeredQ = Object.keys(answers).length;
+                
+                const msg = answeredQ < totalQ 
+                    ? `Bạn mới làm ${answeredQ}/${totalQ} câu. Bạn có chắc chắn muốn nộp bài không?`
+                    : `Bạn có chắc chắn muốn nộp bài?`;
+                
+                window.appConfirm.show('Xác nhận nộp bài', msg, () => executeSubmit(false));
+                return; // Stop here, wait for callback
+            } else {
+                executeSubmit(true);
+            }
+
+            async function executeSubmit(force) {
+                isSubmitting = true;
+                document.getElementById('submitOverlay').classList.remove('hidden');
+
+                const payload = {
+                    SessionId: sessionId,
+                    Answers: Object.keys(answers).map(k => ({ QuestionId: parseInt(k), SelectedOption: answers[k] })),
+                    IsForceSubmit: force,
+                    WarningCount: warningCount
+                };
+
+            try {
+                const res = await fetch('/Student/SubmitExam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    if (window.appToast) window.appToast.error(data.message || 'Có lỗi xảy ra khi nộp bài.');
+                    document.getElementById('submitOverlay').classList.add('hidden');
+                    isSubmitting = false;
+                }
+            } catch (e) {
+                if (window.appToast) window.appToast.error('Lỗi mạng. Vui lòng thử lại.');
+                document.getElementById('submitOverlay').classList.add('hidden');
+                isSubmitting = false;
+            } finally {
+                if (isSubmitting === false) {
+                    isDialogActive = false;
+                }
+            }
+        } // end executeSubmit
+        }
+
+        // --- 4. ANTI-CHEAT LOGIC ---
+        function incrementWarning(reason) {
+            if (isSubmitting || isDialogActive) return;
+            const now = Date.now();
+            // ignore duplicate increments that happen within 1s
+            if (now - _lastWarningTimestamp < 1000) return;
+            _lastWarningTimestamp = now;
+
+            warningCount++;
+            document.getElementById('warningCountDisplay').innerText = warningCount;
+            if (window.appToast) {
+                window.appToast.warning(`CẢNH BÁO VI PHẠM: ${reason}. Vi phạm lần thứ ${warningCount}.`);
+            }
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && !isSubmitting && !isDialogActive) {
+                incrementWarning("Chuyển tab hoặc thu nhỏ trình duyệt");
+            }
+        });
+
+        // Detect window blur
+        window.addEventListener("blur", () => {
+            if (!isSubmitting && !isDialogActive) {
+                incrementWarning("Click ra ngoài giao diện bài thi");
+            }
+        });
+
+        // Prevent Context Menu (Right Click)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Prevent F12, Ctrl+Shift+I, etc.
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "F12" || 
+               (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C" || e.key === "J")) ||
+               (e.ctrlKey && e.key === "U")) {
+                e.preventDefault();
+                incrementWarning("Sử dụng phím tắt không hợp lệ (F12/Inspect)");
+            }
+        });
+
+    </script>
+</body>
+</html>

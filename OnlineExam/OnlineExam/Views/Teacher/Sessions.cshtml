@@ -1,0 +1,2799 @@
+@model OnlineExam.ViewModels.TeacherSessionListVM
+
+@{
+    ViewData["Title"] = "Tổ chức ca thi";
+}
+
+@section Styles {
+    <style>
+        .session-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .session-action-btn-view {
+            background: #f1f5ff;
+            border-color: #dbe6ff;
+            color: #6d28d9;
+        }
+
+        .session-action-btn-view:hover {
+            background: #e6eeff;
+        }
+
+        .session-action-btn-edit {
+            background: #eef6ff;
+            border-color: #d6e7ff;
+            color: #0369A1;
+        }
+
+        .session-action-btn-edit:hover {
+            background: #deecff;
+        }
+
+        .session-action-btn-delete {
+            background: #fff1f1;
+            border-color: #ffd7d7;
+            color: #ba1a1a;
+        }
+
+        .session-action-btn-delete:hover {
+            background: #ffe4e4;
+        }
+
+        .session-report-btn {
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 10px;
+            border: 1px solid #d8dfef;
+            background: #f3f6fd;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .session-report-btn:hover {
+            background: #e7edf8;
+        }
+
+        .session-status-ongoing {
+            background: #86efac;
+            color: #166534;
+        }
+
+        .session-status-upcoming {
+            background: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .session-status-finished {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .session-card-finished {
+            opacity: 0.72;
+        }
+
+        .session-card-finished:hover {
+            opacity: 1;
+        }
+         .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Tùy chỉnh thanh cuộn cho Modal Body */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c6d6; border-radius: 10px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #727785; }
+        
+        /* Hiệu ứng hiển thị Modal */
+        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @@keyframes modalIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Giữ popup xem trước luôn nằm gọn trong khung nhìn, nội dung cuộn bên trong */
+        .preview-modal-panel {
+            max-height: calc(100dvh - 2rem);
+        }
+
+        .preview-modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .success-modal-panel {
+            height: calc(100dvh - 2rem);
+            max-height: calc(100dvh - 2rem);
+        }
+
+        .success-modal-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        @@supports not (height: 100dvh) {
+            .success-modal-panel {
+                height: calc(100vh - 2rem);
+                max-height: calc(100vh - 2rem);
+            }
+        }
+
+        @@supports not (height: 100dvh) {
+            .preview-modal-panel {
+                max-height: calc(100vh - 2rem);
+            }
+        }
+
+        /* Session Detail Panel Styles */
+        .sessions-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .sessions-container.detail-open {
+            grid-template-columns: minmax(350px, 1fr) 420px;
+        }
+
+        .sessions-list {
+            min-width: 0;
+        }
+
+        .session-detail-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            transform: translateX(100%);
+            width: 420px;
+            height: 100vh;
+            background: #ffffff;
+            border-left: 1px solid #e6e8f2;
+            box-shadow: -8px 0 24px rgba(25, 28, 35, 0.12);
+            z-index: 40;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .session-detail-panel.show {
+            transform: translateX(0);
+        }
+
+        .session-detail-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e6e8f2;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .session-detail-header h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #191c23;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .btn-close-detail-panel {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid #e6e8f2;
+            background: #f9f9ff;
+            color: #727785;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-close-detail-panel:hover {
+            background: #f1f3f9;
+            color: #414754;
+        }
+
+        .session-detail-body {
+            flex: 1 1 50%;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 1.5rem;
+            space-y: 1.25rem;
+            custom-scrollbar;
+        }
+
+        .session-detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .session-detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .session-detail-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #414754;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .session-detail-value {
+            font-size: 14px;
+            color: #191c23;
+            font-weight: 500;
+        }
+
+        .session-detail-value.date-time {
+            font-size: 13px;
+        }
+
+        .session-detail-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            background: #f1f5ff;
+            color: #414754;
+        }
+
+        .session-detail-status.ongoing {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .session-detail-status.upcoming {
+            background: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .session-detail-status.finished {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .session-share-section {
+            flex: 0 1 50%;
+            padding: 1.5rem;
+            background: #f9f9ff;
+            border-top: 1px solid #e6e8f2;
+            min-height: 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            custom-scrollbar;
+        }
+
+        .session-share-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #0369A1;
+            font-size: 14px;
+        }
+
+        .session-share-link-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .session-share-link-input {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #dbe6ff;
+            border-radius: 8px;
+            background: #ffffff;
+            font-size: 12px;
+            color: #191c23;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-copy-share-link {
+            padding: 0.5rem 1rem;
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+
+        .btn-copy-share-link:hover {
+            background: #059669;
+        }
+
+        .session-share-qr {
+            text-align: center;
+        }
+
+        .session-share-qr-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #414754;
+            margin-bottom: 0.75rem;
+        }
+
+        .session-share-qr-image {
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto 1rem;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e6e8f2;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .btn-download-qr {
+            width: 100%;
+            padding: 0.75rem;
+            background: #e879f9;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-download-qr:hover {
+            background: #d946ef;
+        }
+
+        .session-tips {
+            padding: 0.75rem;
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #92400e;
+            line-height: 1.5;
+        }
+
+        .session-tips strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .session-tips ul {
+            margin: 0.5rem 0 0 1.5rem;
+            padding: 0;
+        }
+
+        .session-tips li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Delete Confirmation Modal */
+        .delete-confirm-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(25, 28, 35, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .delete-confirm-modal.show {
+            display: flex;
+        }
+
+        .delete-confirm-panel {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(25, 28, 35, 0.12);
+            max-width: 420px;
+            width: 100%;
+            padding: 2rem;
+            text-align: center;
+            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .delete-confirm-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            border-radius: 16px;
+            background: #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dc2626;
+            font-size: 32px;
+        }
+
+        .delete-confirm-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #191c23;
+            margin: 0 0 0.5rem;
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .delete-confirm-message {
+            font-size: 14px;
+            color: #414754;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .delete-confirm-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .delete-confirm-actions button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-delete-cancel {
+            background: #f2f3fd;
+            color: #0369A1;
+        }
+
+        .btn-delete-cancel:hover {
+            background: #e8ecf8;
+        }
+
+        .btn-delete-confirm {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .btn-delete-confirm:hover {
+            background: #b91c1c;
+        }
+
+        .btn-delete-confirm:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        @@media (max-width: 1024px) {
+            .sessions-container.detail-open {
+                grid-template-columns: 1fr;
+            }
+
+            .session-detail-panel {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+}
+
+@* <main class="flex-1 p-6 pt-0 pl-0 md:p-10 lg:p-12 bg-[#f9f9ff] font-['Inter',_sans-serif] text-[#191c23] min-h-screen"> *@
+    <main class="max-w-7xl mx-auto space-y-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="w-full flex items-center justify-between mb-4 max-md:flex-col max-md:items-start gap-4">
+            <div class="flex items-center mb-4 gap-4 px-2">
+                <h1
+                    class="text-[32px] font-['Manrope',_sans-serif] font-bold text-[#0369A1] leading-none tracking-tight">
+                    Danh sách ca thi</h1>
+                    <span
+                    class="px-2.5 py-0.5 bg-[#e0e2ec] text-[#414754] rounded-full text-[13px] font-bold">@Model.TotalItems</span>
+                </div>
+
+        
+                <button type="button"
+                id="btn-open-exam-modal"
+                        class="w-full md:w-auto flex items-center justify-center bg-[#0369A1] text-[#ffffff] px-6 py-3.5 rounded-[12px] font-['Manrope',_sans-serif] font-bold text-[15px] gap-2 shadow-[0_8px_20px_-6px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_24px_-6px_rgba(3,105,161,0.5)] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
+                        title="Tạo ca thi mới">
+                    <span class="material-symbols-outlined text-[20px]"
+                          style="font-variation-settings: 'FILL' 1;">add_circle</span>
+                    Tạo ca thi mới
+                </button>
+            </div>
+        </div>
+  
+
+
+
+<div id="modal-exam-overlay" class="fixed inset-0 z-[100] h-screen w-screen bg-[#191c23]/65 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-[#ffffff] w-full max-w-[860px] max-h-[calc(100dvh-2rem)] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter font-['Inter',_sans-serif]">
+        <form id="create-session-form" asp-action="CreateSession" asp-controller="Teacher" method="post" autocomplete="off" class="flex flex-col h-full overflow-hidden">
+            @Html.AntiForgeryToken()
+
+            @* Decoy fields to prevent browser credential autofill from targeting real session inputs. *@
+            <input type="text" name="fake-username" autocomplete="username" tabindex="-1" class="hidden" aria-hidden="true" />
+            <input type="password" name="fake-password" autocomplete="new-password" tabindex="-1" class="hidden" aria-hidden="true" />
+
+            <div class="px-8 py-6 bg-[#ffffff]/80 backdrop-blur-md sticky top-0 z-20 flex justify-between items-center border-b border-[#e6e8f2]/50">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#0369A1]">
+                        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_add_on</span>
+                    </div>
+                    <div>
+                        <h3 class="text-[20px] font-['Manrope',_sans-serif] font-bold text-[#191c23] leading-tight">Tạo ca thi mới</h3>
+                        
+                    </div>
+                </div>
+                <button type="button" id="btn-close-exam-modal" class="w-10 h-10 rounded-full hover:bg-[#f2f3fd] flex items-center justify-center text-[#727785] transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">close</span>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+                <section class="space-y-5">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
+                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
+                        <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thông tin cơ bản</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-3 space-y-1.5 group">
+                            <label for="sessionNameInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Tên ca thi <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <input id="sessionNameInput" type="text" name="sessionName" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Ví dụ: Kiểm tra cuối kỳ - Môn Cấu trúc dữ liệu" />
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                            <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="sessionName"></div>
+                        </div>
+
+                        <div class="space-y-1.5 group">
+                            <label for="subjectSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Môn học <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <select id="subjectSelect" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                    <option value="">Tất cả môn học</option>
+                                    @foreach (var subject in Model.Subjects)
+                                    {
+                                        <option value="@subject">@subject</option>
+                                    }
+                                </select>
+                                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 group">
+                            <label for="examPaperIdSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Đề thi <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <select id="examPaperIdSelect" name="examPaperId" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                    <option value="">Chọn đề thi từ thư viện</option>
+                                    @foreach (var examPaper in Model.ExamPapers)
+                                    {
+                                        <option value="@examPaper.Id" data-duration="@examPaper.DurationInMinutes" data-subject="@examPaper.Subject">@examPaper.Name</option>
+                                    }
+                                </select>
+                                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                            <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="examPaperId"></div>
+                        </div>
+
+                        <div class="space-y-1.5 group">
+                            <label for="classroomIdSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Lớp học tham gia <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <select id="classroomIdSelect" name="classroomId" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                    <option value="">Chọn lớp học</option>
+                                    @foreach (var classroom in Model.Classrooms)
+                                    {
+                                        <option value="@classroom.Id">@classroom.Name</option>
+                                    }
+                                </select>
+                                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none">keyboard_arrow_down</span>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                            <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="classroomId"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-5">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
+                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+                        <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thời gian</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1.5 group">
+                            <label for="startTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ bắt đầu <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <input id="startTimeInput" type="datetime-local" name="startTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                            <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="startTime"></div>
+                        </div>
+
+                        <div class="space-y-1.5 group">
+                            <label for="endTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ kết thúc <span class="text-[#d32f2f]">*</span></label>
+                            <div class="relative">
+                                <input id="endTimeInput" type="datetime-local" name="endTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                            <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="endTime"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-5">
+                    <div class="flex items-center gap-2 text-[#0369A1]">
+                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+                        <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Bảo mật & hiển thị</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1.5 group">
+                            <label for="sessionPasswordInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Mật khẩu ca thi (Tùy chọn)</label>
+                            <div class="relative">
+                                <input id="sessionPasswordInput" type="password" name="sessionPassword" autocomplete="new-password" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Nhập mã bảo mật" />
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 p-6 bg-[#f2f3fd] rounded-[16px]">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" name="allowViewExplanation" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Công bố lời giải sau khi làm xong</span>
+                            </label>
+
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input id="shuffleQuestionsInput" type="checkbox" name="shuffleQuestions" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Xáo trộn câu hỏi</span>
+                            </label>
+
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input id="shuffleAnswersInput" type="checkbox" name="shuffleAnswers" value="true" checked class="w-5 h-5 rounded-[6px] border-[#c1c6d6] text-[#0369A1] focus:ring-[#0369A1]" />
+                                <span class="text-[14px] font-medium text-[#191c23] group-hover:text-[#0369A1] transition-colors">Xáo trộn đáp án</span>
+                            </label>
+                        </div>
+
+                        <div class="space-y-1.5 group md:col-span-2">
+                            <label for="notesInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Ghi chú (Tùy chọn)</label>
+                            <div class="relative">
+                                <textarea id="notesInput" name="notes" rows="3" class="w-full px-5 py-4 bg-[#f2f3fd] rounded-[16px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] resize-none transition-all" placeholder="Ví dụ: Học sinh được phép sử dụng máy tính bỏ túi..."></textarea>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="px-8 py-3 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-[24px]">
+                <button type="button" id="btn-cancel-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
+                    Hủy bỏ
+                </button>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <button type="button" id="btn-preview-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-transparent border border-[#0369A1]/20 text-[#0369A1] rounded-[12px] text-[14px] font-bold hover:bg-[#f2f3fd] transition-all active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                        Xem trước ca thi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-session-preview-overlay" class="fixed inset-0 bg-[#191c23]/40 backdrop-blur-sm z-[110] hidden items-center justify-center p-4">
+    <div class="preview-modal-panel bg-white w-full max-w-[720px] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter">
+        <div class="px-8 py-6 bg-[#ffffff] flex justify-between items-center border-b border-[#e6e8f2]/50">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-[16px] bg-[#eef3ff] flex items-center justify-center text-[#0369A1]">
+                    <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">visibility</span>
+                </div>
+                <div>
+                    <h3 class="text-[20px] font-['Manrope',_sans-serif] font-bold text-[#191c23] leading-tight">Xem trước ca thi</h3>
+                    <p class="text-[13px] text-[#414754] mt-0.5">Kiểm tra lại dữ liệu trước khi tạo</p>
+                </div>
+            </div>
+            <button type="button" id="btn-close-preview-modal" class="w-10 h-10 rounded-full hover:bg-[#f2f3fd] flex items-center justify-center text-[#727785] transition-colors">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+            </button>
+        </div>
+
+        <div class="preview-modal-body p-8 space-y-4 custom-scrollbar">
+            <div class="p-4 rounded-[16px] bg-[#f9f9ff] border border-[#e6e8f2] text-[14px] text-[#191c23]">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-[#6b7280] mb-1">Tên ca thi</p>
+                <p id="previewSessionName" class="font-semibold"></p>
+            </div>
+
+            <div class="mt-6">
+                <h4 class="text-[12px] font-bold uppercase tracking-widest text-[#4b5563] mb-3">Mô phỏng màn thi học sinh</h4>
+                <div id="previewQuestionList" class="space-y-4 pr-1"></div>
+            </div>
+        </div>
+
+        <div class="px-8 py-4 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-end gap-3">
+            <button type="button" id="btn-confirm-create-session" class="px-6 py-2.5 bg-[#0369A1] text-[#ffffff] rounded-[12px] text-[14px] font-bold shadow-[0_4px_12px_rgba(3,105,161,0.2)] hover:shadow-[0_6px_16px_rgba(3,105,161,0.3)] transition-all active:scale-[0.98]">Hoàn tất tạo</button>
+            <button type="button" id="btn-close-preview-modal-footer" class="px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-create-success-overlay" class="fixed inset-0 bg-[#191c23]/40 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+    <div class="success-modal-panel bg-white w-full max-w-[560px] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.16)] overflow-hidden flex flex-col modal-enter">
+        <div class="success-modal-body p-5 sm:p-6">
+            <button type="button" id="btn-close-success-modal-icon" class="self-end w-10 h-10 rounded-full hover:bg-[#f2f3fd] flex items-center justify-center text-[#727785] transition-colors" title="Đóng">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+            </button>
+
+            <div class="-mt-2 flex flex-col items-center text-center">
+                <div class="w-14 h-14 rounded-2xl bg-[#0b8f43] text-white flex items-center justify-center shadow-[0_10px_20px_rgba(11,143,67,0.35)]">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check</span>
+                </div>
+                <h3 class="mt-2 text-[26px] leading-tight font-['Manrope',_sans-serif] font-extrabold text-[#191c23]">Tạo ca thi thành công!</h3>
+                <p class="mt-1 text-[14px] text-[#4b5563] leading-relaxed">
+                    Ca thi <span id="successSessionName" class="font-bold text-[#0369A1]"></span> đã được tạo thành công.
+                    Chia sẻ link hoặc mã QR bên dưới cho học sinh.
+                </p>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-[11px] font-bold text-[#6b7280] uppercase tracking-widest mb-2">Link tham gia</label>
+                <div class="flex items-center gap-2">
+                    <input id="successJoinLink" type="text" readonly class="flex-1 bg-[#f4f6ff] border border-[#dfe5f4] rounded-[10px] px-3 py-2.5 text-[13px] text-[#374151] focus:ring-0" />
+                    <button type="button" id="btn-copy-join-link" class="px-4 py-2.5 min-w-[88px] rounded-[10px] bg-[#0369A1] text-white text-[13px] font-bold hover:bg-[#0369A1] transition-colors">Copy</button>
+                </div>
+            </div>
+
+            <div class="mt-3 border border-[#e6e8f2] rounded-[16px] bg-[#f9f9ff] p-4 text-center">
+                <img id="successQrImage" src="" alt="QR tham gia ca thi" class="w-36 h-36 object-contain mx-auto rounded-[10px] bg-white border border-[#e6e8f2] p-2" />
+                <button type="button" id="btn-download-qr" class="mt-3 inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-[#eef3ff] border border-[#d8e4ff] text-[#0369A1] font-bold text-[14px] hover:bg-[#e2ebff] transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Tải mã QR
+                </button>
+            </div>
+        </div>
+
+        <div class="px-6 py-3 bg-[#f9f9ff] border-t border-[#e6e8f2] text-center text-[12px] text-[#6b7280]">
+            Hệ thống đã lưu cấu hình ca thi tự động.
+        </div>
+    </div>
+</div>
+
+
+
+        <form id="sessionFilterForm" method="get" asp-action="Sessions" asp-controller="Teacher"
+              class="flex flex-col lg:flex-row gap-5 items-end mb-12 p-4 bg-white rounded-[16px] shadow-[0_4px_12px_rgba(25,28,35,0.02)]">
+                        <input type="hidden" id="sessionPageInput" name="page" value="@Model.CurrentPage" />
+            <div class="flex-1 w-full space-y-2 group">
+                <label class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Từ khóa</label>
+                <div class="relative">
+                    <span
+                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#727785] pointer-events-none group-focus-within:text-[#0369A1] transition-colors">search</span>
+                    <input id="sessionKeywordInput" type="text" name="searchKeyword" value="@Model.SearchKeyword"
+                           class="w-full border-none rounded-[12px] pl-12 pr-14 py-3.5 text-[#191c23] text-[14px] focus:ring-0 focus:bg-[#ffffff] placeholder:text-[#c1c6d6] transition-all shadow-sm"
+                           placeholder="VD: Giữa kỳ, 12A1...">
+                    <button type="submit" title="Tìm kiếm"
+                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-[13px] bg-[#0369A1] text-white inline-flex items-center justify-center hover:bg-[#0369A1] transition-colors shadow-[0_4px_10px_rgba(3,105,161,0.22)]">
+                        <span class="material-symbols-outlined text-[16px]">search</span>
+                    </button>
+                    <div
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-48 space-y-2 group">
+                <label class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Trạng thái</label>
+                <div class="relative">
+                        <select id="statusFilter" name="statusFilter"
+                            class="w-full appearance-none border-none rounded-[12px] pl-4 pr-12 py-3.5 text-[#191c23] text-[14px] font-medium focus:ring-0 focus:bg-[#ffffff] transition-all cursor-pointer shadow-sm">
+                        <option value="all" selected="@(Model.StatusFilter == "all")">Tất cả</option>
+                        <option value="ongoing" selected="@(Model.StatusFilter == "ongoing")">Đang diễn ra</option>
+                        <option value="upcoming" selected="@(Model.StatusFilter == "upcoming")">Sắp diễn ra</option>
+                        <option value="finished" selected="@(Model.StatusFilter == "finished")">Đã kết thúc</option>
+                    </select>
+                    <span
+                    class="material-symbols-outlined absolute right-[14px] top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
+                    <div
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-48 space-y-2 group">
+                <label class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Sắp xếp</label>
+                <div class="relative">
+                        <select id="sortBy" name="sortBy"
+                            class="w-full appearance-none border-none rounded-[12px] pl-4 pr-12 py-3.5 text-[#191c23] text-[14px] font-medium focus:ring-0 focus:bg-[#ffffff] transition-all cursor-pointer shadow-sm">
+                        <option value="start_desc" selected="@(Model.SortBy == "start_desc")">Gần nhất</option>
+                        <option value="start_asc" selected="@(Model.SortBy == "start_asc")">Xa nhất</option>
+                        <option value="name_asc" selected="@(Model.SortBy == "name_asc")">Tên A-Z</option>
+                        <option value="submissions_desc" selected="@(Model.SortBy == "submissions_desc")">Nhiều bài nộp nhất
+                        </option>
+                    </select>
+                    <span
+                    class="material-symbols-outlined absolute right-[14px] top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
+                    <div
+                        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[12px]">
+                    </div>
+                </div>
+            </div>
+
+            <button id="clearSessionFilters" type="button" title="Bỏ lọc"
+                    class="h-[50px] w-[50px] rounded-[12px] bg-[#eef2fb] text-[#51607a] inline-flex items-center justify-center hover:bg-[#e2e9f7] transition-colors">
+                <span class="material-symbols-outlined text-[22px]">filter_alt_off</span>
+            </button>
+            </form>
+
+        
+
+            <div class="space-y-3">
+                <div class="hidden lg:grid grid-cols-12 gap-4 px-6 py-2">
+                    <div class="col-span-4 text-[11px] font-bold text-[#414754] uppercase tracking-widest">Tên ca thi / Đề thi
+                    </div>
+                    <div class="col-span-3 text-[11px] font-bold text-[#414754] uppercase tracking-widest">Lớp học</div>
+                    <div class="col-span-2 text-[11px] font-bold text-[#414754] uppercase tracking-widest">Trạng thái</div>
+                    <div class="col-span-3 text-[11px] font-bold text-[#414754] uppercase tracking-widest text-right">Thao tác
+                    </div>
+                </div>
+
+                @if (!Model.Sessions.Any())
+                {
+                    <div class="bg-white border border-slate-200 rounded-[16px] p-8 text-center text-slate-500 font-semibold">Không
+                        có ca thi phù hợp.</div>
+                    }
+            else
+                    {
+                        @foreach (var session in Model.Sessions)
+                        {
+                            var statusClass = session.Status == "Đang diễn ra"
+                                ? "session-status-ongoing"
+                                : session.Status == "Sắp diễn ra"
+                                    ? "session-status-upcoming"
+                                    : "session-status-finished";
+
+                            var rowClass = session.Status == "Đã kết thúc" ? "session-card-finished" : string.Empty;
+
+                            <article
+                                class="session-card @rowClass bg-[#ffffff] rounded-[16px] p-5 shadow-[0px_4px_12px_rgba(25,28,35,0.02)] hover:-translate-y-0.5 hover:shadow-[0px_12px_32px_rgba(25,28,35,0.06)] transition-all duration-300 flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:items-center group"
+                                data-session-id="@session.Id"
+                                data-monitor-url="@Url.Action("MonitorSession", "Teacher", new { sessionId = session.Id })">
+                                <div class="col-span-4 flex flex-col gap-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[20px] text-[#1d4ed8]"
+                                              style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+                                        <span class="font-bold text-[#191c23] text-[15px] truncate">@session.SessionName</span>
+                                
+                                    </div>
+                            
+                                </div>
+
+                                <div class="col-span-3 text-[14px] font-medium text-[#191c23]">@session.ClassName</div>
+
+                                <div class="col-span-2 text-[13px] font-medium text-[#414754]">
+                                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full @statusClass">@session.Status</span>
+                                </div>
+
+                                <div class="col-span-3 session-actions flex justify-start lg:justify-end gap-2">
+                                    <a href="@Url.Action("MonitorSession", "Teacher", new { sessionId = session.Id })" class="session-report-btn whitespace-nowrap" title="Theo dõi ca thi">
+                                        <span class="material-symbols-outlined text-[18px]">monitoring</span>
+                                        Theo dõi
+                                    </a>
+
+                                    @if (session.Status == "Sắp diễn ra")
+                                    {
+                                        <button type="button" class="session-action-btn session-action-btn-view btn-view-session-detail" title="Xem chi tiết">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                        <button type="button" class="session-action-btn session-action-btn-edit btn-edit-session" title="Chỉnh sửa">
+                                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        </button>
+                                        <button type="button" class="session-action-btn session-action-btn-delete btn-delete-session" title="Xóa">
+                                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
+                                    }
+                                    else if (session.Status == "Đang diễn ra")
+                                    {
+                                        <button type="button" class="session-action-btn session-action-btn-view btn-view-session-detail" title="Xem chi tiết">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="session-action-btn session-action-btn-view btn-view-session-detail" title="Xem chi tiết">
+                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                        <button type="button" class="session-report-btn whitespace-nowrap" title="Xem báo cáo">
+                                            <span class="material-symbols-outlined text-[18px]">analytics</span>
+                                            Xem báo cáo
+                                        </button>
+                                    }
+                                </div>
+                            </article>
+                        }
+                    }
+
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    var startPage = Math.Max(1, Model.CurrentPage - 2);
+                    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                    startPage = Math.Max(1, endPage - 4);
+
+                    <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                        <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == 1 ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+                           href="@Url.Action("Sessions", "Teacher", new { searchKeyword = Model.SearchKeyword, statusFilter = Model.StatusFilter, sortBy = Model.SortBy, page = Model.CurrentPage - 1 })"
+                           aria-label="Trang trước">
+                            <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                        </a>
+
+                        @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                        {
+                            <a class="h-10 min-w-10 px-3 rounded-xl text-sm font-bold inline-flex items-center justify-center transition-colors @(pageNumber == Model.CurrentPage ? "bg-[#5ca0f0] text-white" : "bg-slate-100 text-[#5ca0f0] hover:bg-[#e8f1ff]")"
+                               href="@Url.Action("Sessions", "Teacher", new { searchKeyword = Model.SearchKeyword, statusFilter = Model.StatusFilter, sortBy = Model.SortBy, page = pageNumber })">@pageNumber</a>
+                        }
+
+                        <a class="h-10 w-10 rounded-xl bg-slate-100 text-[#5ca0f0] flex items-center justify-center transition-colors @(Model.CurrentPage == Model.TotalPages ? "pointer-events-none opacity-45" : "hover:bg-[#e8f1ff]")"
+                           href="@Url.Action("Sessions", "Teacher", new { searchKeyword = Model.SearchKeyword, statusFilter = Model.StatusFilter, sortBy = Model.SortBy, page = Model.CurrentPage + 1 })"
+                           aria-label="Trang sau">
+                            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                        </a>
+                    </div>
+                }
+            </div>
+        </main>
+
+        <!-- Session Detail Panel -->
+        <aside id="sessionDetailPanel" class="session-detail-panel">
+            <div class="session-detail-header">
+                <h3 id="detailSessionName">Chi tiết ca thi</h3>
+                <button type="button" id="btnCloseDetailPanel" class="btn-close-detail-panel">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <div class="session-detail-body">
+                <!-- Session Info -->
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Đề thi</div>
+                    <div class="session-detail-value" id="detailExamTitle">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Lớp học</div>
+                    <div class="session-detail-value" id="detailClassName">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Mã khóa</div>
+                    <div class="session-detail-value" id="detailPassword">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Ngày thi</div>
+                    <div class="session-detail-value date-time" id="detailDate">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Thời gian thi</div>
+                    <div class="session-detail-value date-time" id="detailTime">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Trạng thái</div>
+                    <div id="detailStatus">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Công bố lời giải</div>
+                    <div class="session-detail-value" id="detailAllowViewExplanation">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Xáo trộn câu hỏi</div>
+                    <div class="session-detail-value" id="detailShuffleQuestions">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Xáo trộn đáp án</div>
+                    <div class="session-detail-value" id="detailShuffleAnswers">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Ghi chú</div>
+                    <div class="session-detail-value" id="detailNotes" style="word-break: break-word; white-space: pre-wrap;">-</div>
+                </div>
+
+                <div class="session-detail-section">
+                    <div class="session-detail-label">Số bài nộp</div>
+                    <div class="session-detail-value" id="detailSubmissionCount">-</div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="session-share-section">
+                <div class="session-share-header">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">share</span>
+                    Chia sẻ ca thi
+                </div>
+
+                <div class="session-share-link-box">
+                    <input type="text" id="detailJoinLink" class="session-share-link-input" readonly>
+                    <button type="button" id="btnCopyShareLink" class="btn-copy-share-link" title="Sao chép">
+                        <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        Copy
+                    </button>
+                </div>
+
+                <div class="session-share-qr">
+                    <div class="session-share-qr-label">Mã QR</div>
+                    <img id="detailQrImage" src="" alt="QR Code" class="session-share-qr-image">
+                    <button type="button" id="btnDownloadShareQr" class="btn-download-qr" title="Tải QR">
+                        <span class="material-symbols-outlined text-[18px]">download</span>
+                        Tải QR
+                    </button>
+                </div>
+
+                <div class="session-tips" style="margin-top: 1rem;">
+                    <strong>💡 Lưu ý cho học sinh:</strong>
+                    <ul>
+                        <li>Truy cập link hoặc quét mã QR để vào phòng thi</li>
+                        <li>Nhập mã khóa: <strong id="tipPassword">-</strong></li>
+                        <li>Làm bài trong khoảng thời gian quy định</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Edit Session Modal -->
+        <div id="modal-edit-exam-overlay" class="fixed inset-0 bg-[#191c23]/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+            <div class="bg-[#ffffff] w-full max-w-[860px] max-h-[90vh] rounded-[24px] shadow-[0px_12px_32px_rgba(25,28,35,0.12)] overflow-hidden flex flex-col modal-enter font-['Inter',_sans-serif]">
+                <form id="edit-session-form" method="post" autocomplete="off" class="flex flex-col h-full overflow-hidden">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" id="editSessionId" name="sessionId" value="">
+                    <input type="text" name="fake-username" autocomplete="username" tabindex="-1" class="hidden" aria-hidden="true" />
+                    <input type="password" name="fake-password" autocomplete="new-password" tabindex="-1" class="hidden" aria-hidden="true" />
+
+                    <div class="px-8 py-6 bg-[#ffffff]/80 backdrop-blur-md sticky top-0 z-20 flex justify-between items-center border-b border-[#e6e8f2]/50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-[16px] bg-[#d8e2ff] flex items-center justify-center text-[#0369A1]">
+                                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_add_on</span>
+                            </div>
+                            <div>
+                                <h3 class="text-[20px] font-['Manrope',_sans-serif] font-bold text-[#191c23] leading-tight">Chỉnh sửa ca thi</h3>
+                                <p class="text-[13px] text-[#414754] mt-0.5">Cập nhật thông tin ca thi vào CSDL</p>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-close-edit-exam-modal" class="w-10 h-10 rounded-full hover:bg-[#f2f3fd] flex items-center justify-center text-[#727785] transition-colors">
+                            <span class="material-symbols-outlined text-[24px]">close</span>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+                        <section class="space-y-5">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
+                                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
+                                <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thông tin cơ bản</h4>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2 space-y-1.5 group">
+                                    <label for="editSessionNameInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Tên ca thi <span class="text-[#d32f2f]">*</span></label>
+                                    <div class="relative">
+                                        <input id="editSessionNameInput" type="text" name="sessionName" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="Ví dụ: Kiểm tra cuối kỳ - Môn Cấu trúc dữ liệu" />
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="sessionName"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1.5 group">
+                                    <label for="editExamPaperIdSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Đề thi <span class="text-[#d32f2f]">*</span></label>
+                                    <div class="relative">
+                                        <select id="editExamPaperIdSelect" name="examPaperId" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                            <option value="">Chọn đề thi từ thư viện</option>
+                                        </select>
+                                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="examPaperId"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1.5 group">
+                                    <label for="editClassroomIdSelect" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Lớp học tham gia <span class="text-[#d32f2f]">*</span></label>
+                                    <div class="relative">
+                                        <select id="editClassroomIdSelect" name="classroomId" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none appearance-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] font-medium transition-all cursor-pointer">
+                                            <option value="">Chọn lớp học</option>
+                                        </select>
+                                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#727785] text-[21px] pointer-events-none">keyboard_arrow_down</span>
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="classroomId"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="space-y-5">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
+                                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+                                <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Thời gian</h4>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1.5 group">
+                                    <label for="editStartTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ bắt đầu <span class="text-[#d32f2f]">*</span></label>
+                                    <div class="relative">
+                                        <input id="editStartTimeInput" type="datetime-local" name="startTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="startTime"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1.5 group">
+                                    <label for="editEndTimeInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Giờ kết thúc <span class="text-[#d32f2f]">*</span></label>
+                                    <div class="relative">
+                                        <input id="editEndTimeInput" type="datetime-local" name="endTime" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[14px] transition-all" />
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                        <div class="text-[#d32f2f] text-[12px] min-h-[18px] hidden" data-error-for="endTime"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="space-y-5">
+                            <div class="flex items-center gap-2 text-[#0369A1]">
+                                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">settings</span>
+                                <h4 class="font-['Manrope',_sans-serif] font-bold tracking-widest uppercase text-[12px]">Bảo mật & hiển thị</h4>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="space-y-1.5 group">
+                                    <label for="editSessionPasswordInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Mã khóa ca thi (Tùy chọn)</label>
+                                    <div class="relative">
+                                        <input id="editSessionPasswordInput" name="sessionPassword" type="text" autocomplete="off" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] transition-all" placeholder="VD: LK2024...">
+                                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
+                                    <input id="editAllowViewExplanation" name="allowViewExplanation" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
+                                    <label for="editAllowViewExplanation" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Công bố lời giải sau khi kết thúc</label>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
+                                    <input id="editShuffleQuestions" name="shuffleQuestions" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
+                                    <label for="editShuffleQuestions" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Xáo trộn câu hỏi cho mỗi học sinh</label>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-4 rounded-[12px] bg-[#f2f3fd]">
+                                    <input id="editShuffleAnswers" name="shuffleAnswers" type="checkbox" class="w-5 h-5 cursor-pointer accent-[#0369A1]">
+                                    <label for="editShuffleAnswers" class="flex-1 text-[14px] font-medium text-[#191c23] cursor-pointer">Xáo trộn đáp án cho mỗi câu hỏi</label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="space-y-1.5 group md:col-span-2">
+                            <label for="editNotesInput" class="block text-[11px] font-bold text-[#414754] uppercase tracking-widest ml-1">Ghi chú (Tùy chọn)</label>
+                            <div class="relative">
+                                <textarea id="editNotesInput" name="notes" rows="3" class="w-full px-5 py-3.5 bg-[#f2f3fd] rounded-[12px] border-none focus:ring-0 focus:bg-[#ffffff] text-[#191c23] text-[15px] placeholder:text-[#c1c6d6] resize-none transition-all" placeholder="VD: Giữa kỳ tần suất cao, có phần tự luận..."></textarea>
+                                <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#0369A1] scale-x-0 group-focus-within:scale-x-100 transition-transform origin-center duration-300 rounded-b-[16px]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-8 py-3 bg-[#f9f9ff] border-t border-[#e6e8f2] flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-[24px]">
+                        <button type="button" id="btn-cancel-edit-exam" class="w-full sm:w-auto px-6 py-2.5 text-[#0369A1] font-bold text-[14px] hover:bg-[#f2f3fd] rounded-[12px] transition-colors">
+                            Hủy bỏ
+                        </button>
+
+                        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <button type="button" id="btn-update-edit-session" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0369A1] text-white rounded-[12px] text-[14px] font-bold hover:bg-[#0369A1] transition-all active:scale-[0.98]">
+                                <span class="material-symbols-outlined text-[18px]">save</span>
+                                Cập nhật ca thi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="modal-delete-confirm-overlay" class="delete-confirm-modal">
+            <div class="delete-confirm-panel">
+                <div class="delete-confirm-icon">
+                    <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">delete</span>
+                </div>
+                <h3 class="delete-confirm-title">Xóa ca thi?</h3>
+                <p class="delete-confirm-message">
+                    Bạn có chắc chắn muốn xóa ca thi <strong id="deleteConfirmSessionName"></strong> không?<br>
+                    <span style="font-size: 12px; color: #666;">Hành động này không thể hoàn tác.</span>
+                </p>
+                <div class="delete-confirm-actions">
+                    <button type="button" id="btn-delete-cancel" class="btn-delete-cancel">Hủy</button>
+                    <button type="button" id="btn-delete-confirm" class="btn-delete-confirm">Xóa</button>
+                </div>
+            </div>
+        </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Đưa các popups ra khỏi thẻ <main> (để không bị giới hạn bởi relative/stacking context)
+            const body = document.body;
+            body.appendChild(document.getElementById('modal-exam-overlay'));
+            body.appendChild(document.getElementById('modal-session-preview-overlay'));
+            body.appendChild(document.getElementById('modal-create-success-overlay'));
+            body.appendChild(document.getElementById('modal-edit-exam-overlay'));
+            body.appendChild(document.getElementById('modal-delete-confirm-overlay'));
+        });
+
+        (function () {
+            const form = document.getElementById("sessionFilterForm");
+            const statusFilter = document.getElementById("statusFilter");
+            const sortBy = document.getElementById("sortBy");
+            const keywordInput = document.getElementById("sessionKeywordInput");
+            const clearButton = document.getElementById("clearSessionFilters");
+            const pageInput = document.getElementById("sessionPageInput");
+
+            if (!form || !statusFilter || !sortBy || !keywordInput || !clearButton) {
+                return;
+            }
+
+            statusFilter.addEventListener("change", function () {
+                if (pageInput) {
+                    pageInput.value = "1";
+                }
+                form.submit();
+            });
+
+            sortBy.addEventListener("change", function () {
+                if (pageInput) {
+                    pageInput.value = "1";
+                }
+                form.submit();
+            });
+
+            // Keep keyword search tied to search icon click only.
+            keywordInput.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                }
+            });
+
+            clearButton.addEventListener("click", function () {
+                keywordInput.value = "";
+                statusFilter.value = "all";
+                sortBy.value = "start_desc";
+                if (pageInput) {
+                    pageInput.value = "1";
+                }
+                form.submit();
+            });
+
+            form.addEventListener("submit", function () {
+                if (pageInput) {
+                    pageInput.value = "1";
+                }
+            });
+        })();
+        const btnOpen = document.getElementById('btn-open-exam-modal');
+        const overlay = document.getElementById('modal-exam-overlay');
+        const btnClose = document.getElementById('btn-close-exam-modal');
+        const btnCancel = document.getElementById('btn-cancel-exam');
+        const createForm = document.getElementById('create-session-form');
+        const previewOverlay = document.getElementById('modal-session-preview-overlay');
+        const btnPreview = document.getElementById('btn-preview-session');
+        const btnConfirmCreate = document.getElementById('btn-confirm-create-session');
+        const btnClosePreviewHeader = document.getElementById('btn-close-preview-modal');
+        const btnClosePreviewFooter = document.getElementById('btn-close-preview-modal-footer');
+
+        const successOverlay = document.getElementById('modal-create-success-overlay');
+        const successSessionName = document.getElementById('successSessionName');
+        const successJoinLink = document.getElementById('successJoinLink');
+        const successQrImage = document.getElementById('successQrImage');
+        const btnCopyJoinLink = document.getElementById('btn-copy-join-link');
+        const btnDownloadQr = document.getElementById('btn-download-qr');
+        const btnCloseSuccessModalIcon = document.getElementById('btn-close-success-modal-icon');
+
+        const sessionNameInput = document.getElementById('sessionNameInput');
+        const subjectSelect = document.getElementById('subjectSelect');
+        const examPaperIdSelect = document.getElementById('examPaperIdSelect');
+        const examPaperOptionsTemplate = examPaperIdSelect ? examPaperIdSelect.innerHTML : '';
+        const classroomIdSelect = document.getElementById('classroomIdSelect');
+        const startTimeInput = document.getElementById('startTimeInput');
+        const endTimeInput = document.getElementById('endTimeInput');
+        const sessionPasswordInput = document.getElementById('sessionPasswordInput');
+        const notesInput = document.getElementById('notesInput');
+        const allowViewExplanationInput = createForm ? createForm.querySelector('input[name="allowViewExplanation"]') : null;
+        const shuffleQuestionsInput = createForm ? createForm.querySelector('input[name="shuffleQuestions"]') : null;
+        const shuffleAnswersInput = createForm ? createForm.querySelector('input[name="shuffleAnswers"]') : null;
+
+        const previewSessionName = document.getElementById('previewSessionName');
+        const previewQuestionList = document.getElementById('previewQuestionList');
+
+        let cachedExamPreview = null;
+        let latestSuccessLink = '';
+        let latestSuccessQrLink = '';
+
+        function openModal() {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            resetCreateSessionDraft();
+            clearCreateErrors();
+            if (sessionNameInput) {
+                sessionNameInput.focus();
+            }
+        }
+
+        function resetCreateSessionDraft() {
+            clearCreateErrors();
+
+            if (!createForm) {
+                return;
+            }
+
+            createForm.reset();
+
+            if (sessionNameInput) {
+                sessionNameInput.value = '';
+            }
+
+            if (sessionPasswordInput) {
+                sessionPasswordInput.value = '';
+            }
+
+            if (notesInput) {
+                notesInput.value = '';
+            }
+
+            cachedExamPreview = null;
+
+            if (previewQuestionList) {
+                previewQuestionList.innerHTML = '';
+            }
+
+            closePreviewModal();
+
+            if (subjectSelect) {
+                subjectSelect.value = '';
+            }
+
+            if (examPaperIdSelect) {
+                filterExamPapersBySubject('');
+            }
+        }
+
+        function filterExamPapersBySubject(subject) {
+            if (!examPaperIdSelect) {
+                return;
+            }
+
+            const normalizedSubject = (subject || '').trim();
+            const currentValue = examPaperIdSelect.value;
+
+            Array.from(examPaperIdSelect.options).forEach((option, index) => {
+                if (index === 0) {
+                    option.hidden = false;
+                    return;
+                }
+
+                const optionSubject = (option.dataset.subject || '').trim();
+                option.hidden = Boolean(normalizedSubject) && optionSubject !== normalizedSubject;
+            });
+
+            if (currentValue && examPaperIdSelect.selectedOptions.length && examPaperIdSelect.selectedOptions[0]?.hidden) {
+                examPaperIdSelect.value = '';
+            }
+        }
+
+        function closeModal() {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            resetCreateSessionDraft();
+        }
+
+        async function openPreviewModal() {
+            if (!previewOverlay) {
+                return;
+            }
+
+            previewSessionName.textContent = sessionNameInput.value.trim();
+
+            const examPaperId = examPaperIdSelect.value;
+
+            let examData = null;
+
+            try {
+                examData = await fetchExamPreview(examPaperId);
+            } catch (error) {
+                if (window.appToast) {
+                    window.appToast.show(error.message || 'Không thể tải dữ liệu đề thi.', 'error');
+                }
+            }
+
+            renderPreviewQuestions(examData);
+
+            previewOverlay.classList.remove('hidden');
+            previewOverlay.classList.add('flex');
+        }
+
+        function closePreviewModal() {
+            if (!previewOverlay) {
+                return;
+            }
+
+            previewOverlay.classList.add('hidden');
+            previewOverlay.classList.remove('flex');
+        }
+
+        function buildSessionJoinLink(sessionId) {
+            const encodedId = encodeURIComponent(sessionId);
+            return `${window.location.origin}/Student/Index?sessionId=${encodedId}`;
+        }
+
+        function openSuccessModal(sessionName, sessionId) {
+            if (!successOverlay) {
+                location.reload();
+                return;
+            }
+
+            latestSuccessLink = buildSessionJoinLink(sessionId);
+            latestSuccessQrLink = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(latestSuccessLink)}`;
+
+            if (successSessionName) {
+                successSessionName.textContent = sessionName || `#${sessionId}`;
+            }
+
+            if (successJoinLink) {
+                successJoinLink.value = latestSuccessLink;
+            }
+
+            if (successQrImage) {
+                successQrImage.src = latestSuccessQrLink;
+            }
+
+            successOverlay.classList.remove('hidden');
+            successOverlay.classList.add('flex');
+        }
+
+        function closeSuccessModal() {
+            if (!successOverlay) {
+                return;
+            }
+
+            successOverlay.classList.add('hidden');
+            successOverlay.classList.remove('flex');
+            location.reload();
+        }
+
+        function clearCreateErrors() {
+            document.querySelectorAll('[data-error-for]').forEach((element) => {
+                element.textContent = '';
+                element.classList.add('hidden');
+            });
+        }
+
+        function setCreateError(fieldName, message) {
+            const errorElement = document.querySelector(`[data-error-for="${fieldName}"]`);
+            if (!errorElement) {
+                return;
+            }
+
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        function clearCreateError(fieldName) {
+            const errorElement = document.querySelector(`[data-error-for="${fieldName}"]`);
+            if (!errorElement) {
+                return;
+            }
+
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+        }
+
+        function parseLocalDateTime(value) {
+            if (!value) {
+                return null;
+            }
+
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function toDateTimeLocalInputValue(value) {
+            const date = value instanceof Date ? value : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function getSelectedExamDuration() {
+            const selectedOption = examPaperIdSelect ? examPaperIdSelect.selectedOptions[0] : null;
+            if (!selectedOption) {
+                return 0;
+            }
+
+            const rawValue = selectedOption.getAttribute('data-duration');
+            const duration = Number(rawValue);
+            return Number.isFinite(duration) ? duration : 0;
+        }
+
+        function calculateSessionDuration() {
+            const startTime = parseLocalDateTime(startTimeInput.value);
+            const endTime = parseLocalDateTime(endTimeInput.value);
+
+            if (!startTime || !endTime) {
+                return 0;
+            }
+
+            return Math.ceil((endTime.getTime() - startTime.getTime()) / 60000);
+        }
+
+        function shuffleArray(items) {
+            const cloned = [...items];
+            for (let i = cloned.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+            }
+
+            return cloned;
+        }
+
+        function renderPreviewQuestions(examData) {
+            if (!previewQuestionList) {
+                return;
+            }
+
+            previewQuestionList.innerHTML = '';
+
+            if (!examData || !Array.isArray(examData.questions) || examData.questions.length === 0) {
+                previewQuestionList.innerHTML = '<div class="rounded-[14px] border border-[#e6e8f2] bg-[#f9f9ff] px-4 py-3 text-sm text-[#6b7280]">Đề thi chưa có câu hỏi để xem trước.</div>';
+                return;
+            }
+
+            const useShuffleQuestions = !!(shuffleQuestionsInput && shuffleQuestionsInput.checked);
+            const useShuffleAnswers = !!(shuffleAnswersInput && shuffleAnswersInput.checked);
+
+            const questionSource = useShuffleQuestions ? shuffleArray(examData.questions) : [...examData.questions];
+            const optionLetters = ['A', 'B', 'C', 'D'];
+
+            questionSource.forEach((question, index) => {
+                const questionCard = document.createElement('article');
+                questionCard.className = 'rounded-[14px] border border-[#e6e8f2] bg-white p-4';
+
+                const options = Array.isArray(question.options) ? [...question.options] : [];
+                const displayOptions = useShuffleAnswers ? shuffleArray(options) : options;
+
+                const mappedOptions = displayOptions.map((option, optionIndex) => ({
+                    ...option,
+                    displayLetter: optionLetters[optionIndex] || String.fromCharCode(65 + optionIndex)
+                }));
+
+                const correctOption = mappedOptions.find((option) => option.isCorrect);
+
+                const optionsHtml = mappedOptions.map((option) => {
+                    return `<li class="flex items-start gap-2 text-[14px] text-[#374151]"><span class="font-bold text-[#111827]">${option.displayLetter}.</span><span>${option.text || ''}</span></li>`;
+                }).join('');
+
+                const explanationHtml = question.explanation
+                    ? `<p class="text-[13px] text-[#1f2937] mt-2"><span class="font-semibold">Lời giải:</span> ${question.explanation}</p>`
+                    : '';
+
+                questionCard.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <h5 class="text-[15px] font-semibold text-[#111827]">Câu ${index + 1}: ${question.content || ''}</h5>
+                        <span class="whitespace-nowrap text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#eef3ff] text-[#1e40af]">Mô phỏng</span>
+                    </div>
+                    <ul class="mt-3 space-y-2">${optionsHtml}</ul>
+                    <p class="text-[13px] text-[#065f46] mt-3"><span class="font-semibold">Đáp án đúng:</span> ${correctOption ? `${correctOption.displayLetter}. ${correctOption.text || ''}` : 'Không xác định'}</p>
+                    ${explanationHtml}
+                `;
+
+                previewQuestionList.appendChild(questionCard);
+            });
+        }
+
+        async function fetchExamPreview(examPaperId) {
+            if (!examPaperId) {
+                return null;
+            }
+
+            if (cachedExamPreview && String(cachedExamPreview.id) === String(examPaperId)) {
+                return cachedExamPreview;
+            }
+
+            const response = await fetch(`/Teacher/GetExamPreview?examPaperId=${encodeURIComponent(examPaperId)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const result = await response.json().catch(() => null);
+
+            if (!response.ok || !result || !result.success || !result.exam) {
+                throw new Error(result?.message || 'Không thể tải dữ liệu xem trước đề thi.');
+            }
+
+            cachedExamPreview = result.exam;
+            return cachedExamPreview;
+        }
+
+        function validateRequiredField(fieldName) {
+            if (fieldName === 'sessionName') {
+                if (!sessionNameInput.value.trim()) {
+                    setCreateError('sessionName', 'Trường Tên ca thi là trường bắt buộc.');
+                    return false;
+                }
+
+                clearCreateError('sessionName');
+                return true;
+            }
+
+            if (fieldName === 'examPaperId') {
+                if (!examPaperIdSelect.value.trim()) {
+                    setCreateError('examPaperId', 'Trường Đề thi là trường bắt buộc.');
+                    return false;
+                }
+
+                clearCreateError('examPaperId');
+                return true;
+            }
+
+            if (fieldName === 'classroomId') {
+                if (!classroomIdSelect.value.trim()) {
+                    setCreateError('classroomId', 'Trường Lớp học tham gia là trường bắt buộc.');
+                    return false;
+                }
+
+                clearCreateError('classroomId');
+                return true;
+            }
+
+            if (fieldName === 'startTime') {
+                if (!startTimeInput.value.trim()) {
+                    setCreateError('startTime', 'Trường Giờ bắt đầu là trường bắt buộc.');
+                    return false;
+                }
+
+                clearCreateError('startTime');
+                return true;
+            }
+
+            if (fieldName === 'endTime') {
+                if (!endTimeInput.value.trim()) {
+                    setCreateError('endTime', 'Trường Giờ kết thúc là trường bắt buộc.');
+                    return false;
+                }
+
+                clearCreateError('endTime');
+                return true;
+            }
+
+            return true;
+        }
+
+        function validateTimeFieldsImmediate() {
+            const now = new Date();
+            const startTime = parseLocalDateTime(startTimeInput.value);
+            const endTime = parseLocalDateTime(endTimeInput.value);
+            const examDuration = getSelectedExamDuration();
+
+            if (startTimeInput.value.trim()) {
+                if (!startTime) {
+                    setCreateError('startTime', 'Trường Giờ bắt đầu không đúng định dạng.');
+                } else if (startTime < now) {
+                    setCreateError('startTime', 'Giờ bắt đầu không được là thời gian trong quá khứ.');
+                } else {
+                    clearCreateError('startTime');
+                }
+            }
+
+            if (endTimeInput.value.trim()) {
+                if (!endTime) {
+                    setCreateError('endTime', 'Trường Giờ kết thúc không đúng định dạng.');
+                } else {
+                    clearCreateError('endTime');
+                }
+            }
+
+            if (startTime && endTime) {
+                if (endTime <= startTime) {
+                    setCreateError('endTime', 'Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+                } else if (examDuration > 0 && calculateSessionDuration() < examDuration) {
+                    setCreateError('endTime', `Tổng thời gian ca thi phải lớn hơn hoặc bằng thời gian của đề thi (${examDuration} phút).`);
+                } else if (endTimeInput.value.trim()) {
+                    clearCreateError('endTime');
+                }
+            }
+        }
+
+        function validateSequentialBefore(fieldName) {
+            const order = ['sessionName', 'examPaperId', 'classroomId', 'startTime', 'endTime'];
+            const index = order.indexOf(fieldName);
+            if (index <= 0) {
+                return;
+            }
+
+            for (let i = 0; i < index; i += 1) {
+                validateRequiredField(order[i]);
+            }
+
+            validateTimeFieldsImmediate();
+        }
+
+        function validateCreateSessionForm() {
+            clearCreateErrors();
+
+            let firstInvalidField = null;
+            let isValid = true;
+
+            if (!validateRequiredField('sessionName')) {
+                firstInvalidField = firstInvalidField || sessionNameInput;
+                isValid = false;
+            }
+
+            if (!validateRequiredField('examPaperId')) {
+                firstInvalidField = firstInvalidField || examPaperIdSelect;
+                isValid = false;
+            }
+
+            if (!validateRequiredField('classroomId')) {
+                firstInvalidField = firstInvalidField || classroomIdSelect;
+                isValid = false;
+            }
+
+            if (!validateRequiredField('startTime')) {
+                firstInvalidField = firstInvalidField || startTimeInput;
+                isValid = false;
+            }
+
+            if (!validateRequiredField('endTime')) {
+                firstInvalidField = firstInvalidField || endTimeInput;
+                isValid = false;
+            }
+
+            validateTimeFieldsImmediate();
+
+            const startHasError = !document.querySelector('[data-error-for="startTime"]')?.classList.contains('hidden');
+            const endHasError = !document.querySelector('[data-error-for="endTime"]')?.classList.contains('hidden');
+
+            if (startHasError) {
+                firstInvalidField = firstInvalidField || startTimeInput;
+                isValid = false;
+            }
+
+            if (endHasError) {
+                firstInvalidField = firstInvalidField || endTimeInput;
+                isValid = false;
+            }
+
+            if (!isValid && firstInvalidField) {
+                firstInvalidField.focus();
+            }
+
+            return isValid;
+        }
+
+        if (sessionNameInput) {
+            sessionNameInput.addEventListener('blur', () => {
+                validateRequiredField('sessionName');
+            });
+        }
+
+        if (subjectSelect) {
+            subjectSelect.addEventListener('change', () => {
+                filterExamPapersBySubject(subjectSelect.value);
+                if (examPaperIdSelect) {
+                    examPaperIdSelect.value = '';
+                }
+            });
+        }
+
+        if (examPaperIdSelect) {
+            examPaperIdSelect.addEventListener('focus', () => validateSequentialBefore('examPaperId'));
+            examPaperIdSelect.addEventListener('change', () => {
+                cachedExamPreview = null;
+                validateSequentialBefore('examPaperId');
+                validateRequiredField('examPaperId');
+                validateTimeFieldsImmediate();
+            });
+            examPaperIdSelect.addEventListener('blur', () => validateRequiredField('examPaperId'));
+        }
+
+        if (classroomIdSelect) {
+            classroomIdSelect.addEventListener('focus', () => validateSequentialBefore('classroomId'));
+            classroomIdSelect.addEventListener('change', () => {
+                validateSequentialBefore('classroomId');
+                validateRequiredField('classroomId');
+            });
+            classroomIdSelect.addEventListener('blur', () => validateRequiredField('classroomId'));
+        }
+
+        if (startTimeInput) {
+            startTimeInput.addEventListener('focus', () => validateSequentialBefore('startTime'));
+            startTimeInput.addEventListener('change', () => {
+                validateSequentialBefore('startTime');
+                validateRequiredField('startTime');
+                validateTimeFieldsImmediate();
+            });
+            startTimeInput.addEventListener('blur', () => {
+                validateRequiredField('startTime');
+                validateTimeFieldsImmediate();
+            });
+        }
+
+        if (endTimeInput) {
+            endTimeInput.addEventListener('focus', () => validateSequentialBefore('endTime'));
+            endTimeInput.addEventListener('change', () => {
+                validateSequentialBefore('endTime');
+                validateRequiredField('endTime');
+                validateTimeFieldsImmediate();
+            });
+            endTimeInput.addEventListener('blur', () => {
+                validateRequiredField('endTime');
+                validateTimeFieldsImmediate();
+            });
+        }
+
+        async function submitCreateSession() {
+            if (!validateCreateSessionForm()) {
+                return;
+            }
+
+            const tokenInput = createForm.querySelector('input[name="__RequestVerificationToken"]');
+            const payload = new URLSearchParams();
+
+            if (tokenInput) {
+                payload.set('__RequestVerificationToken', tokenInput.value);
+            }
+
+            payload.set('sessionName', sessionNameInput.value.trim());
+            payload.set('classroomId', classroomIdSelect.value);
+            payload.set('examPaperId', examPaperIdSelect.value);
+            payload.set('startTime', startTimeInput.value);
+            payload.set('endTime', endTimeInput.value);
+            payload.set('sessionPassword', sessionPasswordInput.value.trim());
+            payload.set('allowViewExplanation', allowViewExplanationInput && allowViewExplanationInput.checked ? 'true' : 'false');
+            payload.set('shuffleQuestions', shuffleQuestionsInput && shuffleQuestionsInput.checked ? 'true' : 'false');
+            payload.set('shuffleAnswers', shuffleAnswersInput && shuffleAnswersInput.checked ? 'true' : 'false');
+            payload.set('notes', notesInput.value.trim());
+
+            const actionButton = btnConfirmCreate;
+            const originalButtonHtml = actionButton ? actionButton.innerHTML : '';
+
+            try {
+                if (actionButton) {
+                    actionButton.disabled = true;
+                    actionButton.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span> Đang tạo...';
+                }
+
+                const response = await fetch(createForm.getAttribute('action') || '/Teacher/CreateSession', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: payload.toString()
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!response.ok || !result || !result.success) {
+                    throw new Error(result?.message || 'Tạo ca thi thất bại.');
+                }
+
+                const createdSessionName = sessionNameInput ? sessionNameInput.value.trim() : '';
+
+                closeModal();
+                closePreviewModal();
+
+                openSuccessModal(createdSessionName, result.sessionId);
+            } catch (error) {
+                if (window.appToast) {
+                    window.appToast.show(error.message || 'Tạo ca thi thất bại.', 'error');
+                }
+            } finally {
+                if (actionButton) {
+                    actionButton.disabled = false;
+                    actionButton.innerHTML = originalButtonHtml;
+                }
+            }
+        }
+
+        // ========== Session Detail Panel Logic ==========
+        const sessionDetailPanel = document.getElementById('sessionDetailPanel');
+        const btnCloseDetailPanel = document.getElementById('btnCloseDetailPanel');
+        const detailSessionName = document.getElementById('detailSessionName');
+        const detailExamTitle = document.getElementById('detailExamTitle');
+        const detailClassName = document.getElementById('detailClassName');
+        const detailPassword = document.getElementById('detailPassword');
+        const detailDate = document.getElementById('detailDate');
+        const detailTime = document.getElementById('detailTime');
+        const detailStatus = document.getElementById('detailStatus');
+        const detailAllowViewExplanation = document.getElementById('detailAllowViewExplanation');
+        const detailShuffleQuestions = document.getElementById('detailShuffleQuestions');
+        const detailShuffleAnswers = document.getElementById('detailShuffleAnswers');
+        const detailNotes = document.getElementById('detailNotes');
+        const detailSubmissionCount = document.getElementById('detailSubmissionCount');
+        const detailJoinLink = document.getElementById('detailJoinLink');
+        const detailQrImage = document.getElementById('detailQrImage');
+        const btnCopyShareLink = document.getElementById('btnCopyShareLink');
+        const btnDownloadShareQr = document.getElementById('btnDownloadShareQr');
+        const tipPassword = document.getElementById('tipPassword');
+
+        let currentDetailSessionId = null;
+        let currentDetailPassword = '';
+        let currentDetailJoinLink = '';
+        let currentDetailQrUrl = '';
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        function formatTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function getStatusBadge(status) {
+            const statusMap = {
+                'Đang diễn ra': 'session-detail-status ongoing',
+                'Sắp diễn ra': 'session-detail-status upcoming',
+                'Đã kết thúc': 'session-detail-status finished'
+            };
+            const className = statusMap[status] || 'session-detail-status';
+            return `<span class="${className}">${status}</span>`;
+        }
+
+        function getBooleanDisplay(value) {
+            return value ? '<span style="color: #10b981; font-weight: 600;">✓ Có</span>' : '<span style="color: #ef4444; font-weight: 600;">✗ Không</span>';
+        }
+
+        function openDetailPanel(sessionData) {
+            currentDetailSessionId = sessionData.id;
+            currentDetailPassword = sessionData.password;
+            currentDetailJoinLink = sessionData.joinLink;
+            currentDetailQrUrl = sessionData.qrUrl;
+
+            detailSessionName.textContent = sessionData.sessionName;
+            detailExamTitle.textContent = sessionData.examTitle;
+            detailClassName.textContent = sessionData.classroomName;
+            detailPassword.textContent = sessionData.password || '(không có)';
+            detailDate.textContent = formatDate(sessionData.startTime);
+            detailTime.textContent = `${formatTime(sessionData.startTime)} - ${formatTime(sessionData.endTime)}`;
+            detailStatus.innerHTML = getStatusBadge(sessionData.status);
+            detailAllowViewExplanation.innerHTML = getBooleanDisplay(sessionData.allowViewExplanation);
+            detailShuffleQuestions.innerHTML = getBooleanDisplay(sessionData.shuffleQuestions);
+            detailShuffleAnswers.innerHTML = getBooleanDisplay(sessionData.shuffleAnswers);
+            detailNotes.textContent = sessionData.notes || '(không có)';
+            detailSubmissionCount.textContent = `${sessionData.submissionCount} bài`;
+            detailJoinLink.value = sessionData.joinLink;
+            detailQrImage.src = sessionData.qrUrl;
+            tipPassword.textContent = sessionData.password || '(không có)';
+
+            if (sessionDetailPanel) {
+                sessionDetailPanel.classList.add('show');
+            }
+        }
+
+        function closeDetailPanel() {
+            if (sessionDetailPanel) {
+                sessionDetailPanel.classList.remove('show');
+            }
+            currentDetailSessionId = null;
+            currentDetailPassword = '';
+            currentDetailJoinLink = '';
+            currentDetailQrUrl = '';
+        }
+
+        async function loadSessionDetail(sessionId) {
+            try {
+                const response = await fetch(`/Teacher/GetSessionDetail?sessionId=${sessionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể tải chi tiết ca thi.');
+                }
+
+                const result = await response.json();
+                if (!result.success || !result.data) {
+                    throw new Error(result.message || 'Dữ liệu không hợp lệ.');
+                }
+
+                openDetailPanel(result.data);
+            } catch (error) {
+                if (window.appToast) {
+                    window.appToast.show(error.message || 'Không thể tải chi tiết ca thi.', 'error');
+                }
+            }
+        }
+
+        // Event listeners for view detail buttons
+        document.querySelectorAll('.btn-view-session-detail').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const sessionCard = button.closest('[data-session-id]');
+                if (sessionCard) {
+                    const sessionId = parseInt(sessionCard.getAttribute('data-session-id'), 10);
+                    loadSessionDetail(sessionId);
+                }
+            });
+        });
+
+        // Click session card to open monitor page (except when clicking on actionable controls)
+        document.querySelectorAll('.session-card').forEach((card) => {
+            card.addEventListener('click', (event) => {
+                if (event.target.closest('button, a, input, select, textarea, label')) {
+                    return;
+                }
+
+                const monitorUrl = card.getAttribute('data-monitor-url');
+                if (monitorUrl) {
+                    window.location.href = monitorUrl;
+                }
+            });
+        });
+
+        // Close detail panel
+        if (btnCloseDetailPanel) {
+            btnCloseDetailPanel.addEventListener('click', closeDetailPanel);
+        }
+
+        // Copy share link
+        if (btnCopyShareLink) {
+            btnCopyShareLink.addEventListener('click', async () => {
+                if (!currentDetailJoinLink) {
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(currentDetailJoinLink);
+                } catch {
+                    if (detailJoinLink) {
+                        detailJoinLink.focus();
+                        detailJoinLink.select();
+                        document.execCommand('copy');
+                    }
+                }
+
+                if (window.appToast) {
+                    window.appToast.show('Đã sao chép link chia sẻ.', 'success');
+                }
+            });
+        }
+
+        // Download QR
+        if (btnDownloadShareQr) {
+            btnDownloadShareQr.addEventListener('click', async () => {
+                if (!currentDetailQrUrl) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(currentDetailQrUrl);
+                    if (!response.ok) {
+                        throw new Error('Không thể tải mã QR.');
+                    }
+
+                    const qrBlob = await response.blob();
+                    const objectUrl = URL.createObjectURL(qrBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = objectUrl;
+                    downloadLink.download = `qr-${currentDetailSessionId}.png`;
+                    downloadLink.click();
+                    URL.revokeObjectURL(objectUrl);
+
+                    if (window.appToast) {
+                        window.appToast.show('Mã QR đã tải thành công.', 'success');
+                    }
+                } catch (error) {
+                    if (window.appToast) {
+                        window.appToast.show(error.message || 'Không thể tải mã QR.', 'error');
+                    }
+                }
+            });
+        }
+
+        if (btnOpen) {
+            btnOpen.addEventListener('click', openModal);
+        }
+
+        if (btnClose) {
+            btnClose.addEventListener('click', closeModal);
+        }
+
+        if (btnCancel) {
+            btnCancel.addEventListener('click', closeModal);
+        }
+
+        if (btnPreview) {
+            btnPreview.addEventListener('click', async () => {
+                if (validateCreateSessionForm()) {
+                    await openPreviewModal();
+                }
+            });
+        }
+
+        if (btnConfirmCreate) {
+            btnConfirmCreate.addEventListener('click', submitCreateSession);
+        }
+
+        if (createForm) {
+            createForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                if (validateCreateSessionForm()) {
+                    openPreviewModal();
+                }
+            });
+        }
+
+        if (btnClosePreviewHeader) {
+            btnClosePreviewHeader.addEventListener('click', closePreviewModal);
+        }
+
+        if (btnClosePreviewFooter) {
+            btnClosePreviewFooter.addEventListener('click', closePreviewModal);
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', (event) => {
+                if (event.target === overlay) {
+                    closeModal();
+                }
+            });
+        }
+
+        if (previewOverlay) {
+            previewOverlay.addEventListener('click', (event) => {
+                if (event.target === previewOverlay) {
+                    closePreviewModal();
+                }
+            });
+        }
+
+        if (btnCopyJoinLink) {
+            btnCopyJoinLink.addEventListener('click', async () => {
+                if (!latestSuccessLink) {
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(latestSuccessLink);
+                } catch {
+                    if (successJoinLink) {
+                        successJoinLink.focus();
+                        successJoinLink.select();
+                        document.execCommand('copy');
+                    }
+                }
+
+                if (window.appToast) {
+                    window.appToast.show('Đã sao chép link tham gia.', 'success');
+                }
+            });
+        }
+
+        if (btnDownloadQr) {
+            btnDownloadQr.addEventListener('click', async () => {
+                if (!latestSuccessQrLink) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(latestSuccessQrLink);
+                    if (!response.ok) {
+                        throw new Error('Không thể tải mã QR.');
+                    }
+
+                    const qrBlob = await response.blob();
+                    const objectUrl = URL.createObjectURL(qrBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = objectUrl;
+                    downloadLink.download = 'ma-qr-ca-thi.png';
+                    downloadLink.click();
+                    URL.revokeObjectURL(objectUrl);
+                } catch (error) {
+                    if (window.appToast) {
+                        window.appToast.show(error.message || 'Không thể tải mã QR.', 'error');
+                    }
+                }
+            });
+        }
+
+        if (btnCloseSuccessModalIcon) {
+            btnCloseSuccessModalIcon.addEventListener('click', closeSuccessModal);
+        }
+
+        if (successOverlay) {
+            successOverlay.addEventListener('click', (event) => {
+                if (event.target === successOverlay) {
+                    closeSuccessModal();
+                }
+            });
+        }
+
+        // ========== Edit Session Logic ==========
+        const editOverlay = document.getElementById('modal-edit-exam-overlay');
+        const btnCloseEditModal = document.getElementById('btn-close-edit-exam-modal');
+        const btnCancelEditExam = document.getElementById('btn-cancel-edit-exam');
+        const editForm = document.getElementById('edit-session-form');
+        const editSessionId = document.getElementById('editSessionId');
+        const editSessionNameInput = document.getElementById('editSessionNameInput');
+        const editExamPaperIdSelect = document.getElementById('editExamPaperIdSelect');
+        const editClassroomIdSelect = document.getElementById('editClassroomIdSelect');
+        const editStartTimeInput = document.getElementById('editStartTimeInput');
+        const editEndTimeInput = document.getElementById('editEndTimeInput');
+        const editSessionPasswordInput = document.getElementById('editSessionPasswordInput');
+        const editNotesInput = document.getElementById('editNotesInput');
+        const editAllowViewExplanation = document.getElementById('editAllowViewExplanation');
+        const editShuffleQuestions = document.getElementById('editShuffleQuestions');
+        const editShuffleAnswers = document.getElementById('editShuffleAnswers');
+        const btnUpdateEditSession = document.getElementById('btn-update-edit-session');
+
+        let currentEditSessionData = null;
+
+        function openEditModal(sessionData) {
+            currentEditSessionData = sessionData;
+            editSessionId.value = sessionData.id;
+            editSessionNameInput.value = sessionData.sessionName;
+            
+            // Copy options from create form to edit form
+            if (examPaperIdSelect && editExamPaperIdSelect) {
+                editExamPaperIdSelect.innerHTML = examPaperOptionsTemplate;
+                editExamPaperIdSelect.value = sessionData.examPaperId;
+            }
+            
+            if (classroomIdSelect && editClassroomIdSelect) {
+                editClassroomIdSelect.innerHTML = classroomIdSelect.innerHTML;
+                editClassroomIdSelect.value = sessionData.classroomId;
+            }
+
+            editStartTimeInput.value = toDateTimeLocalInputValue(sessionData.startTime);
+            editEndTimeInput.value = toDateTimeLocalInputValue(sessionData.endTime);
+
+            editSessionPasswordInput.value = sessionData.password || '';
+            editAllowViewExplanation.checked = sessionData.allowViewExplanation || false;
+            editShuffleQuestions.checked = sessionData.shuffleQuestions || false;
+            editShuffleAnswers.checked = sessionData.shuffleAnswers || false;
+            editNotesInput.value = sessionData.notes || '';
+
+            clearEditErrors();
+            if (editOverlay) {
+                editOverlay.classList.remove('hidden');
+                editOverlay.classList.add('flex');
+            }
+            if (editSessionNameInput) {
+                editSessionNameInput.focus();
+            }
+        }
+
+        function closeEditModal() {
+            if (editOverlay) {
+                editOverlay.classList.add('hidden');
+                editOverlay.classList.remove('flex');
+            }
+            clearEditErrors();
+            currentEditSessionData = null;
+        }
+
+        function clearEditErrors() {
+            document.querySelectorAll('#modal-edit-exam-overlay [data-error-for]').forEach((element) => {
+                element.textContent = '';
+                element.classList.add('hidden');
+            });
+        }
+
+        function setEditError(fieldName, message) {
+            const errorElement = document.querySelector(`#modal-edit-exam-overlay [data-error-for="${fieldName}"]`);
+            if (!errorElement) {
+                return;
+            }
+
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        function clearEditError(fieldName) {
+            const errorElement = document.querySelector(`#modal-edit-exam-overlay [data-error-for="${fieldName}"]`);
+            if (!errorElement) {
+                return;
+            }
+
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+        }
+
+        function getSelectedEditExamDuration() {
+            const selectedOption = editExamPaperIdSelect ? editExamPaperIdSelect.selectedOptions[0] : null;
+            if (!selectedOption) {
+                return 0;
+            }
+
+            const rawValue = selectedOption.getAttribute('data-duration');
+            const duration = Number(rawValue);
+            return Number.isFinite(duration) ? duration : 0;
+        }
+
+        function calculateEditSessionDuration() {
+            const startTime = parseLocalDateTime(editStartTimeInput.value);
+            const endTime = parseLocalDateTime(editEndTimeInput.value);
+
+            if (!startTime || !endTime) {
+                return 0;
+            }
+
+            return Math.ceil((endTime.getTime() - startTime.getTime()) / 60000);
+        }
+
+        function validateEditRequiredField(fieldName) {
+            if (fieldName === 'sessionName') {
+                if (!editSessionNameInput.value.trim()) {
+                    setEditError('sessionName', 'Trường Tên ca thi là trường bắt buộc.');
+                    return false;
+                }
+
+                clearEditError('sessionName');
+                return true;
+            }
+
+            if (fieldName === 'examPaperId') {
+                if (!editExamPaperIdSelect.value.trim()) {
+                    setEditError('examPaperId', 'Trường Đề thi là trường bắt buộc.');
+                    return false;
+                }
+
+                clearEditError('examPaperId');
+                return true;
+            }
+
+            if (fieldName === 'classroomId') {
+                if (!editClassroomIdSelect.value.trim()) {
+                    setEditError('classroomId', 'Trường Lớp học tham gia là trường bắt buộc.');
+                    return false;
+                }
+
+                clearEditError('classroomId');
+                return true;
+            }
+
+            if (fieldName === 'startTime') {
+                if (!editStartTimeInput.value.trim()) {
+                    setEditError('startTime', 'Trường Giờ bắt đầu là trường bắt buộc.');
+                    return false;
+                }
+
+                clearEditError('startTime');
+                return true;
+            }
+
+            if (fieldName === 'endTime') {
+                if (!editEndTimeInput.value.trim()) {
+                    setEditError('endTime', 'Trường Giờ kết thúc là trường bắt buộc.');
+                    return false;
+                }
+
+                clearEditError('endTime');
+                return true;
+            }
+
+            return true;
+        }
+
+        function validateEditTimeFieldsImmediate() {
+            const now = new Date();
+            const startTime = parseLocalDateTime(editStartTimeInput.value);
+            const endTime = parseLocalDateTime(editEndTimeInput.value);
+            const examDuration = getSelectedEditExamDuration();
+
+            if (editStartTimeInput.value.trim()) {
+                if (!startTime) {
+                    setEditError('startTime', 'Trường Giờ bắt đầu không đúng định dạng.');
+                } else if (startTime < now) {
+                    setEditError('startTime', 'Giờ bắt đầu không được là thời gian trong quá khứ.');
+                } else {
+                    clearEditError('startTime');
+                }
+            }
+
+            if (editEndTimeInput.value.trim()) {
+                if (!endTime) {
+                    setEditError('endTime', 'Trường Giờ kết thúc không đúng định dạng.');
+                } else {
+                    clearEditError('endTime');
+                }
+            }
+
+            if (startTime && endTime) {
+                if (endTime <= startTime) {
+                    setEditError('endTime', 'Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+                } else if (examDuration > 0 && calculateEditSessionDuration() < examDuration) {
+                    setEditError('endTime', `Tổng thời gian ca thi phải lớn hơn hoặc bằng thời gian của đề thi (${examDuration} phút).`);
+                } else if (editEndTimeInput.value.trim()) {
+                    clearEditError('endTime');
+                }
+            }
+        }
+
+        function validateEditSequentialBefore(fieldName) {
+            const order = ['sessionName', 'examPaperId', 'classroomId', 'startTime', 'endTime'];
+            const index = order.indexOf(fieldName);
+            if (index <= 0) {
+                return;
+            }
+
+            for (let i = 0; i < index; i += 1) {
+                validateEditRequiredField(order[i]);
+            }
+
+            validateEditTimeFieldsImmediate();
+        }
+
+        function validateEditSessionForm() {
+            clearEditErrors();
+
+            let firstInvalidField = null;
+            let isValid = true;
+
+            if (!validateEditRequiredField('sessionName')) {
+                firstInvalidField = firstInvalidField || editSessionNameInput;
+                isValid = false;
+            }
+
+            if (!validateEditRequiredField('examPaperId')) {
+                firstInvalidField = firstInvalidField || editExamPaperIdSelect;
+                isValid = false;
+            }
+
+            if (!validateEditRequiredField('classroomId')) {
+                firstInvalidField = firstInvalidField || editClassroomIdSelect;
+                isValid = false;
+            }
+
+            if (!validateEditRequiredField('startTime')) {
+                firstInvalidField = firstInvalidField || editStartTimeInput;
+                isValid = false;
+            }
+
+            if (!validateEditRequiredField('endTime')) {
+                firstInvalidField = firstInvalidField || editEndTimeInput;
+                isValid = false;
+            }
+
+            validateEditTimeFieldsImmediate();
+
+            const startHasError = !document.querySelector('#modal-edit-exam-overlay [data-error-for="startTime"]')?.classList.contains('hidden');
+            const endHasError = !document.querySelector('#modal-edit-exam-overlay [data-error-for="endTime"]')?.classList.contains('hidden');
+
+            if (startHasError) {
+                firstInvalidField = firstInvalidField || editStartTimeInput;
+                isValid = false;
+            }
+
+            if (endHasError) {
+                firstInvalidField = firstInvalidField || editEndTimeInput;
+                isValid = false;
+            }
+
+            if (!isValid && firstInvalidField) {
+                firstInvalidField.focus();
+            }
+
+            return isValid;
+        }
+
+        async function submitUpdateSession() {
+            if (!validateEditSessionForm()) {
+                return;
+            }
+
+            const tokenInput = editForm.querySelector('input[name="__RequestVerificationToken"]');
+            const payload = new URLSearchParams();
+
+            if (tokenInput) {
+                payload.set('__RequestVerificationToken', tokenInput.value);
+            }
+
+            payload.set('sessionId', editSessionId.value);
+            payload.set('sessionName', editSessionNameInput.value.trim());
+            payload.set('classroomId', editClassroomIdSelect.value);
+            payload.set('examPaperId', editExamPaperIdSelect.value);
+            payload.set('startTime', editStartTimeInput.value);
+            payload.set('endTime', editEndTimeInput.value);
+            payload.set('sessionPassword', editSessionPasswordInput.value.trim());
+            payload.set('allowViewExplanation', editAllowViewExplanation.checked ? 'true' : 'false');
+            payload.set('shuffleQuestions', editShuffleQuestions.checked ? 'true' : 'false');
+            payload.set('shuffleAnswers', editShuffleAnswers.checked ? 'true' : 'false');
+            payload.set('notes', editNotesInput.value.trim());
+
+            try {
+                const response = await fetch('/Teacher/UpdateSession', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: payload.toString()
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!response.ok || !result || !result.success) {
+                    throw new Error(result?.message || 'Cập nhật ca thi thất bại.');
+                }
+
+                closeEditModal();
+                location.reload();
+            } catch (error) {
+                if (window.appToast) {
+                    window.appToast.show(error.message || 'Cập nhật ca thi thất bại.', 'error');
+                }
+            }
+        }
+
+        // ========== Delete Session Logic ==========
+        const deleteConfirmOverlay = document.getElementById('modal-delete-confirm-overlay');
+        const deleteConfirmSessionName = document.getElementById('deleteConfirmSessionName');
+        const btnDeleteCancel = document.getElementById('btn-delete-cancel');
+        const btnDeleteConfirm = document.getElementById('btn-delete-confirm');
+
+        let pendingDeleteSessionId = null;
+
+        function openDeleteConfirm(sessionId, sessionName) {
+            pendingDeleteSessionId = sessionId;
+            if (deleteConfirmSessionName) {
+                deleteConfirmSessionName.textContent = sessionName;
+            }
+            if (deleteConfirmOverlay) {
+                deleteConfirmOverlay.classList.add('show');
+            }
+        }
+
+        function closeDeleteConfirm() {
+            if (deleteConfirmOverlay) {
+                deleteConfirmOverlay.classList.remove('show');
+            }
+            pendingDeleteSessionId = null;
+        }
+
+        async function submitDeleteSession() {
+            if (!pendingDeleteSessionId) {
+                return;
+            }
+
+            const token = document.querySelector('form input[name="__RequestVerificationToken"]')?.value || '';
+            const payload = new URLSearchParams();
+
+            if (token) {
+                payload.set('__RequestVerificationToken', token);
+            }
+
+            payload.set('sessionId', pendingDeleteSessionId);
+
+            const actionButton = btnDeleteConfirm;
+            const originalButtonHtml = actionButton ? actionButton.innerHTML : '';
+
+            try {
+                if (actionButton) {
+                    actionButton.disabled = true;
+                    actionButton.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span> Đang xóa...';
+                }
+
+                const response = await fetch('/Teacher/DeleteSession', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: payload.toString()
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!response.ok || !result || !result.success) {
+                    throw new Error(result?.message || 'Xóa ca thi thất bại.');
+                }
+
+                closeDeleteConfirm();
+                location.reload();
+            } catch (error) {
+                if (window.appToast) {
+                    window.appToast.show(error.message || 'Xóa ca thi thất bại.', 'error');
+                }
+            } finally {
+                if (actionButton) {
+                    actionButton.disabled = false;
+                    actionButton.innerHTML = originalButtonHtml;
+                }
+            }
+        }
+
+        // Event listeners for edit/delete buttons
+        document.querySelectorAll('.btn-edit-session').forEach((button) => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const sessionCard = button.closest('[data-session-id]');
+                if (sessionCard) {
+                    const sessionId = parseInt(sessionCard.getAttribute('data-session-id'), 10);
+                    try {
+                        const response = await fetch(`/Teacher/GetSessionDetail?sessionId=${sessionId}`);
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success && result.data) {
+                                openEditModal(result.data);
+                            }
+                        }
+                    } catch (error) {
+                        if (window.appToast) {
+                            window.appToast.show('Không thể tải thông tin ca thi.', 'error');
+                        }
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-session').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const sessionCard = button.closest('[data-session-id]');
+                if (sessionCard) {
+                    const sessionId = parseInt(sessionCard.getAttribute('data-session-id'), 10);
+                    const sessionName = sessionCard.querySelector('[class*="font-bold"][class*="text-\\[15px\\]"]')?.textContent.trim() || `#${sessionId}`;
+                    openDeleteConfirm(sessionId, sessionName);
+                }
+            });
+        });
+
+        // Edit modal event listeners
+        if (btnCloseEditModal) {
+            btnCloseEditModal.addEventListener('click', closeEditModal);
+        }
+
+        if (btnCancelEditExam) {
+            btnCancelEditExam.addEventListener('click', closeEditModal);
+        }
+
+        if (editSessionNameInput) {
+            editSessionNameInput.addEventListener('blur', () => {
+                validateEditRequiredField('sessionName');
+            });
+        }
+
+        if (editExamPaperIdSelect) {
+            editExamPaperIdSelect.addEventListener('focus', () => validateEditSequentialBefore('examPaperId'));
+            editExamPaperIdSelect.addEventListener('change', () => {
+                validateEditSequentialBefore('examPaperId');
+                validateEditRequiredField('examPaperId');
+                validateEditTimeFieldsImmediate();
+            });
+            editExamPaperIdSelect.addEventListener('blur', () => validateEditRequiredField('examPaperId'));
+        }
+
+        if (editClassroomIdSelect) {
+            editClassroomIdSelect.addEventListener('focus', () => validateEditSequentialBefore('classroomId'));
+            editClassroomIdSelect.addEventListener('change', () => {
+                validateEditSequentialBefore('classroomId');
+                validateEditRequiredField('classroomId');
+            });
+            editClassroomIdSelect.addEventListener('blur', () => validateEditRequiredField('classroomId'));
+        }
+
+        if (editStartTimeInput) {
+            editStartTimeInput.addEventListener('focus', () => validateEditSequentialBefore('startTime'));
+            editStartTimeInput.addEventListener('change', () => {
+                validateEditSequentialBefore('startTime');
+                validateEditRequiredField('startTime');
+                validateEditTimeFieldsImmediate();
+            });
+            editStartTimeInput.addEventListener('blur', () => {
+                validateEditRequiredField('startTime');
+                validateEditTimeFieldsImmediate();
+            });
+        }
+
+        if (editEndTimeInput) {
+            editEndTimeInput.addEventListener('focus', () => validateEditSequentialBefore('endTime'));
+            editEndTimeInput.addEventListener('change', () => {
+                validateEditSequentialBefore('endTime');
+                validateEditRequiredField('endTime');
+                validateEditTimeFieldsImmediate();
+            });
+            editEndTimeInput.addEventListener('blur', () => {
+                validateEditRequiredField('endTime');
+                validateEditTimeFieldsImmediate();
+            });
+        }
+
+        if (btnUpdateEditSession) {
+            btnUpdateEditSession.addEventListener('click', async () => {
+                if (validateEditSessionForm()) {
+                    await submitUpdateSession();
+                }
+            });
+        }
+
+        if (editOverlay) {
+            editOverlay.addEventListener('click', (event) => {
+                if (event.target === editOverlay) {
+                    closeEditModal();
+                }
+            });
+        }
+
+        // Delete confirmation event listeners
+        if (btnDeleteCancel) {
+            btnDeleteCancel.addEventListener('click', closeDeleteConfirm);
+        }
+
+        if (btnDeleteConfirm) {
+            btnDeleteConfirm.addEventListener('click', submitDeleteSession);
+        }
+
+        if (deleteConfirmOverlay) {
+            deleteConfirmOverlay.addEventListener('click', (event) => {
+                if (event.target === deleteConfirmOverlay) {
+                    closeDeleteConfirm();
+                }
+            });
+        }
+    </script>
+}
