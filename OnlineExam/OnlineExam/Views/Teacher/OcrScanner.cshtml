@@ -171,7 +171,8 @@
                 const data = await response.json();
                 
                 if (!data.success) {
-                    alert('Lỗi: ' + data.message);
+                    if (window.appToast) window.appToast.error('Lỗi: ' + data.message);
+                    else alert('Lỗi: ' + data.message);
                     return;
                 }
 
@@ -193,8 +194,8 @@
                         
                         optionsHtml += `
                         <div class="p-3 ${bgClass} rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer" onclick="setCorrect(this)">
-                            <span class="w-6 h-6 shrink-0 rounded-full ${circleClass} flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform" title="Đánh dấu đáp án đúng">${labels[optIdx]}</span>
-                            <span class="text-xs ${textClass} break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text" contenteditable="true" spellcheck="false" title="Sửa đáp án" onclick="event.stopPropagation()">${opt}</span>
+                            <span class="option-circle w-6 h-6 shrink-0 rounded-full ${circleClass} flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform" title="Đánh dấu đáp án đúng">${labels[optIdx]}</span>
+                            <div class="option-text text-xs ${textClass} break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text" contenteditable="true" spellcheck="false" title="Sửa đáp án" onclick="event.stopPropagation()">${opt}</div>
                         </div>`;
                     });
 
@@ -224,7 +225,8 @@
 
             } catch (error) {
                 console.error(error);
-                alert('Lỗi xảy ra trong quá trình kết nối tới Backend.');
+                if (window.appToast) window.appToast.error('Lỗi xảy ra trong quá trình kết nối tới Backend.');
+                else alert('Lỗi xảy ra trong quá trình kết nối tới Backend.');
             } finally {
                 btnAnalyze.disabled = false;
                 btnAnalyze.innerHTML = `<span class="material-symbols-outlined !text-lg">shutter_speed</span> Bắt đầu phân tích OCR`;
@@ -241,21 +243,21 @@
             // Reset all siblings
             allOptions.forEach(opt => {
                 opt.className = 'p-3 bg-surface-container-low border border-transparent rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer';
-                const circle = opt.querySelector('span.w-6');
-                if (circle) circle.className = 'w-6 h-6 shrink-0 rounded-full bg-white text-on-surface shadow-sm flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform';
-                const text = opt.querySelector('span.text-xs');
-                if (text) text.className = 'text-xs font-semibold text-on-surface break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
+                const circle = opt.querySelector('.option-circle');
+                if (circle) circle.className = 'option-circle w-6 h-6 shrink-0 rounded-full bg-white text-on-surface shadow-sm flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform';
+                const text = opt.querySelector('.option-text');
+                if (text) text.className = 'option-text text-xs font-semibold text-on-surface break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
             });
 
             // Set current element as active
             const targetDiv = el.closest('.option-item') || el;
             targetDiv.className = 'p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3 group transition-all option-item hover:bg-blue-50/50 cursor-pointer';
             
-            const activeCircle = targetDiv.querySelector('span.w-6');
-            if (activeCircle) activeCircle.className = 'w-6 h-6 shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform scale-110';
+            const activeCircle = targetDiv.querySelector('.option-circle');
+            if (activeCircle) activeCircle.className = 'option-circle w-6 h-6 shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-black mt-0.5 transition-transform scale-110';
             
-            const activeText = targetDiv.querySelector('span.text-xs');
-            if (activeText) activeText.className = 'text-xs text-primary font-bold break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
+            const activeText = targetDiv.querySelector('.option-text');
+            if (activeText) activeText.className = 'option-text text-xs text-primary font-bold break-words leading-relaxed w-full outline-none focus:bg-white focus:ring-2 focus:ring-primary/30 rounded px-1.5 py-0.5 hover:bg-black/5 transition-colors cursor-text';
         }
 
         async function submitExam(status) {
@@ -263,19 +265,22 @@
             const subjectInput = document.getElementById('examSubject');
             
             if (!titleInput.value.trim()) {
-                alert('Vui lòng nhập Tên đề thi bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                if (window.appToast) window.appToast.error('Vui lòng nhập Tên đề thi bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                else alert('Vui lòng nhập Tên đề thi bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
                 titleInput.focus();
                 return;
             }
             if (!subjectInput.value.trim()) {
-                alert('Vui lòng nhập Môn học bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                if (window.appToast) window.appToast.error('Vui lòng nhập Môn học bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
+                else alert('Vui lòng nhập Môn học bắt buộc trước khi ' + (status === 'Bản nháp' ? 'lưu nháp' : 'xuất bản') + '!');
                 subjectInput.focus();
                 return;
             }
             
             const cards = document.querySelectorAll('#questionsContainer .depth-card');
             if (cards.length === 0) {
-                alert('Chưa có câu hỏi nào trong đề thi!');
+                if (window.appToast) window.appToast.error('Chưa có câu hỏi nào trong đề thi!');
+                else alert('Chưa có câu hỏi nào trong đề thi!');
                 return;
             }
             
@@ -299,20 +304,21 @@
                 let hasCorrect = false;
 
                 optElements.forEach((el) => {
-                    const labelSpan = el.querySelector('span:first-child');
-                    const textSpan = el.querySelector('span:last-child');
+                    const labelSpan = el.querySelector('.option-circle');
+                    const textSpan = el.querySelector('.option-text');
                     const isCorrect = labelSpan.classList.contains('bg-primary');
                     if (isCorrect) hasCorrect = true;
                     opts.push({
                         Label: labelSpan.innerText.trim(),
-                        Text: textSpan.innerText.trim(),
+                        Text: textSpan ? textSpan.innerText.trim() : '',
                         IsCorrect: isCorrect
                     });
                 });
                 
                 if (!hasCorrect) {
                    validationError = true;
-                   alert('Lỗi: Câu hỏi số ' + (index + 1) + ' chưa có đáp án đúng! Vui lòng nhấp chọn 1 đáp án làm đáp án đúng.');
+                   if (window.appToast) window.appToast.error('Lỗi: Câu hỏi số ' + (index + 1) + ' chưa có đáp án đúng! Vui lòng nhấp chọn 1 đáp án làm đáp án đúng.');
+                   else alert('Lỗi: Câu hỏi số ' + (index + 1) + ' chưa có đáp án đúng! Vui lòng nhấp chọn 1 đáp án làm đáp án đúng.');
                 }
 
                 request.Questions.push({
@@ -341,14 +347,19 @@
                 
                 const result = await res.json();
                 if (result.success) {
-                    alert((status === 'Bản nháp' ? 'Lưu bản nháp' : 'Xuất bản đề thi') + ' thành công! Đề thi đã nằm trong hệ thống.');
-                    window.location.href = result.redirectUrl || '/Teacher/Exams';
+                    if (window.appToast) {
+                        window.appToast.redirect((status === 'Bản nháp' ? 'Lưu bản nháp' : 'Xuất bản đề thi') + ' thành công! Đề thi đã nằm trong hệ thống.', result.redirectUrl || '/Teacher/Exams');
+                    } else {
+                        window.location.href = result.redirectUrl || '/Teacher/Exams';
+                    }
                 } else {
-                    alert('Có lỗi xảy ra: ' + result.message);
+                    if (window.appToast) window.appToast.error('Có lỗi xảy ra: ' + result.message);
+                    else alert('Có lỗi xảy ra: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
-                alert('Lỗi kết nối tới máy chủ!');
+                if (window.appToast) window.appToast.error('Lỗi kết nối tới máy chủ!');
+                else alert('Lỗi kết nối tới máy chủ!');
             } finally {
                 btnDraft.disabled = false; btnPublish.disabled = false;
                 btnDraft.innerHTML = draftHtml; btnPublish.innerHTML = publishHtml;

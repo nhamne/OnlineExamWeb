@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -30,15 +30,24 @@ namespace OnlineExam.Controllers
                 return true;
             }
 
+<<<<<<< HEAD
             var passwordHasher = new PasswordHasher<User>();
             try
             {
+=======
+            try
+            {
+                var passwordHasher = new PasswordHasher<User>();
+>>>>>>> origin/dev-nham
                 var verificationResult = passwordHasher.VerifyHashedPassword(new User(), storedPassword, enteredPassword);
                 return verificationResult == PasswordVerificationResult.Success || verificationResult == PasswordVerificationResult.SuccessRehashNeeded;
             }
             catch (FormatException)
             {
+<<<<<<< HEAD
                 // Handles legacy/plain-text or invalid hash formats without crashing.
+=======
+>>>>>>> origin/dev-nham
                 return false;
             }
         }
@@ -108,6 +117,7 @@ namespace OnlineExam.Controllers
             // === TẠO COOKIE ĐĂNG NHẬP (LƯU VÀO TRÌNH DUYỆT) ===
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, roleFromDB == "teacher" ? "Teacher" : "Student")
@@ -214,7 +224,7 @@ namespace OnlineExam.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Auth");
+            return RedirectToAction("Login", "Auth", new { cleared = 1 });
         }
     }
 }

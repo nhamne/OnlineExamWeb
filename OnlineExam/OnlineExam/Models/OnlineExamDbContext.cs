@@ -88,6 +88,7 @@ public partial class OnlineExamDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.DurationInMinutes).HasDefaultValue(45);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.Title).HasMaxLength(255);
 
@@ -101,9 +102,12 @@ public partial class OnlineExamDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__ExamSess__3214EC07CEFD9748");
 
-            entity.Property(e => e.AllowViewScore).HasDefaultValue(true);
+            entity.Property(e => e.AllowViewExplanation).HasDefaultValue(true);
             entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.IsShuffled).HasDefaultValue(true);
+            entity.Property(e => e.ShuffleQuestions).HasDefaultValue(true);
+            entity.Property(e => e.ShuffleAnswers).HasDefaultValue(true);
+            entity.Property(e => e.Notes).HasColumnType("nvarchar(max)");
             entity.Property(e => e.SessionName).HasMaxLength(255);
             entity.Property(e => e.SessionPassword)
                 .HasMaxLength(50)

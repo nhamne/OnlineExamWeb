@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,7 +10,18 @@ public partial class ExamPaper
 
     public string Title { get; set; } = null!;
 
+    public int DurationInMinutes { get; set; }
+
     public string? Subject { get; set; }
+
+    public string? Status { get; set; }
+
+    [NotMapped]
+    public int? Duration
+    {
+        get => DurationInMinutes;
+        set => DurationInMinutes = value ?? DurationInMinutes;
+    }
 
     public int TeacherId { get; set; }
 
@@ -18,11 +29,14 @@ public partial class ExamPaper
 
     public bool? IsDeleted { get; set; }
 
+<<<<<<< HEAD
     public string? Status { get; set; }
 
     [NotMapped]
     public int? Duration { get; set; }
 
+=======
+>>>>>>> origin/dev-nham
     public virtual ICollection<ExamSession> ExamSessions { get; set; } = new List<ExamSession>();
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();

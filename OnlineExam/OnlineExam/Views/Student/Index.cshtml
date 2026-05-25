@@ -1,8 +1,140 @@
-﻿@{
-    ViewData["Title"] = "Trang chủ Học sinh";
+@model OnlineExam.ViewModels.StudentDashboardVM
+@{
+    ViewData["Title"] = "Tổng quan";
+    var culture = new System.Globalization.CultureInfo("vi-VN");
+    var today = DateTime.Now.ToString("dddd, dd 'Tháng' MM", culture);
+    today = char.ToUpper(today[0]) + today.Substring(1);
+    var hour = DateTime.Now.Hour;
+    var greeting = hour < 12 ? "Chào buổi sáng" : hour < 18 ? "Chào buổi chiều" : "Chào buổi tối";
+    var completionPercent = Math.Clamp(Model.CompletionRate, 0, 100);
+    var averageScore = Math.Round(Model.AverageScore, 1);
+    var scoreBars = Math.Clamp((int)Math.Ceiling(averageScore / 2.0), 0, 5);
 }
 
-<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-    <h2 class="text-2xl font-bold text-gray-800">Xin chào Học sinh!</h2>
-    <p class="text-gray-600 mt-2">Sẵn sàng làm bài thi chưa nào? Hãy chọn chức năng bên menu trái nhé!</p>
+<div class="w-full max-w-7xl mx-auto space-y-8">
+    <section class="bg-[#e7f1ff] rounded-[32px] p-8 lg:p-12 flex flex-col xl:flex-row xl:items-center justify-between gap-8 overflow-hidden relative shadow-[0_12px_36px_rgba(3,105,161,0.08)] border border-white/70">
+        <div class="z-10 max-w-2xl xl:text-left">
+           
+            <h1 class="text-2xl lg:text-5xl font-extrabold text-[#004493] tracking-tight mb-4">
+                Xin chào, @Model.StudentName!
+            </h1>
+            <p class="text-[#0369A1] text-base lg:text-lg font-medium leading-relaxed max-w-xl xl:mx-0">
+                Đây là nơi bạn theo dõi tiến độ học tập, điểm số trung bình và các kết quả thi gần đây.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-4 justify-center xl:justify-start text-[#004493] font-semibold">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 backdrop-blur text-sm shadow-sm border border-white/70">
+                    <span class="material-symbols-outlined text-xl">calendar_today</span>
+                    <span>@today</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 backdrop-blur text-sm shadow-sm border border-white/70">
+                    <span class="material-symbols-outlined text-xl">task_alt</span>
+                    <span>@Model.CompletedExamsCount/@Model.TotalExamsCount ca thi đã hoàn thành</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-[28px] border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-6 md:p-7">
+            <p class="text-xs font-bold uppercase tracking-[0.3em] text-[#0369A1]/70 mb-4">Tiến độ học tập</p>
+            <div class="flex items-center gap-5">
+                <div class="relative w-28 h-28 shrink-0">
+                    <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="#dbeafe" stroke-width="8"></circle>
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="#0369A1" stroke-width="8" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="@(100 - completionPercent)"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col leading-none">
+                        <span class="text-xl font-black text-[#0369A1]">@((int)Math.Round(completionPercent))%</span>
+                    </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-end gap-2 flex-wrap">
+                        <span class="text-4xl md:text-5xl font-black text-slate-900 leading-none">@Model.CompletedExamsCount</span>
+                        <span class="text-lg md:text-2xl font-semibold text-slate-400 pb-1">/@Model.TotalExamsCount</span>
+                    </div>
+                    <p class="mt-2 text-sm md:text-base text-slate-500 leading-relaxed">Ca thi đã hoàn thành</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[28px] border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-6 md:p-7">
+            <p class="text-xs font-bold uppercase tracking-[0.3em] text-[#0369A1]/70 mb-4">Điểm số trung bình</p>
+            <div class="flex items-end gap-2">
+                <span class="text-4xl md:text-5xl font-black text-[#0369A1] leading-none">@averageScore.ToString("0.0")</span>
+                <span class="text-lg font-semibold text-emerald-500 pb-1">/10</span>
+            </div>
+            <p class="mt-2 text-sm md:text-base text-slate-500">Kết quả trung bình của các bài đã nộp gần đây.</p>
+            <div class="mt-5 flex items-end gap-2 h-6">
+                @for (var i = 0; i < 5; i++)
+                {
+                    var active = i < scoreBars;
+                    var heightClass = i == 0 ? "h-2" : i == 1 ? "h-3" : i == 2 ? "h-4" : i == 3 ? "h-5" : "h-3";
+                    <div class="w-8 rounded-full @heightClass @(active ? "bg-[#0369A1]" : "bg-slate-200")"></div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-[28px] border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-6 md:p-7">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+            <div>
+                <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Kết quả thi gần đây</h2>
+                <p class="text-sm text-slate-500 mt-1">Tổng hợp các bài thi đã nộp gần nhất của bạn.</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[720px] text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="pb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400">Môn học</th>
+                        <th class="pb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400">Ngày thi</th>
+                        <th class="pb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400">Điểm số</th>
+                        <th class="pb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400 text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecentResults != null && Model.RecentResults.Any())
+                    {
+                        foreach (var result in Model.RecentResults)
+                        {
+                            var scoreTone = result.Score >= 8 ? "bg-emerald-100 text-emerald-700" : result.Score >= 6.5 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700";
+                            <tr class="border-b border-slate-50 last:border-b-0 hover:bg-slate-50/60 transition-colors">
+                                <td class="py-4 pr-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-[#f2f3fd] text-[#0369A1] flex items-center justify-center shrink-0 font-black">
+                                            <span class="material-symbols-outlined text-[20px]">science</span>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-slate-900 truncate">@result.ExamName</p>
+                                            <p class="text-xs text-slate-500 truncate">@result.ClassName</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 text-sm text-slate-600 whitespace-nowrap">@result.SubmittedAt.ToString("dd MMM, yyyy", culture)</td>
+                                <td class="py-4">
+                                    <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold @scoreTone min-w-[56px]">
+                                        @result.Score.ToString("0.0")
+                                    </span>
+                                </td>
+                                <td class="py-4 text-right">
+                                    <a href="/Student/ExamResult/@result.ExamSessionId" class="inline-flex items-center gap-2 text-[#0369A1] font-bold text-sm hover:underline">
+                                        Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="py-10 text-center text-slate-400">
+                                Chưa có kết quả nào để hiển thị.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>

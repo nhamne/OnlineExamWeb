@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 # Visual Studio files
+=======
+
+>>>>>>> origin/dev-nham
 .vs/
 bin/
 obj/
 *.user
+<<<<<<< HEAD
 *.lock.json
+=======
+node_modules/
+
+>>>>>>> origin/dev-nham

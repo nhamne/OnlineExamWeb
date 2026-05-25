@@ -1,12 +1,12 @@
 ﻿-- 1. Tạo Database nếu chưa tồn tại
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'OnlineExamDB')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'OnlineExamDBWeb')
 BEGIN
-    CREATE DATABASE OnlineExamDB;
+    CREATE DATABASE OnlineExamDBWeb;
 END
 GO
 
-USE OnlineExamDB;
+USE OnlineExamDBWeb;
 GO
 
 -- 2. Bảng Users (Tài khoản)
@@ -55,12 +55,19 @@ BEGIN
     CREATE TABLE ExamPapers (
         Id INT IDENTITY(1,1) PRIMARY KEY,
         Title NVARCHAR(255) NOT NULL,
+        DurationInMinutes INT NOT NULL DEFAULT 45,
         Subject NVARCHAR(100) NULL,
         TeacherId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
         CreatedAt DATETIME DEFAULT GETDATE(),
         IsDeleted BIT DEFAULT 0,
         Status NVARCHAR(50) DEFAULT N'Bản nháp'
     );
+END
+GO
+
+IF COL_LENGTH('ExamPapers', 'DurationInMinutes') IS NULL
+BEGIN
+    ALTER TABLE ExamPapers ADD DurationInMinutes INT NOT NULL CONSTRAINT DF_ExamPapers_DurationInMinutes DEFAULT(45);
 END
 GO
 
@@ -93,9 +100,50 @@ BEGIN
         EndTime DATETIME NOT NULL,
         DurationInMinutes INT NOT NULL,
         SessionPassword VARCHAR(50) NULL,
-        AllowViewScore BIT DEFAULT 1,
-        IsShuffled BIT DEFAULT 1
+        AllowViewExplanation BIT DEFAULT 1,
+        IsShuffled BIT DEFAULT 1,
+        ShuffleQuestions BIT DEFAULT 1,
+        ShuffleAnswers BIT DEFAULT 1,
+        Notes NVARCHAR(MAX) NULL
     );
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD AllowViewExplanation BIT NOT NULL CONSTRAINT DF_ExamSessions_AllowViewExplanation DEFAULT(1);
+END
+GO
+-- Ensure AllowViewScore column exists (nullable with default)
+IF COL_LENGTH('ExamSessions', 'AllowViewScore') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD AllowViewScore BIT NULL CONSTRAINT DF_ExamSessions_AllowViewScore DEFAULT(1);
+END
+GO
+
+-- If AllowViewExplanation exists and AllowViewScore is missing/NULL, copy values
+IF COL_LENGTH('ExamSessions', 'AllowViewExplanation') IS NOT NULL AND COL_LENGTH('ExamSessions', 'AllowViewScore') IS NOT NULL
+BEGIN
+    UPDATE ExamSessions SET AllowViewScore = AllowViewExplanation WHERE AllowViewScore IS NULL;
+END
+GO
+GO
+
+IF COL_LENGTH('ExamSessions', 'ShuffleQuestions') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD ShuffleQuestions BIT NOT NULL CONSTRAINT DF_ExamSessions_ShuffleQuestions DEFAULT(1);
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'ShuffleAnswers') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD ShuffleAnswers BIT NOT NULL CONSTRAINT DF_ExamSessions_ShuffleAnswers DEFAULT(1);
+END
+GO
+
+IF COL_LENGTH('ExamSessions', 'Notes') IS NULL
+BEGIN
+    ALTER TABLE ExamSessions ADD Notes NVARCHAR(MAX) NULL;
 END
 GO
 

@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using OnlineExam.Models;
+using OnlineExam.Services.Search;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<OnlineExamDbContext>();
+builder.Services.AddHttpClient<IMeiliSearchService, MeiliSearchService>();
 
 builder.Services.AddSession(); // Đăng ký dịch vụ thẻ nhớ tạm
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - The Academic Atelier</title>
+    <title>@ViewData["Title"] - Online Exam</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -18,17 +18,29 @@
           theme: {
             extend: {
               colors: {
-                  "brand-blue": "#005bbf",
-                  "brand-blue-container": "#1a73e8",
+                  "brand-blue": "#0369A1",
+                  "brand-blue-container": "#0369A1",
                   "brand-orange": "#FF8A65",
                   "brand-yellow": "#fbbc05",
                   "brand-teal": "#006e2c",
                   "surface-bg": "#f9f9ff",
-                  "on-surface-variant": "#414754"
+                  "on-surface-variant": "#414754",
+                  "primary": "#1a61a4",
+                  "primary-container": "#75aef7",
+                  "surface": "#f7f9fb",
+                  "surface-container-low": "#f0f4f7",
+                  "on-surface": "#2c3437",
+                  "outline-variant-soft": "rgba(172, 179, 183, 0.15)"
               },
               fontFamily: {
-                  "headline": ["Manrope"],
-                  "body": ["Inter"]
+                  "headline": ["Manrope", "sans-serif"],
+                  "body": ["Inter", "sans-serif"]
+              },
+              backgroundImage: {
+                  "knowledge-flow": "linear-gradient(135deg, #1a61a4 0%, #75aef7 100%)"
+              },
+              boxShadow: {
+                  "ambient": "0 20px 40px rgba(44, 52, 55, 0.06)"
               }
             }
           }
@@ -66,33 +78,105 @@
             ::-webkit-scrollbar-thumb:hover {
                 background: #94a3b8;
             }
+
+        .transition-soft {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hover-scale:hover {
+            transform: translateY(-4px);
+        }
+
+        .glass-dock {
+            background: rgba(247, 249, 251, 0.8);
+            backdrop-filter: blur(12px);
+        }
     </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="bg-surface-bg font-body text-slate-800 antialiased">
+    @{
+        var currentPath = Context.Request.Path.Value ?? string.Empty;
+        string headerTitle;
+        var serverToastMessage = TempData["ToastMessage"] as string;
+        var serverToastType = (TempData["ToastType"] as string) ?? "success";
+
+        if (currentPath.StartsWith("/Teacher/Classes", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/ManageClass", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Quản lý lớp học";
+        }
+        else if (currentPath.StartsWith("/Teacher/Exams", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/CreateExam", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/OcrScanner", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/EditExam", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/ExamDetails", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Quản lý đề thi";
+        }
+        else if (currentPath.StartsWith("/Teacher/Sessions", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Teacher/MonitorSession", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tổ chức ca thi";
+        }
+        else if (currentPath.StartsWith("/Teacher/Reports", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Báo cáo thống kê";
+        }
+        else if (currentPath.StartsWith("/Student/JoinClass", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tham gia lớp";
+        }
+        else if (currentPath.StartsWith("/Student/Exams", StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith("/Student/MyExams", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Ca thi của tôi";
+        }
+        else if (currentPath.StartsWith("/Student/ExamResult", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Kết quả bài thi";
+        }
+        else if (currentPath.StartsWith("/Student/Results", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Kết quả";
+        }
+        else if (currentPath.StartsWith("/Student", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tổng quan";
+        }
+        else if (currentPath.StartsWith("/Teacher", StringComparison.OrdinalIgnoreCase))
+        {
+            headerTitle = "Tổng quan";
+        }
+        else
+        {
+            headerTitle = "Tài khoản";
+        }
+    }
 
     <div class="flex h-screen overflow-hidden">
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity opacity-0"></div>
+        
         <partial name="_Sidebar" />
 
-        <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-surface-bg ml-24 peer-hover:ml-[260px] transition-all duration-300 ease-in-out">
-            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-8 z-10 sticky top-0">
-                <div class="flex-1 max-w-2xl font-headline font-semibold text-lg text-slate-800">
-                    Hệ thống thi trắc nghiệm online
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-surface-bg ml-0 md:ml-24 peer-hover:md:ml-[260px] transition-all duration-300 ease-in-out">
+            <header class="h-20 shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
+                <div class="flex items-center">
+                    <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors mr-3 shrink-0" aria-label="Toggle menu">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div class="font-headline font-semibold text-lg text-slate-800 truncate">
+                        @headerTitle
+                    </div>
                 </div>
-                <div class="ml-4 flex items-center gap-6">
-                    <button class="text-slate-500 hover:text-brand-blue transition-colors">
-                        <span class="material-symbols-outlined text-2xl">settings</span>
-                    </button>
-                    <button class="relative text-slate-500 hover:text-brand-blue transition-colors">
-                        <span class="material-symbols-outlined text-2xl">notifications</span>
-                        <span class="absolute top-0 right-0 flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border border-white"></span>
-                        </span>
-                    </button>
+                <div class="flex items-center gap-4 shrink-0">
+                    <a asp-area="" asp-controller="Profile" asp-action="Index" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-[#0369A1] hover:text-white transition-all shadow-sm group" title="Quản lý tài khoản">
+                        <span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">person</span>
+                    </a>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-8 lg:p-12">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
                 <div>
                     @RenderBody()
                 </div>
@@ -100,9 +184,222 @@
         </main>
     </div>
 
+    <div id="app-toast-container" class="fixed top-4 right-4 z-[140] pointer-events-none">
+        <div id="app-toast" class="hidden min-w-[280px] max-w-[420px] rounded-2xl border bg-white shadow-[0_20px_40px_rgba(15,23,42,0.12)] px-4 py-3 flex items-start gap-3 pointer-events-auto">
+            <div id="app-toast-icon" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="flex-1">
+                <p id="app-toast-title" class="font-bold text-sm">Thông báo</p>
+                <p id="app-toast-message" class="text-sm mt-0.5 text-slate-600">Nội dung thông báo</p>
+            </div>
+            <button id="app-toast-close" class="text-slate-400 hover:text-slate-600 transition-colors" type="button" aria-label="Đóng thông báo">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirm Modal (Global) -->
+    <div id="app-confirm-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" id="app-confirm-backdrop"></div>
+        <div class="relative w-full max-w-sm transform rounded-2xl bg-white p-6 text-left shadow-2xl transition-all duration-300 scale-95 opacity-0" id="app-confirm-panel">
+            <div class="mb-5 flex items-center gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-100 sm:h-10 sm:w-10">
+                    <span class="material-symbols-outlined text-rose-600">warning</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900" id="app-confirm-title">Xác nhận</h3>
+            </div>
+            <p class="text-sm text-slate-600 mb-6" id="app-confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="flex gap-3">
+                <button id="app-confirm-cancel" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-[13px] hover:bg-slate-50 transition-colors">Hủy bỏ</button>
+                <button id="app-confirm-ok" class="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-[13px] hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/password-toggle.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const toastEl = document.getElementById('app-toast');
+            const iconEl = document.getElementById('app-toast-icon');
+            const titleEl = document.getElementById('app-toast-title');
+            const messageEl = document.getElementById('app-toast-message');
+            const closeEl = document.getElementById('app-toast-close');
+            let hideToastTimer;
+
+            function getToastTheme(type) {
+                if (type === 'error') {
+                    return {
+                        root: 'border-rose-200',
+                        iconWrap: 'bg-rose-100 text-rose-600',
+                        title: 'Thất bại',
+                        icon: 'error'
+                    };
+                }
+
+                return {
+                    root: 'border-emerald-200',
+                    iconWrap: 'bg-emerald-100 text-emerald-600',
+                    title: 'Thành công',
+                    icon: 'check_circle'
+                };
+            }
+
+            function hideToast() {
+                if (!toastEl) {
+                    return;
+                }
+
+                toastEl.classList.add('hidden');
+            }
+
+            function showToast(message, type = 'success') {
+                if (!toastEl || !iconEl || !titleEl || !messageEl) {
+                    return;
+                }
+
+                const theme = getToastTheme(type);
+
+                toastEl.classList.remove('border-emerald-200', 'border-rose-200');
+                toastEl.classList.add(theme.root);
+
+                iconEl.classList.remove('bg-emerald-100', 'text-emerald-600', 'bg-rose-100', 'text-rose-600');
+                iconEl.classList.add(...theme.iconWrap.split(' '));
+
+                const iconSpan = iconEl.querySelector('.material-symbols-outlined');
+                if (iconSpan) {
+                    iconSpan.textContent = theme.icon;
+                }
+
+                titleEl.textContent = theme.title;
+                messageEl.textContent = message;
+
+                toastEl.classList.remove('hidden');
+
+                clearTimeout(hideToastTimer);
+                hideToastTimer = setTimeout(hideToast, 3200);
+            }
+
+            if (closeEl) {
+                closeEl.addEventListener('click', hideToast);
+            }
+
+            window.appToast = {
+                show: showToast,
+                success: (message) => showToast(message, 'success'),
+                error: (message) => showToast(message, 'error'),
+                redirect: (message, url, type = 'success') => {
+                    sessionStorage.setItem('app.toast', JSON.stringify({ message, type }));
+                    window.location.href = url;
+                },
+                storeAndReload: (message, type = 'success') => {
+                    sessionStorage.setItem('app.toast', JSON.stringify({ message, type }));
+                    location.reload();
+                }
+            };
+
+            const serverToastMessage = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverToastMessage));
+            const serverToastType = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverToastType));
+
+            if (serverToastMessage) {
+                showToast(serverToastMessage, serverToastType || 'success');
+            }
+
+            const pendingToastRaw = sessionStorage.getItem('app.toast');
+            if (pendingToastRaw) {
+                sessionStorage.removeItem('app.toast');
+                try {
+                    const pendingToast = JSON.parse(pendingToastRaw);
+                    if (pendingToast?.message) {
+                        showToast(pendingToast.message, pendingToast.type || 'success');
+                    }
+                } catch {
+                    // Ignore malformed session data.
+                }
+            }
+
+            // Mobile Sidebar Toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+            const sidebar = document.getElementById('app-sidebar');
+            let isSidebarOpen = false;
+
+            function toggleSidebar() {
+                isSidebarOpen = !isSidebarOpen;
+                if (isSidebarOpen) {
+                    sidebarBackdrop.classList.remove('hidden');
+                    // Small delay to allow display:block to apply before animating opacity
+                    setTimeout(() => {
+                        sidebarBackdrop.classList.remove('opacity-0');
+                    }, 10);
+                    sidebar.classList.remove('-translate-x-full');
+                } else {
+                    sidebarBackdrop.classList.add('opacity-0');
+                    sidebar.classList.add('-translate-x-full');
+                    setTimeout(() => {
+                        sidebarBackdrop.classList.add('hidden');
+                    }, 300); // match transition duration
+                }
+            }
+
+            if (mobileMenuBtn && sidebar && sidebarBackdrop) {
+                mobileMenuBtn.addEventListener('click', toggleSidebar);
+                sidebarBackdrop.addEventListener('click', toggleSidebar);
+            }
+
+            // Confirm Modal Logic
+            const confirmModal = document.getElementById('app-confirm-modal');
+            const confirmPanel = document.getElementById('app-confirm-panel');
+            const confirmTitle = document.getElementById('app-confirm-title');
+            const confirmMessage = document.getElementById('app-confirm-message');
+            const confirmBtnOk = document.getElementById('app-confirm-ok');
+            const confirmBtnCancel = document.getElementById('app-confirm-cancel');
+            const confirmBackdrop = document.getElementById('app-confirm-backdrop');
+            let onConfirmAction = null;
+
+            function closeConfirm() {
+                if (!confirmModal) return;
+                confirmModal.classList.add('opacity-0');
+                confirmPanel.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    confirmModal.classList.add('hidden');
+                    confirmModal.classList.remove('flex');
+                }, 300);
+                onConfirmAction = null;
+            }
+
+            function showConfirm(title, message, callback) {
+                if (!confirmModal) return;
+                confirmTitle.innerText = title || 'Xác nhận';
+                confirmMessage.innerText = message || 'Bạn có chắc chắn muốn thực hiện hành động này?';
+                onConfirmAction = callback;
+
+                confirmModal.classList.remove('hidden');
+                confirmModal.classList.add('flex');
+                setTimeout(() => {
+                    confirmModal.classList.remove('opacity-0');
+                    confirmPanel.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            }
+
+            if (confirmBtnCancel) confirmBtnCancel.addEventListener('click', closeConfirm);
+            if (confirmBackdrop) confirmBackdrop.addEventListener('click', closeConfirm);
+            if (confirmBtnOk) {
+                confirmBtnOk.addEventListener('click', () => {
+                    if (onConfirmAction) onConfirmAction();
+                    closeConfirm();
+                });
+            }
+
+            window.appConfirm = {
+                show: showConfirm
+            };
+
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
