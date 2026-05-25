@@ -568,8 +568,8 @@ public class TeacherController : Controller
             var correctCount = submission?.CorrectAnswersCount?.ToString() ?? "";
             var timeSpent = timeSpentMinutes?.ToString() ?? "";
             var warningCount = submission?.WarningCount.ToString() ?? "0";
-            var startedAt = submission?.StartedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
-            var submittedAt = submission?.SubmittedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+            var startedAt = submission != null ? submission.StartedAt.ToString("dd/MM/yyyy HH:mm") : "";
+            var submittedAt = submission != null && submission.SubmittedAt.HasValue ? submission.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm") : "";
 
             var line = $"\"{x.FullName.Replace("\"", "\"\"")}\",\"{x.Email}\",\"{score}\",\"{correctCount}\",\"{timeSpent}\",\"{warningCount}\",\"{startedAt}\",\"{submittedAt}\",\"{statusText}\"";
             csvLines.Add(line);
